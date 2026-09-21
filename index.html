@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClassPet Pro — Giáo viên</title>
+<style>
+:root{
+--bg:#f6f7fb;--surface:#fff;--surface2:#fafaff;--text:#171c2b;--muted:#7b8497;
+--line:#e8eaf1;--purple:#6757f5;--purple2:#8b7ffb;--green:#2dbb80;--orange:#f5a623;
+--red:#ef5b67;--blue:#4b8ff7;--shadow:0 15px 45px rgba(35,38,72,.08)
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{width:252px;position:fixed;inset:0 auto 0 0;background:#fff;border-right:1px solid var(--line);padding:22px 15px;z-index:20}
+.logo{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:850;padding:4px 10px 25px}.logo i{font-style:normal;width:41px;height:41px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#6456f5,#a099ff);box-shadow:0 9px 20px #6757f52e}
+.section{font-size:10px;color:#adb4c2;font-weight:800;letter-spacing:1.2px;margin:20px 10px 7px;text-transform:uppercase}
+.nav button{width:100%;border:0;background:none;color:#697286;padding:12px 12px;border-radius:12px;display:flex;gap:12px;align-items:center;cursor:pointer;margin:2px 0;text-align:left}.nav button:hover,.nav button.active{background:linear-gradient(100deg,#f0efff,#e9f8ff);color:var(--purple);font-weight:750;box-shadow:0 5px 14px #6757f512}.nav .ico{width:20px;text-align:center;font-size:17px}.nav button:nth-child(1) .ico{color:#6757f5}.nav button:nth-child(2) .ico{color:#2dbb80}.nav button:nth-child(3) .ico{color:#f5a623}.nav button:nth-child(4) .ico{color:#ef5b67}
+.profile{position:absolute;bottom:16px;left:15px;right:15px;border-top:1px solid var(--line);padding:17px 8px 0;display:flex;gap:10px;align-items:center}.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffe1d1,#ffb69f);font-size:21px}.profile small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.main{margin-left:252px;flex:1;padding:27px 34px 55px;max-width:1600px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.hello h1{font-size:28px;margin:0 0 5px}.hello p{margin:0;color:var(--muted);font-size:13px}.dashboard-home{display:none;margin-top:10px;border:0;border-radius:10px;background:#efedff;color:var(--purple);padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer}.dashboard-home:hover{background:#dfdcff}.top-actions{display:flex;gap:9px}.select,.icon{height:42px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:0 13px;color:#4d5668;font-weight:650}.icon{width:42px;padding:0;cursor:pointer}
+.hero{background:linear-gradient(120deg,#5142e8,#7666f7 52%,#b19cff);background-size:180% 180%;animation:heroGlow 8s ease infinite;color:#fff;border-radius:23px;padding:25px 27px;display:flex;justify-content:space-between;align-items:center;overflow:hidden;position:relative;box-shadow:0 18px 45px #6757f52e;margin-bottom:20px}@keyframes heroGlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}.hero:after{content:"";position:absolute;width:240px;height:240px;border:1px solid #ffffff24;border-radius:50%;right:30px;top:-110px;box-shadow:0 0 0 30px #ffffff0d,0 0 0 60px #ffffff08}.hero h2{margin:0 0 6px;font-size:20px}.hero p{margin:0;color:#e9e7ff;font-size:13px}.hero:before{content:"🌟  🌈  📚";position:absolute;right:105px;bottom:13px;font-size:22px;letter-spacing:9px;opacity:.22;transform:rotate(-6deg)}.hero-right{display:flex;gap:24px;align-items:center;z-index:1}.hero-stat{text-align:center}.hero-stat strong{font-size:24px;display:block}.hero-stat span{font-size:10px;color:#ddd9ff}.hero-class-code{text-align:center;padding:8px 11px;border:1px solid #ffffff55;border-radius:12px;background:#ffffff18;min-width:82px}.hero-class-code small{display:block;font-size:8px;letter-spacing:1px;color:#e9e7ff;font-weight:800}.hero-class-code strong{display:block;margin-top:3px;font-size:16px;letter-spacing:2px;color:#fff}.hero-btn{border:0;background:#fff;color:var(--purple);padding:11px 15px;border-radius:11px;font-weight:800;cursor:pointer;z-index:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:var(--shadow);display:flex;align-items:center;gap:13px;position:relative;overflow:hidden}.stat:after{content:"";position:absolute;right:-18px;bottom:-25px;width:75px;height:75px;border-radius:50%;background:#6757f510}.stat:nth-child(2):after{background:#2dbb8012}.stat:nth-child(3):after{background:#f5a62315}.stat:nth-child(4):after{background:#ef5b6715}.stat-icon{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;font-size:19px}.s-purple{background:#efedff}.s-green{background:#e6faf1}.s-orange{background:#fff3df}.s-red{background:#ffe9ec}.stat small{color:var(--muted);display:block;font-size:11px}.stat strong{display:block;font-size:24px;margin-top:3px}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.72fr);gap:19px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;position:relative}.card:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#6757f5,#2dbb80,#f5a623,#ef5b67);opacity:.7}.card>*{position:relative}#studentsPetsSection,#topPetsSection,#activitySection{scroll-margin-top:20px}.head{padding:19px 21px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.head h3{margin:0;font-size:16px}.head p{margin:4px 0 0;font-size:11px;color:var(--muted)}.primary{border:0;border-radius:10px;background:var(--purple);color:#fff;padding:10px 14px;font-weight:750;cursor:pointer}.tools{display:flex;gap:9px;padding:15px 20px 5px}.search{position:relative;flex:1}.search span{position:absolute;left:12px;top:9px;color:#9ba3b2}.search input{width:100%;height:39px;border:1px solid var(--line);border-radius:10px;padding:0 12px 0 34px;outline:none}.filter{height:39px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 10px;color:#606a7d}
+.pet-grid{padding:13px 20px 21px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pet{border:1px solid var(--line);border-radius:16px;padding:13px;cursor:pointer;transition:.22s;background:linear-gradient(145deg,#fff 0%,#fbfaff 70%,#f3f1ff 100%);position:relative;isolation:isolate}.pet:before{content:"";position:absolute;inset:-1px;border-radius:16px;background:linear-gradient(135deg,#8b7ffb55,transparent 45%,#2dbb8050);opacity:0;transition:.22s;z-index:-1}.pet:hover:before{opacity:1}.pet:after{content:"✦";position:absolute;right:12px;bottom:10px;color:#8b7ffb55;font-size:18px;animation:sparkle 2.4s ease-in-out infinite}@keyframes sparkle{50%{transform:translateY(-5px) rotate(18deg);opacity:.35}}.pet-picker{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:8px;max-height:150px;overflow:auto}.pet-picker button{border:1px solid var(--line);background:#f7f7fc;border-radius:9px;padding:7px 2px;font-size:22px;cursor:pointer}.pet-picker button:hover,.pet-picker button.selected{background:#efedff;border-color:var(--purple);transform:scale(1.08)}.dark-mode .pet-picker button{background:#292e42;color:var(--text)}.pet:hover{transform:translateY(-3px);box-shadow:0 12px 25px #23264a12;border-color:#dcd9ff}.pet-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.pet-top .badge{margin-top:3px}.pet-face{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;font-size:48px;background:linear-gradient(145deg,#f5f2ff,#e8f8ff);border:3px solid #fff;box-shadow:0 8px 16px #6757f526;transform-origin:50% 88%;animation:petIdle 2.4s ease-in-out infinite;will-change:transform;position:relative}.pet-face:after{content:"";position:absolute;inset:-7px;border:2px dashed #8b7ffb55;border-radius:27px;animation:petOrbit 5s linear infinite;pointer-events:none}.pet:hover .pet-face{animation:petHello .55s ease-in-out infinite alternate}.pet.eating .pet-face{animation:petEat .7s ease}.pet.level-up .pet-face{animation:petLevelUp .9s ease}.pet.dead .pet-face{filter:grayscale(1);animation:none}.pet.dead .pet-face:after{animation:none}@keyframes petIdle{0%,100%{transform:translateY(0) rotate(0deg) scale(1)}15%{transform:translateY(-8px) rotate(-6deg) scale(1.05)}30%{transform:translateY(1px) rotate(5deg) scale(.98)}45%{transform:translateY(-5px) rotate(-3deg) scale(1.03)}60%{transform:translateY(0) rotate(4deg) scale(1)}75%{transform:translateY(-7px) rotate(-4deg) scale(1.05)}}@keyframes petOrbit{to{transform:rotate(360deg)}}@keyframes petHello{from{transform:translateY(0) rotate(-10deg) scale(1)}to{transform:translateY(-12px) rotate(10deg) scale(1.12)}}@keyframes petEat{35%{transform:translateY(-12px) scale(1.16) rotate(-7deg)}70%{transform:translateY(0) scale(.94) rotate(7deg)}}@keyframes petLevelUp{25%{transform:scale(1.25) rotate(-8deg)}50%{transform:scale(1.4) rotate(8deg);filter:drop-shadow(0 0 16px #ffd85a)}100%{transform:none}}.dark-mode .pet-face{background:#292e42}@media(prefers-reduced-motion:reduce){.pet-face,.pet:hover .pet-face{animation:none!important}}.no-animation *{animation:none!important;transition:none!important}.pet.motion-on .pet-face{animation-play-state:running}.pet:not(.motion-on) .pet-face{animation-play-state:paused}.badge{font-size:9px;padding:5px 7px;border-radius:99px;font-weight:800}.level-badge{min-width:55px;padding:6px 7px;border-radius:12px;text-align:center;background:linear-gradient(135deg,#6757f5,#9a8fff);color:#fff;box-shadow:0 6px 12px #6757f53d;line-height:1}.level-badge span{display:block;font-size:7px;letter-spacing:.7px;opacity:.82}.level-badge strong{display:block;font-size:18px;margin-top:2px}.pet.level-up .level-badge{animation:levelBadgePop .9s ease;box-shadow:0 0 0 5px #ffd85a55,0 8px 20px #6757f566}@keyframes levelBadgePop{0%{transform:scale(1)}45%{transform:scale(1.25) rotate(-5deg)}70%{transform:scale(1.12) rotate(5deg)}100%{transform:none}}.ok{color:#159967;background:#e7faf2}.hungry{color:#c98518;background:#fff2da}.danger{color:#dc4854;background:#ffe8eb}.pet h4{font-size:13px;margin:10px 0 2px}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}.exp{color:var(--purple);font-size:10px;margin-top:8px}.pet.dead{filter:grayscale(1);opacity:.78}.pet.fed{animation:petBounce .5s ease}@keyframes petBounce{50%{transform:translateY(-8px) rotate(-2deg)}}.bar{height:6px;background:#edf0f5;border-radius:99px;margin-top:9px;overflow:hidden}.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#6757f5,#9b93ff)}.fill.g{background:linear-gradient(90deg,#25b879,#62dca8)}.fill.o{background:linear-gradient(90deg,#efa027,#ffd477)}.fill.r{background:linear-gradient(90deg,#ed5865,#ff969e)}
+.activity{padding:10px 20px 15px}.event{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid #f0f1f5}.event:last-child{border:0}.event-icon{width:36px;height:36px;border-radius:11px;background:#f1efff;display:grid;place-items:center;font-size:18px}.event b{font-size:12px}.event p{margin:3px 0 0;color:var(--muted);font-size:10px}.rank{padding:7px 20px 15px}.rankrow{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #f0f1f5}.rankrow:last-child{border:0}.num{width:20px;text-align:center;font-weight:800;color:#9da5b5;font-size:12px}.rpet{font-size:24px}.rname{flex:1;font-size:12px;font-weight:700}.lv{font-size:11px;color:var(--purple);font-weight:800}
+.alert{margin-top:19px;background:#fff7e9;border:1px solid #f9dfae;border-radius:16px;padding:15px 16px;display:flex;gap:11px;align-items:flex-start}.alert-icon{font-size:21px}.alert b{font-size:12px}.alert p{margin:4px 0 0;font-size:10px;color:#8d744b;line-height:1.5}
+.tasks-card{margin-bottom:19px}.task-list{padding:14px 20px 18px;display:grid;gap:12px}.task-item{border:1px solid var(--line);border-radius:14px;padding:13px;background:linear-gradient(180deg,#fff,#fdfdff)}.dark-mode .task-item{background:#202436}.task-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.task-item h4{margin:0;font-size:13px}.task-item p{margin:4px 0 0;color:var(--muted);font-size:10px}.task-exp{color:var(--purple);font-size:11px;font-weight:800;white-space:nowrap}.task-students{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:11px}.task-student{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:10px}.task-student span{flex:1}.task-student button{border:0;border-radius:7px;padding:6px 8px;background:#efedff;color:var(--purple);font-size:10px;font-weight:800;cursor:pointer}.task-student button.done{background:#e7faf2;color:#159967;cursor:default}.task-empty{color:var(--muted);font-size:12px;text-align:center;padding:12px}.task-delete{border:0;background:none;color:var(--red);font-size:10px;cursor:pointer}.task-all-button{margin:13px 20px 0;font-size:11px;padding:8px 11px}.task-all-button:disabled{opacity:.55;cursor:default}@media(max-width:560px){.task-students{grid-template-columns:1fr}}
+.toast{position:fixed;right:25px;bottom:23px;background:#202636;color:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 15px 35px #0002;opacity:0;transform:translateY(12px);transition:.22s;pointer-events:none;z-index:50;font-size:12px}.toast.show{opacity:1;transform:none}.hero-progress{margin-top:15px;max-width:470px}.hero-progress-label{display:flex;justify-content:space-between;font-size:11px;color:#e9e7ff;margin-bottom:6px}.hero-progress .bar{height:8px;background:#ffffff35;margin:0}.hero-progress .fill{background:#fff;transition:width .35s ease}.pet-stage{font-size:10px;color:var(--purple);font-weight:800;margin-top:6px}.pet-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:11px;font-size:10px;color:var(--muted)}.pet-metrics span{background:#f7f7fc;border-radius:8px;padding:6px 3px;text-align:center}.pet-metrics b{display:block;color:var(--text);font-size:11px;margin-top:2px}.care-alert{margin-top:19px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.care-alert .head{padding:16px 18px}.care-list{padding:4px 18px 13px}.care-row{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #f0f1f5;font-size:11px}.care-row:last-child{border:0}.care-row .care-info{flex:1}.care-row small{display:block;color:var(--muted);margin-top:3px}.care-row button{border:0;background:#efedff;color:var(--purple);border-radius:8px;padding:7px 9px;font-size:10px;font-weight:800;cursor:pointer}.dashboard-panels{display:grid;grid-template-columns:1.25fr .75fr;gap:19px;margin-bottom:19px}.main>#statisticsRow{display:none}.main.statistics-only> *{display:none}.main.statistics-only>.top{display:flex}.main.statistics-only>.top .dashboard-home{display:inline-block}.main.statistics-only>#statisticsRow{display:block;margin-bottom:0}.main.statistics-only>#statisticsRow #notificationsSection{display:block}.main.statistics-only>#statisticsRow .analytics{min-height:460px}.statistics-back{border:0;border-radius:10px;background:#efedff;color:var(--purple);padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer}.analytics{padding:19px 21px}.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.analytics-stat{padding:12px;border-radius:13px;background:linear-gradient(135deg,#f5f3ff,#fbfbff);border:1px solid #e7e3ff}.analytics-stat:nth-child(1){background:linear-gradient(135deg,#e9e6ff,#fff)}.analytics-stat:nth-child(2){background:linear-gradient(135deg,#e1f8ef,#fff)}.analytics-stat:nth-child(3){background:linear-gradient(135deg,#fff0d7,#fff)}.analytics-stat:nth-child(4){background:linear-gradient(135deg,#ffe4e9,#fff)}.analytics-stat small{display:block;color:var(--muted);font-size:10px}.analytics-stat strong{display:block;color:var(--purple);font-size:20px;margin-top:5px}.chart{height:110px;display:flex;align-items:end;gap:8px;padding:12px 4px 0;border-bottom:1px solid var(--line)}.chart i{flex:1;min-height:8px;border-radius:8px 8px 0 0;background:linear-gradient(#8b7ffb,#6757f5);position:relative}.chart i span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);font-style:normal}.achievement-list{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:15px 20px 20px}.achievement{padding:12px;border-radius:13px;background:linear-gradient(135deg,#fff8df,#fff);border:1px solid #f4dfaa}.achievement.locked{filter:grayscale(1);opacity:.5}.achievement b{font-size:12px}.achievement small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.notice-list{padding:6px 20px 15px}.notice-item{display:flex;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f1f5;font-size:11px}.notice-item:last-child{border:0}.notice-item small{display:block;color:var(--muted);margin-top:3px}.top-three .rankrow:nth-child(1){background:linear-gradient(90deg,#fff5c7,transparent);border-radius:10px}.top-three .rankrow:nth-child(2){background:linear-gradient(90deg,#f1f3f8,transparent);border-radius:10px}.top-three .rankrow:nth-child(3){background:linear-gradient(90deg,#ffeadb,transparent);border-radius:10px}.dark-mode .analytics-stat,.dark-mode .achievement{background:#292e42;border-color:var(--line)}@media(max-width:850px){.dashboard-panels{grid-template-columns:1fr}.analytics-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.achievement-list{grid-template-columns:1fr}}.dark-mode{--bg:#151827;--surface:#202436;--surface2:#1b1f30;--text:#f3f4fb;--muted:#aab1c5;--line:#34394d;--shadow:0 15px 45px #0003}.dark-mode .sidebar,.dark-mode .card,.dark-mode .stat,.dark-mode .pet,.dark-mode .select,.dark-mode .icon,.dark-mode .search input,.dark-mode .filter,.dark-mode .care-alert,.dark-mode .modal,.dark-mode .cancel,.dark-mode .auth-card{background:var(--surface);color:var(--text)}.dark-mode .pet-metrics span{background:#292e42}.dark-mode .head,.dark-mode .profile{border-color:var(--line)}.dark-mode .logo,.dark-mode .nav button{color:var(--text)}.dark-mode .search input,.dark-mode .filter{color:var(--text)}@media(max-width:720px){.care-alert{margin-top:14px}.hero-progress{max-width:none}.pet-metrics{font-size:9px}}
+.auth-bg{position:fixed;inset:0;background:linear-gradient(135deg,#5142e8 0%,#7666f7 42%,#43c596 100%);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;overflow:hidden}.auth-bg:before{content:"📚     ✏️     🎓     🔬     🌈     🧮     🖍️     📝";position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding-top:8vh;color:#fff;font-size:clamp(25px,4vw,48px);letter-spacing:clamp(5px,2vw,24px);line-height:2.4;opacity:.18;filter:drop-shadow(0 8px 12px #29217a44);transform:rotate(-5deg);white-space:nowrap;pointer-events:none}.auth-bg:after{content:"";position:absolute;width:clamp(380px,58vw,780px);height:clamp(380px,58vw,780px);border-radius:50%;border:2px solid #ffffff25;box-shadow:0 0 0 35px #ffffff12,0 0 0 75px #ffffff0b,0 25px 80px #29217a30;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}.auth-bg.hidden{display:none}.auth-card{position:relative;z-index:1;width:min(400px,100%);background:#fffffff5;border:1px solid #ffffffaa;border-radius:23px;padding:30px;box-shadow:0 25px 80px #332b8a55;backdrop-filter:blur(10px)}.auth-logo{text-align:center;font-size:25px;font-weight:850;margin-bottom:25px}.auth-logo span{display:inline-grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#efedff;margin-right:8px}.auth-card h2{margin:0 0 6px;font-size:21px}.auth-card>p{margin:0 0 22px;color:var(--muted);font-size:12px}.auth-label{display:block;font-size:11px;font-weight:750;margin:14px 0 6px}.auth-input{width:100%;height:43px;border:1px solid var(--line);border-radius:11px;padding:0 13px;outline:none}.auth-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px #6757f51c}.auth-submit{width:100%;margin-top:21px;height:43px;border:0;border-radius:11px;background:var(--purple);color:#fff;font-weight:800;cursor:pointer}.auth-error{min-height:17px;margin:10px 0 0;color:var(--red);font-size:11px}.demo-account{margin-top:17px;padding:10px;border-radius:10px;background:#f7f6ff;color:#7770b0;font-size:10px;text-align:center}.auth-switch{margin-top:16px;text-align:center;color:var(--muted);font-size:11px}.auth-switch button{border:0;background:none;color:var(--purple);font-weight:800;cursor:pointer;padding:0}.logout{border:0;background:none;color:var(--muted);font-size:10px;padding:3px 0;cursor:pointer}.logout:hover{color:var(--red)}
+.profile-edit{display:block;color:var(--purple);font-size:10px;margin-top:3px;cursor:pointer}.settings-modal{width:min(760px,100%);max-height:90vh;overflow:auto}.settings-grid{display:grid;grid-template-columns:180px 1fr;gap:18px;margin-top:18px}.settings-nav{display:flex;flex-direction:column;gap:6px}.settings-nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;font-weight:700}.settings-nav button.active,.settings-nav button:hover{background:#efedff;color:var(--purple)}.settings-panel{display:none}.settings-panel.active{display:block}.settings-panel h3{margin:0 0 5px;font-size:15px}.settings-panel>p{margin:0 0 15px;color:var(--muted);font-size:11px}.settings-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.setting-field{margin-bottom:12px}.setting-field label{display:block;font-size:11px;font-weight:750;margin-bottom:6px}.setting-field input,.setting-field select{width:100%;height:39px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:var(--surface);color:var(--text)}.setting-check{display:flex;align-items:center;gap:8px;font-size:11px;margin:12px 0;color:var(--text)}.setting-check input{accent-color:var(--purple)}.settings-note{padding:11px;border-radius:10px;background:#f7f6ff;color:#7770b0;font-size:10px;margin-top:10px}.settings-panel[data-settings-panel="exp"]{background:linear-gradient(135deg,#faf9ff,#f2f0ff);border:1px solid #e1ddff;border-radius:16px;padding:18px}.settings-panel[data-settings-panel="exp"] h3{color:var(--purple);font-size:17px}.exp-rules{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.exp-rule{padding:12px 8px;text-align:center;background:#fff;border:1px solid #e7e3ff;border-radius:12px;color:var(--purple);font-size:11px}.exp-rule strong{display:block;font-size:17px;margin-top:4px}.dark-mode .settings-panel[data-settings-panel="exp"]{background:linear-gradient(135deg,#25213e,#202436);border-color:#4d4677}.dark-mode .exp-rule{background:#292e42;border-color:#494264}@media(max-width:560px){.exp-rules{grid-template-columns:1fr 1fr}}.danger-zone{border:1px solid #f6c8ce;background:#fff5f6;border-radius:12px;padding:13px;margin-top:16px}.danger-zone b{color:var(--red);font-size:12px}.backup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.backup-actions button{border:0;border-radius:9px;padding:9px 12px;font-size:11px;font-weight:750;cursor:pointer;background:#efedff;color:var(--purple)}.backup-actions button.danger{background:#ffe8eb;color:#dc4854}@media(max-width:560px){.settings-grid{grid-template-columns:1fr}.settings-nav{display:grid;grid-template-columns:repeat(2,1fr)}.settings-form-grid{grid-template-columns:1fr}.settings-modal{padding:17px}.pet-picker{grid-template-columns:repeat(6,1fr)}}
+.modal-bg{position:fixed;inset:0;background:#10132266;backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:40;padding:20px}.modal-bg.show{display:flex}.modal{width:min(460px,100%);background:#fff;border-radius:22px;box-shadow:0 25px 80px #0003;padding:23px}.modal h2{margin:0 0 5px;font-size:20px}.modal p{color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.cancel{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;cursor:pointer}.feedall{background:#6757f5;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer}.pet-action{border:0;background:#e7faf2;color:#159967;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer}.pet-action:hover{filter:brightness(.97)}.pet-delete{border:0;background:#ffe8eb;color:#dc4854;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer}.pet-delete:hover{filter:brightness(.97)}.pet-actions{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}.pet-feed-effect{position:absolute;pointer-events:none;font-size:19px;animation:floatFeed .9s ease forwards;z-index:3}@keyframes floatFeed{0%{opacity:0;transform:translate(-50%,8px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-42px) scale(1.15)}}.pet{position:relative}.pet-profile{display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center;margin:17px 0;padding:15px;border-radius:15px;background:linear-gradient(135deg,#f6f4ff,#fff);border:1px solid var(--line)}.dark-mode .pet-profile{background:#292e42}.profile-pet-face{width:110px;height:110px;border-radius:28px;display:grid;place-items:center;font-size:72px;background:#efedff}.profile-pet-face.dead{filter:grayscale(1)}.pet-profile h3{margin:0 0 4px;font-size:20px}.pet-profile p{margin:3px 0;color:var(--muted);font-size:12px}.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.profile-stats span{padding:8px;border-radius:9px;background:#f7f7fc;text-align:center;font-size:10px;color:var(--muted)}.dark-mode .profile-stats span{background:#202436}.profile-stats b{display:block;color:var(--text);font-size:14px;margin-top:3px}.profile-timeline{margin:14px 0 0;padding-left:16px;border-left:2px solid #dcd9ff;color:var(--muted);font-size:11px;line-height:1.7}@media(max-width:560px){.pet-profile{grid-template-columns:1fr;text-align:center}.profile-pet-face{margin:auto}.profile-stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.pet-grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.sidebar{width:220px}.main{margin-left:220px}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;padding:18px 12px}.hello h1{font-size:21px}.top-actions .select{display:none}.hero{align-items:flex-start}.hero-right{display:none}.stats{gap:9px}.stat{padding:12px}.stat strong{font-size:20px}.pet-grid{padding:12px;grid-template-columns:1fr 1fr}.tools{padding-left:12px;padding-right:12px}.filter{display:none}}
+@media(max-width:450px){.pet-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero{padding:20px}}
+.student-choice{display:flex;gap:8px;margin:0 0 20px}.student-choice button{flex:1;border:1px solid var(--line);background:#f7f7fc;color:var(--muted);border-radius:11px;padding:10px;font-weight:800;cursor:pointer}.student-choice button.active{background:#efedff;color:var(--purple);border-color:#cfc9ff}.student-login{display:none}.student-login.active{display:block}.class-code-input{text-align:center;text-transform:uppercase;letter-spacing:7px;font-size:22px;font-weight:850}.class-code-note{margin:10px 0;color:var(--muted);font-size:11px;text-align:center}.student-portal{display:none;position:fixed;inset:0;overflow:auto;min-height:100vh;background:var(--bg);padding:24px;z-index:110}.student-portal.show{display:block}.student-shell{max-width:1180px;margin:auto}.student-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.student-brand{font-size:24px;font-weight:850}.student-brand span{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:14px;background:#efedff;margin-right:8px}.student-logout{border:0;border-radius:10px;background:#ffe8eb;color:#dc4854;padding:10px 13px;font-weight:800;cursor:pointer}.student-welcome{background:linear-gradient(120deg,#5142e8,#7666f7 55%,#56c99b);color:#fff;border-radius:22px;padding:24px;margin-bottom:18px;box-shadow:0 15px 35px #6757f52e}.student-welcome h1{margin:0 0 6px;font-size:24px}.student-welcome p{margin:0;color:#e9e7ff;font-size:12px}.student-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}.student-nav button{border:0;border-radius:10px;background:#fff;color:var(--purple);padding:10px 13px;font-size:11px;font-weight:800;box-shadow:var(--shadow);cursor:pointer}.student-section{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-bottom:18px}.student-section h2{margin:0 0 4px;font-size:17px}.student-section>p{margin:0 0 14px;color:var(--muted);font-size:11px}.student-member-select{height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:var(--surface);color:var(--text);margin-bottom:14px}.student-pet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.student-pet-card{border:1px solid var(--line);border-radius:15px;padding:14px;background:linear-gradient(145deg,#fff,#f5f3ff)}.student-pet-card.mine{border:2px solid var(--purple);box-shadow:0 8px 20px #6757f526}.student-pet-card .face{font-size:52px;text-align:center;margin-bottom:5px}.student-pet-card h3{margin:0;font-size:14px}.student-pet-card small{color:var(--muted);font-size:10px}.student-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.student-badge{background:#efedff;color:var(--purple);border-radius:8px;padding:5px 7px;font-size:10px;font-weight:750}.student-progress{height:7px;background:#edf0f5;border-radius:99px;overflow:hidden;margin-top:6px}.student-progress i{display:block;height:100%;background:linear-gradient(90deg,#6757f5,#2dbb80)}.student-task{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px}.student-task b{font-size:12px}.student-task p{margin:4px 0;color:var(--muted);font-size:10px}.student-status{color:#c98518;font-size:10px;font-weight:800}.student-status.done{color:#159967}.student-rank-row,.student-member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}.student-rank-row:last-child,.student-member-row:last-child{border:0}.student-rank-row strong{margin-left:auto;color:var(--purple)}.student-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px}@media(max-width:600px){.student-portal{padding:14px}.student-top{align-items:flex-start}.student-brand{font-size:19px}.student-welcome h1{font-size:20px}}
+.student-portal{background:linear-gradient(145deg,#f4f6ff 0%,#f8fbff 48%,#eefaf6 100%)}
+.student-shell{max-width:1240px}
+.student-top{padding:4px 2px 0}
+.student-brand{color:#252b43;letter-spacing:-.4px}
+.student-brand span{box-shadow:0 8px 20px #6757f52a}
+.student-welcome{position:relative;overflow:hidden;padding:30px 32px;min-height:165px;background:linear-gradient(120deg,#4e40e4,#7666f7 55%,#43c596);box-shadow:0 18px 42px #6757f538}
+.student-welcome:after{content:"🐾  ✨  🎯";position:absolute;right:30px;bottom:22px;font-size:36px;opacity:.22;letter-spacing:12px;transform:rotate(-8deg)}
+.student-welcome h1,.student-welcome p{position:relative;z-index:1}
+.student-welcome p{font-size:13px}
+.student-nav{padding:7px;background:#ffffffb8;border:1px solid #fff;border-radius:15px;box-shadow:0 10px 28px #23264a0b}
+.student-nav button{box-shadow:none;background:transparent;color:#697286;transition:.2s}
+.student-nav button:hover{background:#efedff;color:var(--purple);transform:translateY(-2px)}
+.student-section{padding:22px;border-radius:20px;background:#fffffff2}
+.student-section h2{font-size:18px;color:#252b43}
+.student-section>p{font-size:12px}
+.student-overview-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;margin-top:15px}
+.student-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.student-kpi{padding:14px;border-radius:14px;background:linear-gradient(135deg,#f0efff,#fff);border:1px solid #e4e1ff}
+.student-kpi:nth-child(2){background:linear-gradient(135deg,#e8faf2,#fff);border-color:#d8f2e6}
+.student-kpi:nth-child(3){background:linear-gradient(135deg,#fff3df,#fff);border-color:#f8e3bb}
+.student-kpi small{display:block;color:var(--muted);font-size:10px}.student-kpi strong{display:block;font-size:22px;color:var(--purple);margin-top:5px}
+.student-choice-card{padding:16px;border-radius:15px;background:linear-gradient(135deg,#fff8df,#fff);border:1px solid #f4dfaa}
+.student-choice-card label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.student-choice-card select{width:100%;height:39px;border:1px solid #ead8a8;border-radius:10px;background:#fff;padding:0 10px;color:var(--text)}
+.student-reward{margin-top:14px;padding:18px;border-radius:17px;background:linear-gradient(135deg,#fff8df,#fff2ca);border:1px solid #f2d98b;display:flex;align-items:center;gap:15px;box-shadow:0 8px 18px #f5a62318}.student-reward-wheel{width:104px;height:104px;flex:none;position:relative;display:grid;place-items:center;border-radius:50%;font-size:27px;background:conic-gradient(#6757f5 0 25%,#ffcf56 25% 50%,#43c596 50% 75%,#ff7f91 75%);box-shadow:inset 0 0 0 7px #fff,0 8px 18px #f5a62345}.reward-wheel-center{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:0 2px 8px #23264a25;z-index:2}.reward-wheel-label{position:absolute;color:#fff;font-size:11px;font-weight:900;text-shadow:0 1px 3px #23264a80;z-index:1}.reward-10{top:16px;left:14px}.reward-20{top:16px;right:14px}.reward-30{bottom:16px;right:13px}.reward-50{bottom:16px;left:13px}.student-reward-info{min-width:0}.student-reward h3{margin:0 0 4px;font-size:14px}.student-reward p{margin:0;color:#8b7447;font-size:11px}.reward-range{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:9px}.reward-range b{width:100%;font-size:10px;color:#806933}.reward-range span{padding:4px 6px;border-radius:7px;background:#fff;color:var(--purple);font-size:10px;font-weight:850;border:1px solid #f1dda7}.student-reward button{margin-left:auto;white-space:nowrap;border:0;border-radius:10px;background:var(--purple);color:#fff;padding:10px 13px;font-size:11px;font-weight:800;cursor:pointer}.student-reward button:disabled{opacity:.55;cursor:default}
+.student-pet-card{position:relative;transition:.2s;background:linear-gradient(145deg,#fff,#f5f3ff);box-shadow:0 7px 17px #23264a08}.student-pet-card:hover{transform:translateY(-3px);box-shadow:0 12px 25px #6757f51c}.student-pet-card.mine:before{content:'PET CỦA EM';position:absolute;top:10px;right:10px;color:var(--purple);font-size:8px;font-weight:850;letter-spacing:.5px}.student-pet-card .face{filter:drop-shadow(0 7px 7px #6757f526)}
+.student-task{background:linear-gradient(110deg,#fff,#faf9ff);box-shadow:0 5px 14px #23264a08}.student-task b{color:#30364d}.student-ranking-list,.student-member-list{background:#fbfcff;border-radius:13px;padding:0 13px}.student-rank-row:first-child{color:#bd8615;font-weight:800}.student-rank-row strong{font-size:11px}.student-progress{height:11px;margin-top:10px;background:#e9edf5}.student-progress i{border-radius:99px;transition:width .5s ease}
+@keyframes rewardSpin{to{transform:rotate(720deg) scale(1.08)}}.student-reward.spinning .student-reward-wheel{animation:rewardSpin 1.1s cubic-bezier(.2,.8,.2,1)}
+@media(max-width:800px){.student-overview-grid{grid-template-columns:1fr}}@media(max-width:520px){.student-kpi-grid{grid-template-columns:1fr 1fr}.student-kpi:last-child{grid-column:span 2}.student-reward{align-items:flex-start;flex-wrap:wrap}.student-reward button{margin-left:77px;margin-top:-4px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo"><i>🐾</i> ClassPet</div>
+  <div class="section">Quản lý lớp</div>
+  <div class="nav">
+    <button class="active" onclick="toast('Đang ở Tổng quan')"><span class="ico">⌂</span>Tổng quan</button>
+    <button onclick="document.getElementById('studentsPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">👥</span>Học sinh & Pet</button>
+    <button onclick="document.getElementById('tasksSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🎯</span>Nhiệm vụ</button>
+  </div>
+  <div class="section">Phân tích</div>
+  <div class="nav">
+    <button onclick="document.getElementById('topPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🏆</span>Xếp hạng</button>
+    <button onclick="showStatistics()"><span class="ico">📊</span>Thống kê</button>
+  </div>
+  <div class="section">Hệ thống</div>
+  <div class="nav"><button onclick="openSettings()"><span class="ico">⚙️</span>Cài đặt</button><button onclick="openClassModal()"><span class="ico">＋</span>Tạo lớp mới</button></div>
+  <div class="profile"><div class="avatar">👩‍🏫</div><div><b id="profileName" style="font-size:12px;cursor:pointer" onclick="openProfileModal()" title="Đổi thông tin hồ sơ">Giáo viên</b><small id="profileSchool">Giáo viên chủ nhiệm</small><button class="logout" type="button" onclick="logout()">Đăng xuất</button></div></div>
+</aside>
+
+<main class="main" id="mainContent">
+  <header class="top">
+    <div class="hello"><h1 id="welcomeTitle">Chào giáo viên! 👋</h1><p id="dateText">Hãy bắt đầu thêm học sinh và pet cho lớp học.</p><button class="dashboard-home" type="button" onclick="showDashboard()">🏠 Tổng quan lớp học</button></div>
+    <div class="top-actions"><select class="select" id="classSelect" onchange="switchClass(this.value)" aria-label="Chọn lớp đang quản lý"></select><button class="icon" id="themeToggle" type="button" onclick="toggleTheme()" title="Đổi giao diện">🌙</button><button class="icon" onclick="toast('Bạn có 1 cảnh báo mới')">🔔</button></div>
+  </header>
+
+  <section class="hero">
+    <div><h2>🌱 Chăm sóc Pet – đồng hành cùng học sinh</h2><p id="heroText">Mỗi hành động tích cực là một bước phát triển.</p><div class="hero-progress"><div class="hero-progress-label"><span>Tiến độ sức khỏe của lớp</span><b id="classProgressText">0%</b></div><div class="bar"><div class="fill" id="classProgress"></div></div></div></div>
+    <div class="hero-right"><div class="hero-stat"><strong id="totalLevel">0</strong><span>TỔNG LV LỚP</span></div><div class="hero-class-code"><small>MÃ LỚP</small><strong id="heroClassCode">-----</strong></div><button class="hero-btn" onclick="openModal()">🍖 Cho cả lớp ăn</button></div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-icon s-purple">👥</div><div><small>Tổng học sinh & pet</small><strong id="studentCount">0</strong></div></div>
+    <div class="stat"><div class="stat-icon s-green">💚</div><div><small>Pet đang khỏe</small><strong id="healthyCount">0</strong></div></div>
+    <div class="stat"><div class="stat-icon s-orange">🍎</div><div><small>Pet cần chăm sóc</small><strong id="hungryCount">0</strong></div></div>
+    <div class="stat"><div class="stat-icon s-red">⭐</div><div><small>Level trung bình</small><strong id="dangerCount">0</strong></div></div>
+  </section>
+
+  <div class="dashboard-panels" id="statisticsRow">
+    <section class="card analytics" id="statisticsSection">
+      <div class="head" style="padding:0 0 12px"><div><h3>📊 Thống kê lớp học</h3><p>EXP, sức khỏe và tiến độ trong tháng này</p></div><button class="statistics-back" type="button" onclick="showDashboard()">🏠 Về tổng quan</button></div>
+      <div class="analytics-grid"><div class="analytics-stat"><small>EXP tuần này</small><strong id="weeklyExp">0</strong></div><div class="analytics-stat"><small>EXP tháng này</small><strong id="monthlyExp">0</strong></div><div class="analytics-stat"><small>Nhiệm vụ xong</small><strong id="completedTasks">0</strong></div><div class="analytics-stat"><small>Pet tiến hóa</small><strong id="evolvedPets">0</strong></div></div>
+      <div class="chart" id="expChart" aria-label="Biểu đồ EXP 7 ngày"></div>
+    </section>
+    <aside class="card" id="notificationsSection"><div class="head"><div><h3>🔔 Thông báo</h3><p>Cảnh báo và hoạt động quan trọng</p></div></div><div class="notice-list" id="noticeList"><div class="notice-item">✨<div>Chưa có thông báo mới<small>Thêm Pet hoặc nhiệm vụ để bắt đầu.</small></div></div></div></aside>
+  </div>
+  <div class="dashboard-panels">
+    <section class="card"><div class="head"><div><h3>🏆 Thành tích & Badge</h3><p>Những cột mốc đáng nhớ của lớp</p></div></div><div class="achievement-list" id="achievementList"></div></section>
+    <section class="card top-three"><div class="head"><div><h3>🥇 Bảng xếp hạng nổi bật</h3><p>Top Pet theo Level và EXP</p></div></div><div class="rank" id="topThreeList"></div></section>
+  </div>
+
+  <section class="card tasks-card" id="tasksSection">
+    <div class="head"><div><h3>🎯 Nhiệm vụ của lớp</h3><p>Đánh dấu học sinh hoàn thành để trao EXP cho Pet.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openTaskModal()">＋ Thêm nhiệm vụ</button><button class="pet-delete" type="button" onclick="deleteAllTasks()">🗑️ Xóa tất cả</button></div></div>
+    <div class="task-list" id="taskList"><div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div></div>
+  </section>
+
+  <div class="layout">
+    <section class="card" id="studentsPetsSection">
+      <div class="head"><div><h3 id="petsTitle">👥 Học sinh & Pet của lớp</h3><p>Mỗi học sinh tương ứng với một pet trong lớp.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openAddModal()">＋ Thêm học sinh & pet</button><button class="primary" onclick="deleteAllPets()">🗑️ Xoá tất cả</button></div></div>
+      <div class="tools"><div class="search"><span>⌕</span><input id="q" placeholder="Tìm học sinh hoặc pet..." oninput="searchPets()"></div><select class="filter" id="statusFilter" onchange="filterStatus()" aria-label="Lọc trạng thái Pet"><option value="all">Tất cả trạng thái</option><option value="ok">Đang khỏe</option><option value="hungry">Cần chăm sóc</option><option value="danger">Nguy hiểm / đã qua đời</option></select></div>
+      <div class="pet-grid" id="pets"></div>
+    </section>
+
+    <aside>
+      <section class="card" id="topPetsSection">
+        <div class="head"><div><h3>🏆 Top pet</h3><p>10 pet có cấp độ cao nhất trong lớp</p></div></div>
+        <div class="rank" id="rankList"><p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có pet để xếp hạng.</p></div>
+      </section>
+      <section class="card" id="activitySection" style="margin-top:19px">
+        <div class="head"><div><h3>⚡ Hoạt động gần đây</h3><p>Lịch sử các lần cho ăn</p></div></div>
+        <div class="activity" id="activityList"><p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có hoạt động. Hãy thêm học sinh và pet.</p></div>
+      </section>
+      <div class="alert" id="classAlert"><div class="alert-icon">⏰</div><div><b>Chưa có pet cần chú ý</b><p>Thông báo chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp.</p></div></div><section class="care-alert" id="careAlert"><div class="head"><div><h3>⚠️ Pet cần chăm sóc</h3><p>Ưu tiên những Pet đang có độ no thấp.</p></div></div><div class="care-list" id="careList"><p style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0">Chưa có Pet cần chú ý.</p></div></section>
+    </aside>
+  </div>
+</main>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal"><h2>🍖 Cho cả lớp ăn?</h2><p id="feedModalText">Hành động này sẽ bổ sung thức ăn cho tất cả pet trong lớp.</p><div class="modal-actions"><button class="cancel" onclick="closeModal()">Hủy</button><button class="feedall" onclick="feedAll()">Xác nhận cho ăn</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="auth-bg" id="authScreen">
+  <form class="auth-card" id="loginForm">
+    <div class="auth-logo"><span>🐾</span>ClassPet</div>
+    <div class="student-choice"><button type="button" class="active" id="teacherModeButton">👨‍🏫 Giáo viên</button><button type="button" id="studentModeButton">👨‍🎓 Học sinh</button></div>
+    <div id="teacherLoginFields">
+    <h2 id="authTitle">Đăng nhập giáo viên</h2>
+    <p id="authDescription">Đăng nhập để quản lý lớp học và chăm sóc các pet.</p>
+    <div id="registrationFields" hidden>
+      <label class="auth-label" for="teacherName">Họ và tên giáo viên</label>
+      <input class="auth-input" id="teacherName" autocomplete="name" placeholder="Ví dụ: Nguyễn Thị Lan">
+      <label class="auth-label" for="schoolName">Tên trường</label>
+      <input class="auth-input" id="schoolName" autocomplete="organization" placeholder="Ví dụ: THPT Nguyễn Du">
+      <label class="auth-label" for="className">Tên lớp</label>
+      <input class="auth-input" id="className" placeholder="Ví dụ: 10A1">
+    </div>
+    <label class="auth-label" for="username">Tài khoản</label>
+    <input class="auth-input" id="username" autocomplete="username" placeholder="Nhập tài khoản" required>
+    <label class="auth-label" for="password">Mật khẩu</label>
+    <input class="auth-input" id="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
+    <label class="auth-label" id="confirmLabel" for="confirmPassword" hidden>Nhập lại mật khẩu</label>
+    <input class="auth-input" id="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" hidden>
+    <div class="auth-error" id="authError" aria-live="polite"></div>
+    <button class="auth-submit" id="authSubmit" type="submit">Đăng nhập</button>
+
+    <div class="demo-account">Demo V1: teacher@classpet.vn · 123456</div>
+    <div class="auth-switch"><span id="switchText">Chưa có tài khoản?</span> <button type="button" id="switchAuth">Đăng ký</button></div>
+    </div>
+    <div class="student-login" id="studentLoginFields">
+      <h2>Vào lớp học sinh</h2><p>Nhập mã lớp do giáo viên cung cấp.</p>
+      <label class="auth-label" for="studentNameLogin">Tên học sinh</label>
+      <input class="auth-input" id="studentNameLogin" placeholder="Nhập đúng tên giáo viên đã thêm" autocomplete="name">
+      <label class="auth-label" for="studentPetNameLogin">Tên Pet</label>
+      <input class="auth-input" id="studentPetNameLogin" placeholder="Nhập đúng tên Pet của em">
+      <label class="auth-label" for="studentClassCode">Mã lớp</label>
+      <input class="auth-input class-code-input" id="studentClassCode" maxlength="5" placeholder="A7K2P" autocomplete="off">
+      <div class="class-code-note">Ví dụ: A7K2P</div>
+      <div class="auth-error" id="studentAuthError" aria-live="polite"></div>
+      <button class="auth-submit" type="button" id="studentEnterButton">Vào lớp</button>
+    </div>
+  </form>
+</div>
+<div class="modal-bg" id="taskModal">
+  <form class="modal" id="taskForm">
+    <h2>🎯 Tạo nhiệm vụ mới</h2>
+    <p>Chọn nội dung và số EXP thưởng cho mỗi học sinh hoàn thành.</p>
+    <label class="auth-label" for="taskTitle">Tên nhiệm vụ</label>
+    <input class="auth-input" id="taskTitle" required placeholder="Ví dụ: Hoàn thành bài tập">
+    <label class="auth-label" for="taskDescription">Mô tả</label>
+    <input class="auth-input" id="taskDescription" placeholder="Ví dụ: Nộp bài đúng hạn">
+    <label class="auth-label" for="taskExp">EXP thưởng cho mỗi học sinh</label>
+    <input class="auth-input" id="taskExp" type="number" min="1" max="1000" value="20" required>
+    <label class="auth-label" for="taskDueDate">Hạn hoàn thành</label>
+    <input class="auth-input" id="taskDueDate" type="date">
+    <div class="modal-actions"><button class="cancel" type="button" onclick="closeTaskModal()">Hủy</button><button class="feedall" type="submit">Tạo nhiệm vụ</button></div>
+  </form>
+</div>
+<div class="modal-bg" id="addModal">
+  <form class="modal" id="addForm"><h2>＋ Thêm học sinh và pet</h2><p>Nhập thông tin để thêm thành viên mới vào lớp.</p><label class="auth-label" for="studentName">Tên học sinh</label><input class="auth-input" id="studentName" required placeholder="Ví dụ: Nguyễn Văn An"><label class="auth-label" for="petName">Tên pet</label><input class="auth-input" id="petName" required placeholder="Ví dụ: Miu"><label class="auth-label" for="petEmoji">Biểu tượng pet</label><input class="auth-input" id="petEmoji" value="🐱" maxlength="2" required><div class="pet-picker" id="petPicker" aria-label="Chọn hình hoạt họa cho Pet"></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeAddModal()">Hủy</button><button class="feedall" type="submit">Thêm vào lớp</button></div></form>
+</div>
+<div class="modal-bg" id="classModal">
+  <form class="modal" id="classForm">
+    <h2>＋ Tạo lớp mới</h2>
+    <p>Tạo một lớp riêng để quản lý học sinh và Pet độc lập.</p>
+    <label class="auth-label" for="newClassName">Tên lớp</label>
+    <input class="auth-input" id="newClassName" required placeholder="Ví dụ: 7A1">
+    <label class="auth-label" for="newClassYear">Năm học</label>
+    <input class="auth-input" id="newClassYear" value="2026–2027" required>
+    <div class="modal-actions"><button class="cancel" type="button" onclick="closeClassModal()">Hủy</button><button class="pet-delete" type="button" onclick="deleteCurrentClass()">🗑️ Xóa lớp</button><button class="feedall" type="submit">Tạo lớp</button></div>
+  </form>
+</div>
+<div class="modal-bg" id="settingsModal">
+  <div class="modal settings-modal">
+    <div class="head" style="padding:0 0 14px;border:0"><div><h2>⚙️ Cài đặt ClassPet</h2><p>Quản lý tài khoản, lớp học, Pet và dữ liệu của bạn.</p></div><button class="cancel" type="button" onclick="closeSettings()">Đóng</button></div>
+    <div class="settings-grid">
+      <nav class="settings-nav" aria-label="Danh mục cài đặt">
+        <button class="active" data-settings-tab="account">👤 Tài khoản</button>
+        <button data-settings-tab="class">🏫 Lớp học</button>
+        <button data-settings-tab="pet">🐾 Pet</button>
+        <button data-settings-tab="exp">⭐ EXP & Level</button>
+        <button data-settings-tab="notifications">🔔 Thông báo</button>
+        <button data-settings-tab="appearance">🎨 Giao diện</button>
+        <button data-settings-tab="data">💾 Dữ liệu & sao lưu</button>
+      </nav>
+      <div>
+        <section class="settings-panel active" data-settings-panel="account"><h3>👤 Thông tin tài khoản</h3><p>Cập nhật thông tin giáo viên đang sử dụng ClassPet.</p><div class="settings-form-grid"><div class="setting-field"><label>Họ và tên</label><input id="settingsTeacherName"></div><div class="setting-field"><label>Email / tài khoản</label><input id="settingsUsername" disabled></div><div class="setting-field"><label>Trường</label><input id="settingsSchoolName"></div><div class="setting-field"><label>Chức vụ</label><input id="settingsRoleName"></div></div><button class="primary" type="button" onclick="saveSettingsAccount()">Lưu thông tin</button><div class="settings-note">🔐 V1 mô phỏng đăng nhập bằng LocalStorage. Không dùng dữ liệu nhạy cảm trong môi trường thật.</div><div class="danger-zone"><b>Đăng xuất</b><p style="font-size:10px;color:var(--muted);margin:5px 0 10px">Kết thúc phiên làm việc trên trình duyệt này.</p><button class="pet-delete" type="button" onclick="logout();closeSettings()">Đăng xuất</button></div></section>
+        <section class="settings-panel" data-settings-panel="class"><h3>🏫 Cài đặt lớp học</h3><p>Thông tin lớp hiện tại sẽ được hiển thị trên dashboard.</p><div class="settings-form-grid"><div class="setting-field"><label>Tên lớp</label><input id="settingsClassName"></div><div class="setting-field"><label>Năm học</label><input id="settingsSchoolYear" value="2026–2027"></div><div class="setting-field"><label>Khối</label><input id="settingsGrade" placeholder="Ví dụ: 7"></div><div class="setting-field"><label>Chủ nhiệm</label><input id="settingsHomeroom" disabled></div></div><div class="setting-field"><label>Mô tả lớp</label><input id="settingsClassDescription" placeholder="Một vài thông tin về lớp học"></div><button class="primary" type="button" onclick="saveSettingsClass()">Lưu cài đặt lớp</button></section>
+        <section class="settings-panel" data-settings-panel="pet"><h3>🐾 Cài đặt hệ thống Pet</h3><p>Điều chỉnh cơ chế chăm sóc Pet trong lớp.</p><div class="settings-form-grid"><div class="setting-field"><label>EXP mỗi lần chăm sóc</label><input id="settingsFeedExpPet" type="number" min="0" max="1000"></div><div class="setting-field"><label>Độ no hồi phục</label><input id="settingsFeedHunger" type="number" min="1" max="100"></div><div class="setting-field"><label>Số lần chăm sóc tối đa/ngày</label><input id="settingsDailyLimit" type="number" min="1" max="20"></div><div class="setting-field"><label>Pet không chăm sóc sau (ngày)</label><input id="settingsDeathDays" type="number" min="1" max="365"></div></div><label class="setting-check"><input id="settingsBulkFeed" type="checkbox"> Cho phép chăm sóc toàn bộ lớp</label><label class="setting-check"><input id="settingsRevive" type="checkbox"> Cho phép hồi sinh Pet</label><button class="primary" type="button" onclick="saveSettingsPet()">Lưu cài đặt Pet</button></section>
+        <section class="settings-panel" data-settings-panel="exp"><h3>⭐ Hệ thống EXP & Level</h3><p>Điều chỉnh phần thưởng và quy tắc lên cấp cho toàn bộ lớp hiện tại.</p><div class="exp-rules"><div class="exp-rule">Lv.1 → 2<strong>100 EXP</strong></div><div class="exp-rule">Lv.2 → 3<strong>200 EXP</strong></div><div class="exp-rule">Lv.3 → 4<strong>300 EXP</strong></div></div><div class="settings-form-grid"><div class="setting-field"><label>EXP mỗi lần cho ăn</label><input id="settingsFeedExp" type="number" min="0" max="1000" value="5"></div><div class="setting-field"><label>EXP mặc định nhiệm vụ</label><input id="settingsTaskExp" type="number" min="1" max="1000" value="20"></div><div class="setting-field"><label>EXP cần lên cấp cơ bản</label><input id="settingsLevelBaseExp" type="number" min="1" max="10000" value="100"></div><div class="setting-field"><label>Hệ số EXP theo Level</label><input id="settingsLevelMultiplier" type="number" min="0.1" max="100" step="0.1" value="1"></div></div><div class="settings-note">Công thức: EXP lên cấp = EXP cơ bản × Level × hệ số. Ví dụ: 100 × Lv.2 × 1 = 200 EXP.</div><label class="setting-check"><input id="settingsShowExp" type="checkbox" checked> Hiển thị EXP trên thẻ Pet</label><label class="setting-check"><input id="settingsLevelNotice" type="checkbox" checked> Thông báo khi Pet lên Level hoặc tiến hóa</label><button class="primary" type="button" onclick="saveSettingsExp()">💾 Lưu cài đặt EXP</button></section>
+        <section class="settings-panel" data-settings-panel="notifications"><h3>🔔 Thông báo</h3><p>Chọn các cảnh báo quan trọng dành cho giáo viên.</p><label class="setting-check"><input id="noticeDeath" type="checkbox" checked> Pet sắp chết hoặc đã chết</label><label class="setting-check"><input id="noticeHungry" type="checkbox" checked> Pet bị bỏ đói</label><label class="setting-check"><input id="noticeLevel" type="checkbox" checked> Pet lên Level / tiến hóa</label><label class="setting-check"><input id="noticeBrowser" type="checkbox"> Thông báo trên trình duyệt</label><button class="primary" type="button" onclick="saveSettingsNotifications()">Lưu thông báo</button></section>
+        <section class="settings-panel" data-settings-panel="appearance"><h3>🎨 Giao diện</h3><p>Cá nhân hóa trải nghiệm sử dụng ClassPet.</p><div class="setting-field"><label>Chế độ hiển thị</label><select id="settingsTheme"><option value="light">☀️ Sáng</option><option value="dark">🌙 Tối</option></select></div><label class="setting-check"><input id="settingsAnimation" type="checkbox" checked> Hiệu ứng Pet và hiệu ứng lên Level</label><label class="setting-check"><input id="settingsSound" type="checkbox" checked> Âm thanh giao diện và Pet</label><button class="primary" type="button" onclick="saveSettingsAppearance()">Áp dụng giao diện</button></section>
+        <section class="settings-panel" data-settings-panel="data"><h3>💾 Dữ liệu & sao lưu</h3><p>Sao lưu dữ liệu lớp để tránh mất dữ liệu khi xóa bộ nhớ trình duyệt.</p><div class="settings-note" id="backupStatus">Dữ liệu hiện được lưu tự động trên trình duyệt này.</div><div class="backup-actions"><button type="button" onclick="exportBackup()">📥 Xuất dữ liệu</button><button type="button" onclick="document.getElementById('backupFile').click()">📤 Nhập dữ liệu</button><button class="danger" type="button" onclick="clearClassData()">🗑️ Xóa dữ liệu lớp</button></div><input id="backupFile" type="file" accept="application/json" hidden onchange="importBackup(event)"><div class="settings-note">⚠️ Dữ liệu nhập sẽ thay thế danh sách Pet và lịch sử hiện tại của tài khoản.</div></section>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="profileModal">
+  <form class="modal" id="profileForm">
+    <h2>✏️ Chỉnh sửa hồ sơ giáo viên</h2>
+    <p>Cập nhật thông tin công tác của giáo viên.</p>
+    <label class="auth-label" for="editTeacherName">Họ và tên</label>
+    <input class="auth-input" id="editTeacherName" required>
+    <label class="auth-label" for="editSchoolName">Tên trường</label>
+    <input class="auth-input" id="editSchoolName" required>
+    <label class="auth-label" for="editClassName">Tên lớp</label>
+    <input class="auth-input" id="editClassName" required>
+    <label class="auth-label" for="editRoleName">Chức danh / vị trí công việc</label>
+    <input class="auth-input" id="editRoleName" required placeholder="Ví dụ: Giáo viên chủ nhiệm">
+    <div class="modal-actions">
+      <button class="cancel" type="button" onclick="closeProfileModal()">Hủy</button>
+      <button class="feedall" type="submit">Lưu thay đổi</button>
+    </div>
+  </form>
+</div>
+<div class="student-portal" id="studentPortal">
+  <div class="student-shell">
+    <header class="student-top"><div class="student-brand"><span>🐾</span>ClassPet học sinh</div><button class="student-logout" type="button" onclick="studentLogout()">Đăng xuất</button></header>
+    <section class="student-welcome"><h1 id="studentWelcome">Chào mừng đến lớp học! 👋</h1><p id="studentClassLabel"></p></section>
+    <nav class="student-nav"><button type="button" onclick="studentScroll('studentHome')">🏠 Trang chủ</button><button type="button" onclick="studentScroll('studentPets')">🐾 Pet của lớp</button><button type="button" onclick="studentScroll('studentTasks')">🎯 Nhiệm vụ</button><button type="button" onclick="studentScroll('studentRanking')">🏆 Xếp hạng</button><button type="button" onclick="studentScroll('studentProgress')">📊 Tiến độ lớp</button><button type="button" onclick="studentScroll('studentMembers')">👥 Thành viên lớp</button></nav>
+    <section class="student-section" id="studentHome"><h2>🏠 Trang chủ</h2><p>Tổng quan Pet và thành tích của lớp.</p><div class="student-overview-grid"><div class="student-kpi-grid"><div class="student-kpi"><small>🐾 Tổng Pet</small><strong id="studentPetCount">0</strong></div><div class="student-kpi"><small>⭐ Level cao nhất</small><strong id="studentTopLevel">0</strong></div><div class="student-kpi"><small>💚 Sức khỏe lớp</small><strong id="studentAverageHealth">0%</strong></div></div><div class="student-choice-card"><label for="studentRewardPet">🎁 Pet nhận EXP thưởng</label><select id="studentRewardPet"></select></div></div><div class="student-reward" id="studentRewardCard"><div class="student-reward-wheel" aria-label="Vòng quay phần thưởng EXP"><span class="reward-wheel-center">🎡</span><span class="reward-wheel-label reward-10">+10</span><span class="reward-wheel-label reward-20">+20</span><span class="reward-wheel-label reward-30">+30</span><span class="reward-wheel-label reward-50">+50</span></div><div class="student-reward-info"><h3>🎁 Vòng quay EXP miễn phí</h3><p id="studentRewardStatus">Mỗi học sinh được quay 1 lần mỗi ngày.</p><div class="reward-range"><b>Phần thưởng có thể nhận</b><span>+10 EXP</span><span>+20 EXP</span><span>+30 EXP</span><span>+50 EXP</span></div></div><button type="button" id="studentRewardButton" onclick="spinStudentReward()">QUAY NGAY</button></div><div class="student-pet-grid" id="studentSummary"></div></section>
+    <section class="student-section" id="studentPets"><h2>🐾 Pet của lớp</h2><p>Chỉ xem thông tin, không thể chỉnh sửa dữ liệu Pet.</p><div class="student-pet-grid" id="studentPetList"></div></section>
+    <section class="student-section" id="studentTasks"><h2>🎯 NHIỆM VỤ</h2><p>Giáo viên sẽ xác nhận hoàn thành và trao EXP cho Pet.</p><div id="studentTaskList"></div></section>
+    <section class="student-section" id="studentRanking"><h2>🏆 Xếp hạng</h2><p>Thứ hạng Pet theo Level và EXP.</p><div id="studentRankingList"></div></section>
+    <section class="student-section" id="studentProgress"><h2>📊 Tiến độ lớp</h2><p id="studentProgressText"></p><div class="student-progress"><i id="studentProgressBar"></i></div></section>
+    <section class="student-section" id="studentMembers"><h2>👥 Thành viên lớp</h2><p>Danh sách học sinh trong lớp.</p><div id="studentMemberList"></div></section>
+  </div>
+</div>
+<div class="modal-bg" id="petModal">
+  <div class="modal">
+    <div class="pet-profile">
+      <div class="profile-pet-face" id="profilePetFace">🐱</div>
+      <div><h3 id="petModalTitle">Thông tin pet</h3><p id="petModalStudent"></p><p id="petModalStage"></p><div class="profile-stats"><span>❤️ Sức khỏe<b id="profileHealth">100</b></span><span>🍖 Độ no<b id="profileHunger">100</b></span><span>😊 Hạnh phúc<b id="profileHappiness">90</b></span></div><p id="petModalLastFed"></p></div>
+    </div>
+    <div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
+    <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
+  </div>
+</div>
+<script>
+const modal = document.getElementById('modal');
+const sessionKey = 'classpet-session';
+let storageKey = 'classpet-health';
+let studentsKey = 'classpet-students';
+let activityKey = 'classpet-activity';
+let tasksKey = 'classpet-tasks';
+const accountsKey = 'classpet-accounts';
+let currentAccount = null;
+let currentClass = null;
+let isRegisterMode = false;
+
+function makeClassId(name) {
+  return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'class';
+}
+function createClassCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  do { code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''); } while (getAccounts().some(account => account.classes && account.classes.some(item => item.code === code)));
+  return code;
+}
+
+function ensureAccountClasses(account) {
+  if (!Array.isArray(account.classes) || !account.classes.length) {
+    const classId = makeClassId(account.className);
+    account.classes = [{ id: classId, name: account.className, year: account.schoolYear || '2026–2027', code: createClassCode() }];
+    const username = account.username.toLowerCase();
+    const migrate = (prefix, oldKey) => { const newKey = prefix + '-' + username + '-' + classId; if (!localStorage.getItem(newKey) && localStorage.getItem(oldKey)) localStorage.setItem(newKey, localStorage.getItem(oldKey)); };
+    migrate('classpet-health', 'classpet-health-' + username);
+    migrate('classpet-students', 'classpet-students-' + username);
+    migrate('classpet-activity', 'classpet-activity-' + username);
+  }
+  account.classes.forEach(item => { if (!item.code) item.code = createClassCode(); });
+  if (!account.activeClassId || !account.classes.some(item => item.id === account.activeClassId)) account.activeClassId = account.classes[0].id;
+  return account;
+}
+
+function getClassStorageKey(prefix, classId) {
+  return prefix + '-' + currentAccount.username.toLowerCase() + '-' + classId;
+}
+
+function getAccounts() {
+  try {
+    const accounts = JSON.parse(localStorage.getItem(accountsKey) || '[]');
+    if (!Array.isArray(accounts)) return [];
+    if (!accounts.some(account => account.username.toLowerCase() === 'teacher@classpet.vn')) {
+      accounts.push({ username: 'teacher@classpet.vn', password: '123456', name: 'Giáo viên Demo', schoolName: 'ClassPet School', className: '6A1', role: 'Giáo viên chủ nhiệm' });
+      saveAccounts(accounts);
+    }
+    return accounts;
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem(accountsKey, JSON.stringify(accounts));
+}
+
+function usernameExists(username) {
+  const normalized = username.toLowerCase();
+  return getAccounts().some(account => account.username.toLowerCase() === normalized);
+}
+
+function getCurrentAccount() {
+  const username = sessionStorage.getItem(sessionKey);
+  return getAccounts().find(account => account.username === username) || null;
+}
+
+function isLoggedIn() {
+  return Boolean(getCurrentAccount());
+}
+
+function applyAccount(account) {
+  if (!account) return;
+  currentAccount = ensureAccountClasses(account);
+  currentClass = currentAccount.classes.find(item => item.id === currentAccount.activeClassId) || currentAccount.classes[0];
+  const classLabel = '🏫 ' + currentClass.name;
+  const role = currentAccount.role || 'Giáo viên chủ nhiệm';
+  document.getElementById('dateText').textContent = 'Mã lớp dành cho học sinh: ' + (currentClass.code || '-----') + ' · Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
+  storageKey = getClassStorageKey('classpet-health', currentClass.id);
+  studentsKey = getClassStorageKey('classpet-students', currentClass.id);
+  activityKey = getClassStorageKey('classpet-activity', currentClass.id);
+  tasksKey = getClassStorageKey('classpet-tasks', currentClass.id);
+  const accountIndex = getAccounts().findIndex(item => item.username === currentAccount.username);
+  if (accountIndex >= 0) {
+    const accounts = getAccounts();
+    accounts[accountIndex] = currentAccount;
+    saveAccounts(accounts);
+  }
+  document.getElementById('welcomeTitle').textContent = 'Chào giáo viên! 👋';
+  document.getElementById('profileName').textContent = account.name;
+  document.getElementById('profileSchool').textContent = account.schoolName + ' · ' + role;
+  document.getElementById('classSelect').innerHTML = currentAccount.classes.map(item => '<option value="' + item.id + '"' + (item.id === currentClass.id ? ' selected' : '') + '>🏫 ' + item.name + '</option>').join('');
+  document.getElementById('heroText').textContent = 'Hãy thêm học sinh và pet để bắt đầu quản lý lớp ' + currentClass.name + '.';
+  loadStudents();
+  renderRankings();
+  renderActivity();
+  renderTasks();
+  document.getElementById('petsTitle').textContent = '👥 Học sinh & Pet của lớp ' + currentClass.name;
+  document.getElementById('feedModalText').textContent = 'Hành động này sẽ bổ sung thức ăn cho tất cả pet trong lớp ' + currentClass.name + '.';
+  document.getElementById('classAlert').querySelector('p').textContent = 'Thông báo chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp.';
+  document.getElementById('dateText').textContent = 'Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
+  document.getElementById('heroClassCode').textContent = currentClass.code || '-----';
+}
+
+function showStatistics() {
+  const mainContent = document.getElementById('mainContent');
+  const statisticsSection = document.getElementById('statisticsSection');
+  if (!mainContent || !statisticsSection) return;
+  mainContent.classList.add('statistics-only');
+  document.querySelectorAll('.nav button').forEach(button => button.classList.remove('active'));
+  const statisticsButton = [...document.querySelectorAll('.nav button')].find(button => button.textContent.includes('Thống kê'));
+  if (statisticsButton) statisticsButton.classList.add('active');
+  requestAnimationFrame(() => statisticsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  playUiSound('click');
+}
+
+function showDashboard() {
+  document.getElementById('mainContent').classList.remove('statistics-only');
+  document.querySelectorAll('.nav button').forEach(button => button.classList.remove('active'));
+  const overviewButton = [...document.querySelectorAll('.nav button')].find(button => button.textContent.includes('Tổng quan'));
+  if (overviewButton) overviewButton.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  playUiSound('click');
+}
+
+function switchClass(classId) {
+  if (!currentAccount || !currentAccount.classes.some(item => item.id === classId)) return;
+  currentAccount.activeClassId = classId;
+  const accounts = getAccounts();
+  const account = accounts.find(item => item.username === currentAccount.username);
+  if (account) { account.activeClassId = classId; saveAccounts(accounts); }
+  applyAccount(currentAccount);
+  toast('Đã chuyển sang lớp ' + currentClass.name + '.');
+}
+
+const classModal = document.getElementById('classModal');
+function openClassModal() { if (currentAccount) classModal.classList.add('show'); }
+function closeClassModal() { classModal.classList.remove('show'); document.getElementById('classForm').reset(); document.getElementById('newClassYear').value = '2026–2027'; }
+
+function requestPassword(action, callback) {
+  if (!currentAccount) return;
+  const password = prompt('Nhập mật khẩu đăng nhập để ' + action + ':');
+  if (password === null) return;
+  if (password !== currentAccount.password) { toast('Mật khẩu không đúng.'); return; }
+  callback();
+}
+
+function deleteCurrentClass() {
+  if (!currentAccount || currentAccount.classes.length <= 1) { toast('Tài khoản phải có ít nhất một lớp.'); return; }
+  requestPassword('xóa lớp ' + currentClass.name, () => {
+    if (!confirm('Xóa lớp ' + currentClass.name + ' và toàn bộ học sinh, Pet, lịch sử của lớp?')) return;
+    const classId = currentClass.id;
+    const deletedClassName = currentClass.name;
+    ['classpet-health', 'classpet-students', 'classpet-activity', 'classpet-tasks'].forEach(prefix => localStorage.removeItem(getClassStorageKey(prefix, classId)));
+    currentAccount.classes = currentAccount.classes.filter(item => item.id !== classId);
+    currentAccount.activeClassId = currentAccount.classes[0].id;
+    const accounts = getAccounts();
+      const account = accounts.find(item => item.username === currentAccount.username);
+  if (account) { account.classes = currentAccount.classes; account.activeClassId = currentAccount.activeClassId; saveAccounts(accounts); }
+  closeClassModal();
+    applyAccount(currentAccount);
+    toast('Đã xóa lớp ' + deletedClassName + '.');
+  });
+}
+
+document.getElementById('classForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const name = document.getElementById('newClassName').value.trim();
+  const year = document.getElementById('newClassYear').value.trim();
+  if (!name || !year) return;
+  const id = makeClassId(name) + '-' + Date.now();
+  if (currentAccount.classes.some(item => item.name.toLowerCase() === name.toLowerCase())) { toast('Lớp này đã tồn tại.'); return; }
+  currentAccount.classes.push({ id, name, year, code: createClassCode() });
+  currentAccount.activeClassId = id;
+  const accounts = getAccounts();
+  const account = accounts.find(item => item.username === currentAccount.username);
+  if (account) { account.classes = currentAccount.classes; account.activeClassId = id; saveAccounts(accounts); }
+  closeClassModal();
+  applyAccount(currentAccount);
+  toast('Đã tạo lớp ' + name + ' và chuyển sang lớp mới.');
+});
+
+
+const profileModal = document.getElementById('profileModal');
+const settingsModal = document.getElementById('settingsModal');
+const settingsKey = 'classpet-settings';
+const defaultSettings = { feedExp: 5, taskExp: 20, levelBaseExp: 100, levelMultiplier: 1, feedHunger: 10, dailyLimit: 3, deathDays: 30, bulkFeed: true, revive: true, showExp: true, levelNotice: true, noticeDeath: true, noticeHungry: true, noticeLevel: true, noticeBrowser: false, animation: true, sound: true };
+function getSettings() { try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem(settingsKey) || '{}') }; } catch (error) { return { ...defaultSettings }; } }
+function saveSettings(settings) { localStorage.setItem(settingsKey, JSON.stringify(settings)); }
+
+let audioContext;
+function getAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === 'suspended') audioContext.resume();
+  return audioContext;
+}
+function playTone(frequency, duration = .08, type = 'sine', volume = .035, delay = 0) {
+  if (!getSettings().sound) return;
+  try {
+    const context = getAudioContext();
+    if (!context) return;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type; oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.0001, context.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + delay + .01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + delay + duration);
+    oscillator.connect(gain); gain.connect(context.destination);
+    oscillator.start(context.currentTime + delay); oscillator.stop(context.currentTime + delay + duration + .02);
+  } catch (error) { /* Âm thanh có thể bị trình duyệt chặn trước tương tác đầu tiên. */ }
+}
+function playUiSound(kind = 'click') {
+  const sounds = { click: [520], save: [660, 880], success: [660, 990], error: [180] };
+  (sounds[kind] || sounds.click).forEach((frequency, index) => playTone(frequency, .07, 'sine', .025, index * .06));
+}
+function playAnimalSound(emoji) {
+  const sounds = {
+    '🐶': [280, 210], '🐱': [720, 560], '🐭': [1200, 980], '🐹': [900, 760], '🐰': [620, 520],
+    '🦊': [360, 290], '🐻': [150, 120], '🐼': [190, 150], '🐯': [170, 130], '🦁': [120, 90],
+    '🐮': [180, 140], '🐷': [230, 180], '🐸': [420, 300], '🐵': [500, 680], '🐔': [700, 820],
+    '🐧': [480, 620], '🐦': [1000, 1300], '🐤': [900, 1100], '🦄': [880, 1170], '🐝': [180, 220],
+    '🦋': [1050], '🐢': [180, 200], '🐍': [250, 330], '🦎': [300], '🦖': [110, 80], '🦕': [140, 100],
+    '🐙': [300, 420], '🦑': [260, 360], '🦀': [220, 270], '🐠': [760, 920], '🐟': [680, 840],
+    '🐬': [1000, 1250], '🐳': [100, 75], '🦈': [130, 170], '🐊': [160, 120], '🦆': [500, 430],
+    '🦉': [300, 240], '🦅': [550, 700], '🦇': [850, 1050], '🐺': [260, 340], '🦌': [420, 500],
+    '🐘': [100, 130], '🦒': [300, 380], '🦓': [330, 270], '🐪': [180, 220], '🦘': [350, 430],
+    '🦥': [170, 140], '🦦': [500, 620], '🦔': [700, 560], '🐿️': [850, 1000]
+  };
+  (sounds[emoji] || [440, 660]).forEach((frequency, index) => playTone(frequency, .13, 'triangle', .035, index * .1));
+}
+function getSettingsElement(key) { return document.getElementById('settings' + key.charAt(0).toUpperCase() + key.slice(1)) || document.getElementById(key); }
+function openSettings() { if (!currentAccount) return; const s = getSettings(); document.getElementById('settingsTeacherName').value = currentAccount.name; document.getElementById('settingsUsername').value = currentAccount.username; document.getElementById('settingsSchoolName').value = currentAccount.schoolName; document.getElementById('settingsRoleName').value = currentAccount.role || 'Giáo viên chủ nhiệm'; document.getElementById('settingsClassName').value = currentClass.name; document.getElementById('settingsHomeroom').value = currentAccount.name; Object.keys(s).forEach(key => { const el = getSettingsElement(key); if (el) el.type === 'checkbox' ? el.checked = s[key] : el.value = s[key]; }); document.getElementById('settingsFeedExpPet').value = s.feedExp; document.getElementById('settingsTheme').value = document.body.classList.contains('dark-mode') ? 'dark' : 'light'; document.getElementById('settingsSound').checked = s.sound !== false; settingsModal.classList.add('show'); }
+function closeSettings() { settingsModal.classList.remove('show'); }
+function settingsValue(key) { const el = getSettingsElement(key); return el.type === 'checkbox' ? el.checked : Number(el.value); }
+function saveSettingsAccount() { const accounts = getAccounts(); const account = accounts.find(item => item.username === currentAccount.username); account.name = document.getElementById('settingsTeacherName').value.trim(); account.schoolName = document.getElementById('settingsSchoolName').value.trim(); account.role = document.getElementById('settingsRoleName').value.trim(); saveAccounts(accounts); applyAccount(account); toast('Đã lưu thông tin tài khoản.'); }
+function saveSettingsClass() { const accounts = getAccounts(); const account = accounts.find(item => item.username === currentAccount.username); const name = document.getElementById('settingsClassName').value.trim(); if (!name) return; const classItem = account.classes.find(item => item.id === account.activeClassId); if (classItem) { classItem.name = name; classItem.year = document.getElementById('settingsSchoolYear').value.trim() || classItem.year; } account.className = name; saveAccounts(accounts); applyAccount(account); toast('Đã lưu cài đặt lớp học.'); }
+function saveSettingsPet() { const s = getSettings(); s.feedExp = Math.max(0, Math.min(1000, Number(document.getElementById('settingsFeedExpPet').value) || 0)); ['feedHunger','dailyLimit','deathDays','bulkFeed','revive'].forEach(key => s[key] = settingsValue(key)); saveSettings(s); const expInput = document.getElementById('settingsFeedExp'); if (expInput) expInput.value = s.feedExp; toast('✅ Đã lưu cài đặt hệ thống Pet.'); }
+function saveSettingsExp() { const s = getSettings(); s.feedExp = Math.max(0, Math.min(1000, Number(document.getElementById('settingsFeedExp').value) || defaultSettings.feedExp)); s.taskExp = Math.max(1, Math.min(1000, Number(document.getElementById('settingsTaskExp').value) || defaultSettings.taskExp)); s.levelBaseExp = Math.max(1, Math.min(10000, Number(document.getElementById('settingsLevelBaseExp').value) || defaultSettings.levelBaseExp)); s.levelMultiplier = Math.max(.1, Math.min(100, Number(document.getElementById('settingsLevelMultiplier').value) || defaultSettings.levelMultiplier)); s.showExp = settingsValue('showExp'); s.levelNotice = settingsValue('levelNotice'); saveSettings(s); document.getElementById('taskExp').value = s.taskExp; document.querySelectorAll('.exp-value').forEach(el => { const pet = el.closest('.pet'); const level = Number(pet.dataset.level || 1); el.textContent = (Number(pet.dataset.exp || 0)) + ' / ' + getLevelCost(level); }); toast('✅ Đã lưu cài đặt EXP & Level.'); }
+function saveSettingsNotifications() { const s = getSettings(); ['noticeDeath','noticeHungry','noticeLevel','noticeBrowser'].forEach(key => s[key] = settingsValue(key)); saveSettings(s); toast('Đã lưu cài đặt thông báo.'); }
+function applyMotionSettings(enabled = getSettings().animation !== false) { document.body.classList.toggle('no-animation', !enabled); document.querySelectorAll('.pet').forEach(pet => pet.classList.toggle('motion-on', enabled && pet.dataset.dead !== 'true')); }
+function saveSettingsAppearance() { const dark = document.getElementById('settingsTheme').value === 'dark'; document.body.classList.toggle('dark-mode', dark); localStorage.setItem('classpet-theme', dark ? 'dark' : 'light'); document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙'; const s = getSettings(); s.animation = document.getElementById('settingsAnimation').checked; s.sound = document.getElementById('settingsSound').checked; saveSettings(s); applyMotionSettings(s.animation); toast('Đã áp dụng giao diện và âm thanh.'); playUiSound('save'); }
+function exportBackup() { const data = { exportedAt: new Date().toISOString(), account: currentAccount.username, students: JSON.parse(localStorage.getItem(studentsKey) || '[]'), activities: JSON.parse(localStorage.getItem(activityKey) || '[]'), settings: getSettings() }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'classpet-backup-' + new Date().toISOString().slice(0, 10) + '.json'; link.click(); URL.revokeObjectURL(link.href); toast('Đã xuất bản sao dữ liệu.'); }
+function importBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); if (!Array.isArray(data.students)) throw new Error(); localStorage.setItem(studentsKey, JSON.stringify(data.students)); localStorage.setItem(activityKey, JSON.stringify(Array.isArray(data.activities) ? data.activities : [])); if (data.settings) saveSettings({ ...defaultSettings, ...data.settings }); applyAccount(currentAccount); toast('Đã nhập dữ liệu sao lưu.'); } catch (error) { toast('Tệp sao lưu không hợp lệ.'); } event.target.value = ''; }; reader.readAsText(file); }
+function clearClassData() { const phrase = prompt('Nhập XOA LOP ' + currentAccount.className + ' để xác nhận:'); if (phrase !== 'XOA LOP ' + currentAccount.className) { if (phrase !== null) toast('Xác nhận chưa chính xác.'); return; } localStorage.removeItem(studentsKey); localStorage.removeItem(storageKey); localStorage.removeItem(activityKey); localStorage.removeItem(tasksKey); loadStudents(); renderRankings(); renderActivity(); renderTasks(); toast('Đã xóa dữ liệu lớp.'); }
+document.querySelectorAll('[data-settings-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-settings-tab]').forEach(item => item.classList.remove('active')); document.querySelectorAll('[data-settings-panel]').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.querySelector('[data-settings-panel="' + button.dataset.settingsTab + '"]').classList.add('active'); }));
+
+function openProfileModal() {
+  if (!currentAccount) return;
+  document.getElementById('editTeacherName').value = currentAccount.name;
+  document.getElementById('editSchoolName').value = currentAccount.schoolName;
+  document.getElementById('editClassName').value = currentAccount.className;
+  document.getElementById('editRoleName').value = currentAccount.role || 'Giáo viên chủ nhiệm';
+  profileModal.classList.add('show');
+}
+
+function closeProfileModal() {
+  profileModal.classList.remove('show');
+}
+
+function logout() {
+  sessionStorage.removeItem(sessionKey);
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('password').value = '';
+  currentAccount = null;
+  toast('Đã đăng xuất');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+}
+
+function toast(message) {
+  const t = document.getElementById('toast');
+  t.textContent = message;
+  t.classList.add('show');
+  clearTimeout(window.tt);
+  window.tt = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
+function renderPetPicker() {
+  const picker = document.getElementById('petPicker');
+  picker.innerHTML = petEmojis.map((emoji, index) => '<button type="button" class="' + (index === 1 ? 'selected' : '') + '" data-emoji="' + emoji + '" title="Chọn ' + emoji + '">' + emoji + '</button>').join('');
+  picker.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+    document.getElementById('petEmoji').value = button.dataset.emoji;
+    picker.querySelectorAll('button').forEach(item => item.classList.remove('selected'));
+    button.classList.add('selected');
+  }));
+}
+renderPetPicker();
+
+const addModal = document.getElementById('addModal');
+function openModal() {
+  if (!document.querySelector('.pet')) { toast('Hãy thêm học sinh và pet trước.'); return; }
+  modal.classList.add('show');
+}
+function closeModal() { modal.classList.remove('show'); }
+function openAddModal() { addModal.classList.add('show'); }
+function closeAddModal() { addModal.classList.remove('show'); document.getElementById('addForm').reset(); document.getElementById('petEmoji').value = '🐱'; }
+function saveStudents() {
+  localStorage.setItem(studentsKey, JSON.stringify([...document.querySelectorAll('.pet')].map(pet => ({
+    id: pet.dataset.id,
+    student: pet.querySelector('h4').textContent,
+    pet: pet.querySelector('.meta span').textContent.split(' · ')[0],
+    emoji: pet.querySelector('.pet-face').textContent,
+    health: parseInt(pet.querySelector('.meta b').textContent, 10),
+    level: parseInt(pet.dataset.level || '1', 10),
+    exp: parseInt(pet.dataset.exp || '0', 10),
+    lastFedAt: Number(pet.dataset.lastFedAt || Date.now()),
+    dead: pet.dataset.dead === 'true'
+  }))));
+}
+function addPetCard(student, petName, emoji, health = 100, level = 1, exp = 0, lastFedAt = Date.now(), dead = false, id = '') {
+  const pet = document.createElement('article');
+  pet.className = 'pet';
+  pet.dataset.id = id || (crypto.randomUUID ? crypto.randomUUID() : 'pet-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+  pet.dataset.name = student + ' ' + petName;
+  pet.dataset.level = level;
+  pet.innerHTML = '<div class="pet-top"><div class="pet-face">' + escapeHtml(emoji) + '</div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
+  document.getElementById('pets').appendChild(pet);
+  pet.dataset.exp = exp;
+  pet.dataset.lastFedAt = lastFedAt;
+  pet.classList.toggle('motion-on', getSettings().animation !== false && !dead);
+  updatePetStatus(pet, health, dead);
+  addPetActions(pet);
+}
+function addPetActions(pet) {
+  const feedButton = document.createElement('button');
+  feedButton.type = 'button'; feedButton.className = 'pet-action'; feedButton.textContent = '🍖 Cho ăn';
+  feedButton.addEventListener('click', event => { event.stopPropagation(); feedPet(pet); });
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'pet-delete';
+  deleteButton.textContent = '🗑️ Xoá pet';
+  deleteButton.addEventListener('click', event => { event.stopPropagation(); deletePet(pet); });
+  const reviveButton = document.createElement('button');
+  reviveButton.type = 'button'; reviveButton.className = 'pet-action revive'; reviveButton.textContent = '💚 Hồi sinh';
+  reviveButton.addEventListener('click', event => { event.stopPropagation(); revivePet(pet); reviveButton.hidden = true; feedButton.hidden = false; });
+  feedButton.hidden = pet.dataset.dead === 'true'; reviveButton.hidden = !feedButton.hidden;
+  const actionGroup = document.createElement('div');
+  actionGroup.className = 'pet-actions';
+  actionGroup.append(feedButton, reviveButton, deleteButton);
+  pet.appendChild(actionGroup);
+  pet.addEventListener('click', event => { if (!event.target.closest('button')) openPetModal(pet); });
+}
+function loadStudents() {
+  const pets = document.getElementById('pets'); pets.innerHTML = '';
+  let students = [];
+  try { students = JSON.parse(localStorage.getItem(studentsKey) || '[]'); } catch (error) { students = []; }
+  students.forEach(item => addPetCard(item.student, item.pet, item.emoji, item.health ?? 100, item.level ?? 1, item.exp ?? 0, item.lastFedAt ?? Date.now(), item.dead ?? false, item.id));
+  updateStats();
+}
+
+function getPetData() {
+  return [...document.querySelectorAll('.pet')].map(pet => ({
+    id: pet.dataset.id,
+    student: pet.querySelector('h4').textContent,
+    pet: pet.querySelector('.meta span').textContent.split(' · ')[0],
+    emoji: pet.querySelector('.pet-face').textContent,
+    level: parseInt(pet.dataset.level || '1', 10)
+  }));
+}
+
+function renderRankings() {
+  const list = document.getElementById('rankList');
+  const pets = getPetData().sort((a, b) => b.level - a.level).slice(0, 10);
+  if (!pets.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có pet để xếp hạng.</p>';
+    return;
+  }
+  list.innerHTML = pets.map((pet, index) => '<div class="rankrow"><span class="num">' + (index + 1) + '</span><span class="rpet">' + pet.emoji + '</span><span class="rname">' + pet.pet + '<small style="display:block;color:var(--muted);font-size:10px">' + pet.student + '</small></span><span class="lv">Lv.' + pet.level + '</span></div>').join('');
+}
+
+function renderActivity() {
+  const list = document.getElementById('activityList');
+  let activities = [];
+  try { activities = JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { activities = []; }
+  activities = activities.slice(0, 20);
+  if (!activities.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có lịch sử cho ăn.</p>';
+    return;
+  }
+  list.innerHTML = activities.map(item => '<div class="event"><div class="event-icon">🍖</div><div><b>' + item.text + '</b><p>' + item.time + '</p></div></div>').join('');
+}
+
+function addActivity(text) {
+  let activities = [];
+  try { activities = JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { activities = []; }
+  activities.unshift({ text, time: new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date()), timestamp: Date.now() });
+  localStorage.setItem(activityKey, JSON.stringify(activities.slice(0, 20)));
+  renderActivity();
+  if (typeof renderDashboardInsights === 'function') renderDashboardInsights();
+}
+const taskModal = document.getElementById('taskModal');
+function getTasks() {
+  try { const tasks = JSON.parse(localStorage.getItem(tasksKey) || '[]'); return Array.isArray(tasks) ? tasks : []; }
+  catch (error) { return []; }
+}
+function saveTasks(tasks) { localStorage.setItem(tasksKey, JSON.stringify(tasks)); }
+function openTaskModal() { if (currentAccount) { document.getElementById('taskExp').value = getSettings().taskExp; taskModal.classList.add('show'); } }
+function closeTaskModal() { taskModal.classList.remove('show'); document.getElementById('taskForm').reset(); document.getElementById('taskExp').value = getSettings().taskExp; }
+function getLevelCost(level) { const settings = getSettings(); return Math.max(1, Math.round(settings.levelBaseExp * level * settings.levelMultiplier)); }
+function getPetStage(level) {
+  if (level >= 31) return '👑 Huyền thoại';
+  if (level >= 21) return '✨ Tiến hóa';
+  if (level >= 11) return '🐱 Trưởng thành';
+  if (level >= 6) return '🐣 Baby';
+  return '🥚 Trứng';
+}
+
+function showEvolutionNotice(pet, petName, newLevel) {
+  const settings = getSettings();
+  if (!settings.levelNotice) return;
+  const stage = getPetStage(newLevel);
+  if (settings.animation !== false) {
+    pet.classList.add('level-up');
+    setTimeout(() => pet.classList.remove('level-up'), 900);
+  }
+  toast('🎉 PET TIẾN HÓA! ' + petName + ' đã đạt cấp độ ' + newLevel + ' – ' + stage);
+}
+
+function awardTaskExp(studentName, expReward, taskTitle, petId = '') {
+  const pet = [...document.querySelectorAll('.pet')].find(item => petId
+    ? item.dataset.id === petId
+    : item.querySelector('h4').textContent === studentName);
+  if (!pet || pet.dataset.dead === 'true') { toast('Không thể trao EXP cho Pet đã qua đời.'); return false; }
+  const oldLevel = parseInt(pet.dataset.level || '1', 10);
+  const currentHealth = parseInt(pet.querySelector('.meta b').textContent, 10);
+  let exp = parseInt(pet.dataset.exp || '0', 10) + expReward;
+  let level = oldLevel;
+  while (exp >= getLevelCost(level)) { exp -= getLevelCost(level); level++; }
+  pet.dataset.exp = exp; pet.dataset.level = level;
+  pet.dataset.lastFedAt = Date.now();
+  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+  pet.querySelector('.meta span').textContent = petName + ' · Lv.' + level;
+  const levelBadge = pet.querySelector('.level-badge strong');
+  if (levelBadge) levelBadge.textContent = level;
+  playAnimalSound(pet.querySelector('.pet-face').textContent);
+  updatePetStatus(pet, Math.min(100, currentHealth + getSettings().feedHunger));
+  if (level > oldLevel) showEvolutionNotice(pet, petName, level);
+  saveStudents(); renderRankings(); updateStats();
+  addActivity(studentName + ' hoàn thành nhiệm vụ "' + taskTitle + '" · +' + expReward + ' EXP cho ' + petName + ' và tăng độ no.');
+  return true;
+}
+function getTaskPetKey(pet) {
+  return pet?.dataset?.id || '';
+}
+
+function isTaskCompleted(task, pet) {
+  const petKey = getTaskPetKey(pet);
+  return (Array.isArray(task.completedPetIds) && task.completedPetIds.includes(petKey)) ||
+    (Array.isArray(task.completed) && task.completed.includes(pet.querySelector('h4').textContent));
+}
+
+function completeTask(taskId, petId) {
+  const tasks = getTasks();
+  const task = tasks.find(item => item.id === taskId);
+  const pet = [...document.querySelectorAll('.pet')].find(item => item.dataset.id === petId);
+  if (!task || !pet || isTaskCompleted(task, pet)) return;
+  const studentName = pet.querySelector('h4').textContent;
+  if (!awardTaskExp(studentName, task.exp, task.title, petId)) return;
+  task.completedPetIds = Array.isArray(task.completedPetIds) ? task.completedPetIds : [];
+  task.completedPetIds.push(petId);
+  saveTasks(tasks); renderTasks(); toast('🎉 ' + studentName + ' nhận +' + task.exp + ' EXP và tăng độ no!');
+}
+
+function completeTaskForAll(taskId) {
+  const tasks = getTasks();
+  const task = tasks.find(item => item.id === taskId);
+  if (!task) return;
+  const students = [...document.querySelectorAll('.pet')].map(pet => pet.querySelector('h4').textContent);
+  task.completedPetIds = Array.isArray(task.completedPetIds) ? task.completedPetIds : [];
+  const remaining = [...document.querySelectorAll('.pet')].filter(pet => !isTaskCompleted(task, pet));
+  if (!remaining.length) { toast('Tất cả học sinh đã hoàn thành nhiệm vụ này.'); return; }
+  let awarded = 0;
+  remaining.forEach(pet => {
+    const student = pet.querySelector('h4').textContent;
+    if (awardTaskExp(student, task.exp, task.title, pet.dataset.id)) {
+      task.completedPetIds.push(pet.dataset.id);
+      awarded++;
+    }
+  });
+  saveTasks(tasks);
+  renderTasks();
+  toast('🎉 Đã trao EXP và tăng độ no cho ' + awarded + ' học sinh!');
+}
+function deleteTask(taskId) {
+  requestPassword('xóa nhiệm vụ', () => {
+    const tasks = getTasks().filter(task => task.id !== taskId);
+    saveTasks(tasks); renderTasks(); toast('Đã xóa nhiệm vụ.');
+  });
+}
+function deleteAllTasks() {
+  const tasks = getTasks();
+  if (!tasks.length) { toast('Lớp hiện chưa có nhiệm vụ.'); return; }
+  requestPassword('xóa tất cả nhiệm vụ', () => {
+    if (!confirm('Bạn có chắc muốn xóa tất cả ' + tasks.length + ' nhiệm vụ trong lớp?')) return;
+    saveTasks([]); renderTasks(); toast('Đã xóa tất cả nhiệm vụ.');
+  });
+}
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  if (!list) return;
+  const tasks = getTasks();
+  if (!tasks.length) { list.innerHTML = '<div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div>'; return; }
+  const pets = [...document.querySelectorAll('.pet')];
+  list.innerHTML = tasks.map(task => '<article class="task-item"><div class="task-item-head"><div><h4>🎯 ' + escapeHtml(task.title) + '</h4><p>' + escapeHtml(task.description || 'Nhiệm vụ của lớp') + '</p></div><div><span class="task-exp">+' + task.exp + ' EXP</span><button class="task-delete" type="button" onclick="deleteTask(\'' + task.id + '\')">Xóa</button></div></div><button class="primary task-all-button" type="button" onclick="completeTaskForAll(\'' + task.id + '\')">✓ Tất cả hoàn thành</button><div class="task-students">' + (pets.length ? pets.map(pet => { const student = pet.querySelector('h4').textContent; const petName = pet.querySelector('.meta span').textContent.split(' · ')[0]; const done = isTaskCompleted(task, pet); return '<div class="task-student"><span>👤 ' + escapeHtml(student) + ' · 🐾 ' + escapeHtml(petName) + '</span><button class="' + (done ? 'done' : '') + '" type="button" ' + (done ? 'disabled' : '') + ' onclick="completeTask(\'' + task.id + '\',\'' + pet.dataset.id + '\')">' + (done ? '✓ Đã nhận EXP' : 'Hoàn thành') + '</button></div>'; }).join('') : '<div class="task-empty">Hãy thêm học sinh để giao nhiệm vụ.</div>') + '</div></article>').join('');
+}
+document.getElementById('taskForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const title = document.getElementById('taskTitle').value.trim();
+  const description = document.getElementById('taskDescription').value.trim();
+  const exp = Math.max(1, Number(document.getElementById('taskExp').value) || getSettings().taskExp);
+  if (!title) return;
+  const tasks = getTasks();
+  tasks.unshift({ id: 'task-' + Date.now(), title, description, exp, dueDate: document.getElementById('taskDueDate').value, completed: [], createdAt: Date.now() });
+  saveTasks(tasks); closeTaskModal(); renderTasks(); updateStats(); toast('🎯 Đã tạo nhiệm vụ mới.');
+});
+
+document.getElementById('profileForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const accounts = getAccounts();
+  const account = accounts.find(item => item.username === currentAccount.username);
+  if (!account) return;
+  account.name = document.getElementById('editTeacherName').value.trim();
+  account.schoolName = document.getElementById('editSchoolName').value.trim();
+  account.className = document.getElementById('editClassName').value.trim();
+  account.role = document.getElementById('editRoleName').value.trim();
+  if (!account.name || !account.schoolName || !account.className || !account.role) return;
+  saveAccounts(accounts);
+  applyAccount(account);
+  closeProfileModal();
+  toast('Đã cập nhật thông tin hồ sơ.');
+});
+
+document.getElementById('addForm').addEventListener('submit', event => {
+  event.preventDefault();
+  addPetCard(document.getElementById('studentName').value.trim(), document.getElementById('petName').value.trim(), document.getElementById('petEmoji').value.trim() || '🐱');
+  saveHealth(); saveStudents(); updateStats(); renderRankings(); renderTasks(); closeAddModal(); toast('Đã thêm học sinh và pet vào lớp!');
+});
+
+function updatePetStatus(pet, health, dead = false) {
+  health = Math.max(0, Math.min(100, Number(health) || 0));
+  const fill = pet.querySelector('.fill');
+  pet.dataset.dead = dead;
+  pet.classList.toggle('dead', dead);
+  pet.classList.toggle('motion-on', getSettings().animation !== false && !dead);
+  const badge = pet.querySelector('.badge');
+  const status = dead ? 'danger' : health >= 60 ? 'ok' : health >= 30 ? 'hungry' : 'danger';
+  const labels = { ok: 'KHỎE', hungry: 'CẦN CHĂM SÓC', danger: dead ? 'ĐÃ QUA ĐỜI' : 'NGUY HIỂM' };
+
+  pet.dataset.status = status;
+  fill.style.width = health + '%';
+  fill.className = 'fill ' + (status === 'ok' ? 'g' : status === 'hungry' ? 'o' : 'r');
+  badge.className = 'badge ' + status;
+  badge.textContent = labels[status];
+  pet.querySelector('.meta b').textContent = health + '%';
+  const level = parseInt(pet.dataset.level || '1', 10);
+  pet.querySelector('.health-value').textContent = health;
+  pet.querySelector('.hunger-value').textContent = health;
+  pet.querySelector('.pet-stage').textContent = getPetStage(level);
+  pet.querySelector('.exp-value').textContent = (parseInt(pet.dataset.exp || '0', 10)) + ' / ' + getLevelCost(level);
+  pet.querySelector('.fill').style.width = Math.max(0, Math.min(100, health)) + '%';
+}
+
+function showFeedEffect(pet) {
+  const effect = document.createElement('span');
+  effect.className = 'pet-feed-effect'; effect.textContent = '🍖 +' + getSettings().feedExp + ' EXP';
+  effect.style.left = '50%'; effect.style.top = '55%';
+  pet.appendChild(effect); setTimeout(() => effect.remove(), 900);
+}
+
+function feedPet(pet) {
+  if (pet.dataset.dead === 'true') { playUiSound('error'); toast('Pet đã qua đời. Hãy hồi sinh trước.'); return; }
+  playAnimalSound(pet.querySelector('.pet-face').textContent);
+  const current = parseInt(pet.querySelector('.meta b').textContent, 10);
+  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+  const studentName = pet.querySelector('h4').textContent;
+  const level = parseInt(pet.dataset.level || '1', 10);
+  const settings = getSettings();
+  let exp = parseInt(pet.dataset.exp || '0', 10) + settings.feedExp;
+  let nextLevel = level;
+  while (exp >= getLevelCost(nextLevel)) {
+    exp -= getLevelCost(nextLevel);
+    nextLevel++;
+  }
+  pet.dataset.exp = exp;
+  pet.dataset.level = nextLevel;
+  pet.dataset.lastFedAt = Date.now();
+  pet.querySelector('.meta span').textContent = petName + ' · Lv.' + nextLevel;
+  const levelBadge = pet.querySelector('.level-badge strong');
+  if (levelBadge) levelBadge.textContent = nextLevel;
+  updatePetStatus(pet, Math.min(100, current + settings.feedHunger));
+  showFeedEffect(pet);
+  pet.classList.add('fed', 'eating');
+  if (nextLevel > level) showEvolutionNotice(pet, petName, nextLevel);
+  setTimeout(() => pet.classList.remove('fed', 'eating', 'level-up'), 900);
+  toast(nextLevel > level ? '✨ PET TIẾN HÓA! ' + petName + ' đã lên cấp ' + nextLevel + '!' : '🍖 ' + petName + ' vừa được chăm sóc, +' + settings.feedExp + ' EXP!');
+  saveHealth(); saveStudents(); updateStats(); renderRankings();
+  addActivity('Đã cho ' + petName + ' của ' + studentName + ' ăn · +' + settings.feedExp + ' EXP.');
+}
+
+function saveHealth() {
+  const health = {};
+  document.querySelectorAll('.pet').forEach(pet => {
+    health[pet.dataset.id] = parseInt(pet.querySelector('.meta b').textContent, 10);
+  });
+  localStorage.setItem(storageKey, JSON.stringify(health));
+}
+
+function deletePet(pet) {
+  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+  const studentName = pet.querySelector('h4').textContent;
+  requestPassword('xóa Pet ' + petName, () => {
+    if (!confirm('Bạn có chắc muốn xoá pet ' + petName + ' của ' + studentName + '? Dữ liệu Pet cũng sẽ bị xóa.')) return;
+    if (selectedPet === pet) closePetModal();
+    pet.remove();
+    saveStudents();
+    saveHealth();
+    updateStats();
+    renderRankings();
+    applyFilters();
+    toast('Đã xoá pet của ' + studentName + '.');
+  });
+}
+
+function deleteAllPets() {
+  const pets = document.querySelectorAll('.pet');
+  if (!pets.length) {
+    toast('Lớp hiện chưa có pet nào.');
+    return;
+  }
+  requestPassword('xóa tất cả Pet trong lớp', () => {
+    if (!confirm('Bạn có chắc muốn xoá tất cả ' + pets.length + ' pet trong lớp?')) return;
+    document.getElementById('pets').innerHTML = '';
+    localStorage.removeItem(studentsKey);
+    localStorage.removeItem(storageKey);
+    updateStats();
+    renderRankings();
+    renderTasks();
+    toast('Đã xoá tất cả pet trong lớp.');
+  });
+}
+
+function checkPetLifetimes() {
+  const settings = getSettings();
+  const limit = settings.deathDays * 24 * 60 * 60 * 1000;
+  document.querySelectorAll('.pet').forEach(pet => {
+    const lastFedAt = Number(pet.dataset.lastFedAt || Date.now());
+    const elapsed = Date.now() - lastFedAt;
+    const days = Math.floor(elapsed / 86400000);
+    const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+    pet.dataset.daysUnfed = days;
+    if (days >= 3 && days < 30 && pet.dataset.warning !== '3') {
+      pet.dataset.warning = '3';
+      addActivity('⚠️ ' + petName + ' đã 3 ngày chưa được chăm sóc.');
+    } else if (days >= 7 && days < 30 && pet.dataset.warning !== '7') {
+      pet.dataset.warning = '7';
+      addActivity('⏰ ' + petName + ' đã 7 ngày chưa được chăm sóc, hãy chú ý!');
+    }
+    if (elapsed >= limit && pet.dataset.dead !== 'true') {
+      updatePetStatus(pet, 0, true);
+      addActivity(petName + ' đã qua đời vì không được chăm sóc trong ' + settings.deathDays + ' ngày.');
+    }
+  });
+}
+
+function revivePet(pet) {
+  pet.dataset.dead = 'false';
+  pet.dataset.lastFedAt = Date.now();
+  updatePetStatus(pet, 30, false);
+  saveStudents(); saveHealth(); updateStats();
+  toast('💚 Đã hồi sinh pet!');
+}
+
+function updateClassProgress() {
+  const pets = [...document.querySelectorAll('.pet')];
+  const progress = pets.length ? Math.round(pets.reduce((sum, pet) => sum + parseInt(pet.querySelector('.meta b').textContent, 10), 0) / pets.length) : 0;
+  document.getElementById('classProgress').style.width = progress + '%';
+  document.getElementById('classProgressText').textContent = progress + '%';
+}
+
+function renderCareAlerts() {
+  const list = document.getElementById('careList');
+  const pets = [...document.querySelectorAll('.pet')].filter(pet => pet.dataset.dead === 'true' || parseInt(pet.querySelector('.meta b').textContent, 10) < 50).sort((a, b) => parseInt(a.querySelector('.meta b').textContent, 10) - parseInt(b.querySelector('.meta b').textContent, 10)).slice(0, 5);
+  if (!pets.length) { list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0">Chưa có Pet cần chú ý.</p>'; return; }
+  list.innerHTML = pets.map(pet => '<div class="care-row"><span class="rpet">' + pet.querySelector('.pet-face').textContent + '</span><div class="care-info"><b>' + pet.querySelector('.meta span').textContent.split(' · ')[0] + '</b><small>' + pet.querySelector('h4').textContent + ' · ' + (pet.dataset.dead === 'true' ? 'Đã qua đời' : 'Độ no: ' + pet.querySelector('.meta b').textContent) + '</small></div><button type="button" onclick="feedPetByName(\'' + pet.dataset.name.replace(/'/g, "\\'") + '\')">Chăm sóc</button></div>').join('');
+}
+
+function feedPetByName(name) { const pet = [...document.querySelectorAll('.pet')].find(item => item.dataset.name === name); if (pet) { if (pet.dataset.dead === 'true') revivePet(pet); else feedPet(pet); } }
+
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const dark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('classpet-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
+}
+
+function renderDashboardInsights() {
+  const pets = [...document.querySelectorAll('.pet')];
+  const activities = (() => { try { return JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { return []; } })();
+  const now = Date.now();
+  const week = activities.filter(item => now - Number(item.timestamp || 0) <= 7 * 86400000);
+  const month = activities.filter(item => now - Number(item.timestamp || 0) <= 30 * 86400000);
+  const expFrom = items => items.reduce((sum, item) => { const match = String(item.text).match(/\+(\d+)\s*EXP/); return sum + (match ? Number(match[1]) : 0); }, 0);
+  document.getElementById('weeklyExp').textContent = expFrom(week);
+  document.getElementById('monthlyExp').textContent = expFrom(month);
+  const tasks = getTasks();
+  document.getElementById('completedTasks').textContent = tasks.reduce((sum, task) => sum + task.completed.length, 0);
+  document.getElementById('evolvedPets').textContent = pets.filter(pet => Number(pet.dataset.level || 1) >= 11).length;
+  const chart = document.getElementById('expChart');
+  const values = Array.from({ length: 7 }, (_, index) => { const start = new Date(now - (6 - index) * 86400000); start.setHours(0, 0, 0, 0); const end = start.getTime() + 86400000; return activities.filter(item => Number(item.timestamp || 0) >= start.getTime() && Number(item.timestamp || 0) < end).reduce((sum, item) => sum + expFrom([item]), 0); });
+  const max = Math.max(...values, 1);
+  chart.innerHTML = values.map((value, index) => '<i style="height:' + Math.max(8, value / max * 100) + '%"><span>' + (index === 6 ? 'Hôm nay' : '-' + (6 - index)) + '</span></i>').join('');
+  const notices = pets.filter(pet => pet.dataset.dead === 'true' || Number(pet.querySelector('.meta b').textContent) < 50).slice(0, 5);
+  document.getElementById('noticeList').innerHTML = notices.length ? notices.map(pet => '<div class="notice-item">' + (pet.dataset.dead === 'true' ? '💀' : '⚠️') + '<div><b>' + pet.querySelector('.meta span').textContent.split(' · ')[0] + '</b><small>' + (pet.dataset.dead === 'true' ? 'Pet đã qua đời, cần hồi sinh.' : 'Pet đang đói hoặc nguy hiểm.') + '</small></div></div>').join('') : '<div class="notice-item">✅<div><b>Lớp đang ổn định</b><small>Không có cảnh báo chăm sóc mới.</small></div></div>';
+  const badges = [{ icon: '🍖', title: 'Chăm sóc tận tâm', text: 'Có Pet được chăm sóc', unlocked: pets.length > 0 }, { icon: '🎯', title: 'Người giao nhiệm vụ', text: 'Tạo nhiệm vụ cho lớp', unlocked: tasks.length > 0 }, { icon: '✨', title: 'Nhà tiến hóa', text: 'Có Pet đạt Lv.11+', unlocked: pets.some(pet => Number(pet.dataset.level || 1) >= 11) }, { icon: '👑', title: 'Huyền thoại', text: 'Có Pet đạt Lv.31+', unlocked: pets.some(pet => Number(pet.dataset.level || 1) >= 31) }];
+  document.getElementById('achievementList').innerHTML = badges.map(badge => '<div class="achievement ' + (badge.unlocked ? '' : 'locked') + '"><b>' + badge.icon + ' ' + badge.title + '</b><small>' + badge.text + '</small></div>').join('');
+  const top = pets.sort((a, b) => Number(b.dataset.level || 1) - Number(a.dataset.level || 1) || Number(b.dataset.exp || 0) - Number(a.dataset.exp || 0)).slice(0, 3);
+  document.getElementById('topThreeList').innerHTML = top.length ? top.map((pet, index) => '<div class="rankrow"><span class="num">' + (index + 1) + '</span><span class="rpet">' + pet.querySelector('.pet-face').textContent + '</span><span class="rname">' + pet.querySelector('.meta span').textContent.split(' · ')[0] + '<small style="display:block;color:var(--muted);font-size:10px">' + pet.querySelector('h4').textContent + '</small></span><span class="lv">Lv.' + pet.dataset.level + '</span></div>').join('') : '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px">Chưa có Pet.</p>';
+}
+
+function updateStats() {
+  checkPetLifetimes();
+  const counts = { ok: 0, hungry: 0, danger: 0 };
+  document.querySelectorAll('.pet').forEach(pet => counts[pet.dataset.status]++);
+  const total = document.querySelectorAll('.pet').length;
+  document.getElementById('studentCount').textContent = total;
+  document.getElementById('healthyCount').textContent = counts.ok;
+  document.getElementById('hungryCount').textContent = counts.hungry;
+  const levels = [...document.querySelectorAll('.pet')].map(pet => parseInt(pet.dataset.level || '1', 10));
+  document.getElementById('dangerCount').textContent = levels.length ? (levels.reduce((a, b) => a + b, 0) / levels.length).toFixed(1) : '0';
+  document.getElementById('hungryCount').textContent = counts.hungry + counts.danger;
+  const totalLevel = levels.reduce((sum, level) => sum + level, 0);
+  document.getElementById('totalLevel').textContent = totalLevel;
+  updateClassProgress();
+  renderCareAlerts();
+  renderDashboardInsights();
+}
+
+function applyFilters() {
+  const query = document.getElementById('q').value.trim().toLowerCase();
+  const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+  document.querySelectorAll('.pet').forEach(pet => {
+    const matchesText = pet.dataset.name.toLowerCase().includes(query);
+    const matchesStatus = statusFilter === 'all' || pet.dataset.status === statusFilter;
+    pet.style.display = matchesText && matchesStatus ? 'block' : 'none';
+  });
+}
+
+function searchPets() { applyFilters(); }
+function filterStatus() { applyFilters(); }
+
+function feedAll() {
+  document.querySelectorAll('.pet').forEach(pet => feedPet(pet));
+  closeModal();
+  toast('🍖 Đã cho toàn bộ pet trong lớp ăn!');
+}
+
+const petModal = document.getElementById('petModal');
+let selectedPet = null;
+
+function openPetModal(pet) {
+  selectedPet = pet;
+  const student = pet.querySelector('h4').textContent;
+  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+  const level = parseInt(pet.dataset.level || '1', 10);
+  const exp = parseInt(pet.dataset.exp || '0', 10);
+  const health = pet.querySelector('.meta b').textContent;
+  const stage = pet.querySelector('.pet-stage').textContent;
+  const lastFed = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(Number(pet.dataset.lastFedAt || Date.now()));
+  const history = pet.dataset.lastFedAt ? '🍖 Lần chăm sóc gần nhất: ' + lastFed + '<br>⭐ EXP hiện tại: ' + exp + ' / ' + getLevelCost(level) : 'Chưa có lịch sử chăm sóc.';
+  document.getElementById('petModalTitle').textContent = '🐾 ' + petName;
+  document.getElementById('petModalStudent').textContent = '👤 Học sinh: ' + student + ' · Lv.' + level;
+  document.getElementById('petModalStage').textContent = stage;
+  document.getElementById('profilePetFace').textContent = pet.querySelector('.pet-face').textContent;
+  document.getElementById('profilePetFace').classList.toggle('dead', pet.dataset.dead === 'true');
+  document.getElementById('profileHealth').textContent = health;
+  document.getElementById('profileHunger').textContent = health;
+  document.getElementById('profileHappiness').textContent = '90';
+  document.getElementById('petModalLastFed').textContent = '📅 Chăm sóc cuối: ' + lastFed;
+  document.getElementById('profileExpBar').style.width = Math.min(100, exp / getLevelCost(level) * 100) + '%';
+  document.getElementById('petModalExp').textContent = '⭐ ' + exp + ' / ' + getLevelCost(level) + ' EXP';
+  document.getElementById('petModalHistory').innerHTML = history;
+  petModal.classList.add('show');
+}
+
+function closePetModal() {
+  petModal.classList.remove('show');
+  selectedPet = null;
+}
+
+function feedSelectedPet() {
+  if (!selectedPet) return;
+  const name = selectedPet.querySelector('h4').textContent;
+  feedPet(selectedPet);
+  closePetModal();
+  toast('🍖 Đã chăm sóc ' + name);
+}
+
+function getStudentRewardKey(account, classItem, studentName, petName) { return 'classpet-student-reward-' + account.username.toLowerCase() + '-' + classItem.id + '-' + encodeURIComponent((studentName || 'student') + '-' + (petName || 'pet')); }
+function getTodayKey() { return new Date().toISOString().slice(0, 10); }
+function getStudentRewardData(account, classItem, studentName, petName) { try { return JSON.parse(localStorage.getItem(getStudentRewardKey(account, classItem, studentName, petName)) || '{}'); } catch (error) { return {}; } }
+function saveStudentRewardData(account, classItem, studentName, petName, data) { localStorage.setItem(getStudentRewardKey(account, classItem, studentName, petName), JSON.stringify(data)); }
+function updateStudentRewardUI(pets, account, classItem) {
+  const select = document.getElementById('studentRewardPet');
+  const ownPets = pets.filter(pet => account.studentPetId
+    ? pet.id === account.studentPetId
+    : pet.student === account.studentName && pet.pet === account.studentPetName);
+  const selectedPet = ownPets[0];
+  const today = getTodayKey(); const data = getStudentRewardData(account, classItem, account.studentName, account.studentPetName);
+  const used = data.date === today;
+  select.innerHTML = ownPets.length ? ownPets.map((pet, index) => '<option value="' + pets.indexOf(pet) + '">' + pet.emoji + ' ' + pet.pet + ' · ' + (Number(data.petUses && data.petUses[pets.indexOf(pet)] || 0)) + '/3 lượt hôm nay</option>').join('') : '<option>Em chưa có Pet</option>';
+  const button = document.getElementById('studentRewardButton'); button.disabled = used || !pets.length;
+  document.getElementById('studentRewardStatus').textContent = used ? 'Em đã sử dụng lượt quay miễn phí hôm nay.' : (ownPets.length ? 'Mỗi học sinh được quay 1 lần mỗi ngày cho Pet của mình.' : 'Em chưa được gán Pet trong lớp.');
+}
+function spinStudentReward() {
+  const classItem = window.studentClassItem, account = window.studentAccount; if (!classItem || !account) return;
+  const username = account.username.toLowerCase(), key = 'classpet-students-' + username + '-' + classItem.id; let pets = [];
+  if (!account.studentName || !account.studentPetName) { toast('Thiếu thông tin học sinh hoặc Pet.'); return; }
+  try { pets = JSON.parse(localStorage.getItem(key) || '[]'); } catch (error) { pets = []; }
+  const selectedIndex = Number(document.getElementById('studentRewardPet').value); if (!pets[selectedIndex] || pets[selectedIndex].student !== account.studentName || pets[selectedIndex].pet !== account.studentPetName) return;
+  const today = getTodayKey(), data = getStudentRewardData(account, classItem, account.studentName, account.studentPetName);
+  if (data.date === today) { toast('Em đã quay EXP hôm nay rồi.'); return; }
+  data.date = today; data.petUses = data.petUses || {};
+  Object.keys(data.petUses).forEach(index => { if (Number(data.petUses[index]) >= 3) delete data.petUses[index]; });
+  if (Number(data.petUses[selectedIndex] || 0) >= 3) { toast('Pet này đã nhận đủ 3 lượt EXP hôm nay.'); return; }
+  const reward = [10, 20, 30, 50][Math.floor(Math.random() * 4)]; const pet = pets[selectedIndex];
+  let level = Number(pet.level || 1);
+  let exp = Number(pet.exp || 0) + reward;
+  while (exp >= getLevelCost(level)) { exp -= getLevelCost(level); level++; }
+  pet.exp = exp;
+  pet.level = level;
+  data.petUses[selectedIndex] = Number(data.petUses[selectedIndex] || 0) + 1;
+  localStorage.setItem(key, JSON.stringify(pets)); saveStudentRewardData(account, classItem, account.studentName, account.studentPetName, data);
+  const card = document.getElementById('studentRewardCard'); card.classList.add('spinning');
+  setTimeout(() => { card.classList.remove('spinning'); document.getElementById('studentRewardStatus').textContent = '🎉 ' + pet.pet + ' nhận +' + reward + ' EXP!'; renderStudentPortal(classItem, account); }, 1100);
+}
+function renderStudentPortal(classItem, account) {
+  window.studentClassItem = classItem; window.studentAccount = account;
+  const username = account.username.toLowerCase();
+  const studentKey = 'classpet-students-' + username + '-' + classItem.id;
+  const taskStorageKey = 'classpet-tasks-' + username + '-' + classItem.id;
+  let pets = [], tasks = [];
+  try { pets = JSON.parse(localStorage.getItem(studentKey) || '[]'); tasks = JSON.parse(localStorage.getItem(taskStorageKey) || '[]'); } catch (error) {}
+  const code = classItem.code || '-----';
+  document.getElementById('studentClassLabel').textContent = '🏫 Lớp ' + classItem.name + ' · Mã lớp: ' + code;
+  document.getElementById('studentWelcome').textContent = 'Chào học sinh! 👋';
+  const petCard = item => { const level = Number(item.level || 1), exp = Number(item.exp || 0), health = Number(item.health ?? 100); const isMine = account.studentPetId ? item.id === account.studentPetId : item.student === account.studentName && item.pet === account.studentPetName; return '<article class="student-pet-card' + (isMine ? ' mine' : '') + '"><div class="face">' + escapeHtml(item.emoji || '🐱') + '</div><h3>' + escapeHtml(item.pet) + ' · Lv.' + level + '</h3><small>👤 ' + escapeHtml(item.student) + '</small><div class="student-badges"><span class="student-badge">⭐ EXP: ' + exp + '</span><span class="student-badge">🍖 No: ' + health + '%</span><span class="student-badge">❤️ Sức khỏe: ' + health + '%</span><span class="student-badge">😊 Hạnh phúc: 90%</span></div><small>Quá trình: ' + getPetStage(level) + '</small></article>'; };
+  const cards = pets.length ? pets.map(petCard).join('') : '<div class="student-empty">Lớp chưa có Pet.</div>';
+  document.getElementById('studentSummary').innerHTML = cards; document.getElementById('studentPetList').innerHTML = cards;
+  document.getElementById('studentPetCount').textContent = pets.length;
+  document.getElementById('studentTopLevel').textContent = pets.length ? Math.max(...pets.map(pet => Number(pet.level || 1))) : 0;
+  document.getElementById('studentAverageHealth').textContent = pets.length ? Math.round(pets.reduce((sum, pet) => sum + Number(pet.health ?? 100), 0) / pets.length) + '%' : '0%';
+  updateStudentRewardUI(pets, account, classItem);
+  document.getElementById('studentTaskList').innerHTML = tasks.length ? tasks.map(task => { const completed = (Array.isArray(task.completedPetIds) && task.completedPetIds.includes(account.studentPetId)) || (Array.isArray(task.completed) && task.completed.includes(account.studentName)); return '<article class="student-task"><b>🎯 ' + escapeHtml(task.title) + ' <span class="student-badge">+' + task.exp + ' EXP</span></b><p>' + escapeHtml(task.description || 'Nhiệm vụ của lớp') + (task.dueDate ? ' · Hạn: ' + new Intl.DateTimeFormat('vi-VN').format(new Date(task.dueDate + 'T00:00:00')) : '') + '</p><span class="student-status ' + (completed ? 'done' : '') + '">' + (completed ? '🟢 Đã hoàn thành · +' + task.exp + ' EXP cho Pet' : '🟡 Chưa hoàn thành') + '</span></article>'; }).join('') : '<div class="student-empty">Chưa có nhiệm vụ.</div>';
+  const sorted = [...pets].sort((a, b) => Number(b.level || 1) - Number(a.level || 1) || Number(b.exp || 0) - Number(a.exp || 0));
+  document.getElementById('studentRankingList').innerHTML = sorted.length ? sorted.map((pet, index) => '<div class="student-rank-row"><span>' + (index + 1) + '. ' + pet.emoji + ' ' + pet.pet + ' · ' + pet.student + '</span><strong>Lv.' + (pet.level || 1) + ' · ' + (pet.exp || 0) + ' EXP</strong></div>').join('') : '<div class="student-empty">Chưa có dữ liệu xếp hạng.</div>';
+  const average = pets.length ? Math.round(pets.reduce((sum, pet) => sum + Number(pet.health ?? 100), 0) / pets.length) : 0;
+  document.getElementById('studentProgressText').textContent = pets.length + ' Pet trong lớp · Sức khỏe trung bình: ' + average + '%'; document.getElementById('studentProgressBar').style.width = average + '%';
+  document.getElementById('studentMemberList').innerHTML = pets.length ? pets.map(pet => '<div class="student-member-row">👤 ' + escapeHtml(pet.student) + '<span style="margin-left:auto;color:var(--muted)">' + escapeHtml(pet.pet) + ' · Lv.' + (pet.level || 1) + '</span></div>').join('') : '<div class="student-empty">Chưa có thành viên.</div>';
+}
+function studentScroll(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function studentLogout() { document.getElementById('studentPortal').classList.remove('show'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('studentClassCode').value = ''; document.getElementById('studentNameLogin').value = ''; document.getElementById('studentPetNameLogin').value = ''; window.studentAccount = null; window.studentClassItem = null; }
+function enterStudentClass() { const code = document.getElementById('studentClassCode').value.trim().toUpperCase(); const studentName = document.getElementById('studentNameLogin').value.trim(); const studentPetName = document.getElementById('studentPetNameLogin').value.trim(); const error = document.getElementById('studentAuthError'); const accounts = getAccounts(); accounts.forEach(ensureAccountClasses); saveAccounts(accounts); const found = accounts.flatMap(account => account.classes.map(classItem => ({ account, classItem }))).find(item => item.classItem.code === code); if (!found) { error.textContent = 'Mã lớp không đúng hoặc không tồn tại.'; return; }
+  if (!studentName || !studentPetName) { error.textContent = 'Vui lòng nhập cả tên học sinh và tên Pet.'; return; }
+  const students = JSON.parse(localStorage.getItem('classpet-students-' + found.account.username.toLowerCase() + '-' + found.classItem.id) || '[]');
+  const match = students.find(item => item.student.toLowerCase() === studentName.toLowerCase() && item.pet.toLowerCase() === studentPetName.toLowerCase());
+  if (!match) { error.textContent = 'Tên học sinh hoặc tên Pet chưa đúng. Hãy kiểm tra lại cả hai thông tin.'; return; }
+  found.account.studentName = match.student;
+  found.account.studentPetName = match.pet;
+  found.account.studentPetId = match.id || '';
+  error.textContent = ''; document.getElementById('authScreen').classList.add('hidden'); document.getElementById('studentPortal').classList.add('show'); renderStudentPortal(found.classItem, found.account); }
+document.getElementById('studentEnterButton').addEventListener('click', enterStudentClass);
+document.getElementById('studentClassCode').addEventListener('input', event => { event.target.value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+document.getElementById('studentModeButton').addEventListener('click', () => { document.getElementById('teacherModeButton').classList.remove('active'); document.getElementById('studentModeButton').classList.add('active'); document.getElementById('teacherLoginFields').style.display = 'none'; document.getElementById('studentLoginFields').classList.add('active'); });
+document.getElementById('teacherModeButton').addEventListener('click', () => { document.getElementById('studentModeButton').classList.remove('active'); document.getElementById('teacherModeButton').classList.add('active'); document.getElementById('studentLoginFields').classList.remove('active'); document.getElementById('teacherLoginFields').style.display = 'block'; });
+
+function updateDate() {
+  const date = new Intl.DateTimeFormat('vi-VN', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  }).format(new Date());
+  document.getElementById('dateText').textContent =
+    date.charAt(0).toUpperCase() + date.slice(1) + ' · Hãy cùng quản lý lớp học nhé.';
+}
+
+document.getElementById('loginForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const error = document.getElementById('authError');
+
+  if (username.length < 3) {
+    error.textContent = 'Tên đăng nhập phải có ít nhất 3 ký tự.';
+    return;
+  }
+
+  if (isRegisterMode) {
+    const teacherName = document.getElementById('teacherName').value.trim();
+    const schoolName = document.getElementById('schoolName').value.trim();
+    const className = document.getElementById('className').value.trim();
+
+    if (!teacherName || !schoolName || !className) {
+      error.textContent = 'Vui lòng nhập đầy đủ họ tên, trường và lớp.';
+      return;
+    }
+    if (usernameExists(username)) {
+      error.textContent = 'Tên đăng nhập này đã tồn tại. Hãy chọn tên khác.';
+      return;
+    }
+    if (password.length < 6) {
+      error.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+      return;
+    }
+    if (password !== confirmPassword) {
+      error.textContent = 'Mật khẩu nhập lại không khớp.';
+      return;
+    }
+
+    const accounts = getAccounts();
+    const account = { username, password, name: teacherName, schoolName, className, role: 'Giáo viên chủ nhiệm' };
+    accounts.push(account);
+    saveAccounts(accounts);
+    sessionStorage.setItem(sessionKey, username);
+    applyAccount(account);
+    error.textContent = '';
+    document.getElementById('authScreen').classList.add('hidden');
+    toast('Đăng ký và đăng nhập thành công!');
+    return;
+  }
+
+  const account = getAccounts().find(item => item.username.toLowerCase() === username.toLowerCase());
+  if (!account || account.password !== password) {
+    error.textContent = 'Tài khoản hoặc mật khẩu không đúng.';
+    return;
+  }
+
+  sessionStorage.setItem(sessionKey, account.username);
+  applyAccount(account);
+  error.textContent = '';
+  document.getElementById('authScreen').classList.add('hidden');
+  toast('Đăng nhập thành công!');
+});
+
+document.getElementById('switchAuth').addEventListener('click', () => {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('authTitle').textContent = isRegisterMode ? 'Đăng ký giáo viên' : 'Đăng nhập giáo viên';
+  document.getElementById('authDescription').textContent = isRegisterMode ? 'Tạo tài khoản để quản lý lớp học và chăm sóc các pet.' : 'Đăng nhập để quản lý lớp học và chăm sóc các pet.';
+  document.getElementById('registrationFields').hidden = !isRegisterMode;
+  document.getElementById('teacherName').required = isRegisterMode;
+  document.getElementById('schoolName').required = isRegisterMode;
+  document.getElementById('className').required = isRegisterMode;
+  document.getElementById('authSubmit').textContent = isRegisterMode ? 'Đăng ký' : 'Đăng nhập';
+  document.getElementById('switchText').textContent = isRegisterMode ? 'Đã có tài khoản?' : 'Chưa có tài khoản?';
+  document.getElementById('switchAuth').textContent = isRegisterMode ? 'Đăng nhập' : 'Đăng ký';
+  document.getElementById('confirmLabel').hidden = !isRegisterMode;
+  document.getElementById('confirmPassword').hidden = !isRegisterMode;
+  document.getElementById('confirmPassword').required = isRegisterMode;
+  document.getElementById('authError').textContent = '';
+});
+
+let savedHealth = {};
+try {
+  savedHealth = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+} catch (error) {
+  localStorage.removeItem(storageKey);
+}
+
+document.querySelectorAll('.pet').forEach((pet, index) => {
+  const health = savedHealth[index];
+  if (Number.isFinite(health)) updatePetStatus(pet, health);
+  const feedButton = document.createElement('button');
+  feedButton.type = 'button';
+  feedButton.className = 'pet-action';
+  feedButton.textContent = '🍖 Cho ăn';
+  feedButton.addEventListener('click', event => {
+    event.stopPropagation();
+    const current = parseInt(pet.querySelector('.meta b').textContent, 10);
+    updatePetStatus(pet, Math.min(100, current + settings.feedHunger));
+    saveHealth();
+    updateStats();
+    toast('🍖 Đã cho ' + pet.querySelector('h4').textContent + ' ăn!');
+  });
+  pet.appendChild(feedButton);
+  pet.addEventListener('click', event => {
+    if (event.target.closest('button')) return;
+    openPetModal(pet);
+  });
+});
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (button && !button.closest('.pet')) playUiSound('click');
+});
+
+document.querySelectorAll('.nav button').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.nav button').forEach(item => item.classList.remove('active'));
+    button.classList.add('active');
+  });
+});
+
+updateDate();
+updateStats();
+applyMotionSettings();
+if (localStorage.getItem('classpet-theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+  document.getElementById('themeToggle').textContent = '☀️';
+}
+
+const loggedInAccount = getCurrentAccount();
+if (loggedInAccount) {
+  applyAccount(loggedInAccount);
+  document.getElementById('authScreen').classList.add('hidden');
+}
+window.addEventListener('click', event => {
+  if (event.target === modal) closeModal();
+  if (event.target === profileModal) closeProfileModal();
+  if (event.target === petModal) closePetModal();
+  if (event.target === addModal) closeAddModal();
+  if (event.target === settingsModal) closeSettings();
+  if (event.target === classModal) closeClassModal();
+  if (event.target === taskModal) closeTaskModal();
+});
+</script>
+</body>
+</html>
