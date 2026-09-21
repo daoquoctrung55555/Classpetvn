@@ -1,9 +1,26 @@
+const SUPABASE_URL = "https://tyrwtmnxeblpktuutlta.supabase.co";
 
+const SUPABASE_PUBLISHABLE_KEY = "DÁN_PUBLISHABLE_KEY_CỦA_BẠN_VÀO_ĐÂY";
 
-function showTime() {
-	document.getElementById('currentTime').innerHTML = new Date().toUTCString();
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+// JavaScript của ClassPet được tải inline trong index.html.
+// File này được giữ để chuẩn bị tách toàn bộ logic sang script.js.
+
+async function testSupabase() {
+  const { data, error } = await supabaseClient
+    .from("classes")
+    .select("*");
+
+  if (error) {
+    console.error("❌ Supabase lỗi:", error);
+  } else {
+    console.log("✅ Supabase đã kết nối!");
+    console.log("Dữ liệu classes:", data);
+  }
 }
-showTime();
-setInterval(function () {
-	showTime();
-}, 1000);
+
+testSupabase();
