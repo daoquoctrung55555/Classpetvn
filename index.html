@@ -455,21 +455,86 @@ function deleteCurrentClass() {
   });
 }
 
-document.getElementById('classForm').addEventListener('submit', event => {
+document.getElementById('classForm').addEventListener('submit', async event => {
   event.preventDefault();
+
   const name = document.getElementById('newClassName').value.trim();
   const year = document.getElementById('newClassYear').value.trim();
-  if (!name || !year) return;
-  const id = makeClassId(name) + '-' + Date.now();
-  if (currentAccount.classes.some(item => item.name.toLowerCase() === name.toLowerCase())) { toast('Lớp này đã tồn tại.'); return; }
-  currentAccount.classes.push({ id, name, year, code: createClassCode() });
-  currentAccount.activeClassId = id;
-  const accounts = getAccounts();
-  const account = accounts.find(item => item.username === currentAccount.username);
-  if (account) { account.classes = currentAccount.classes; account.activeClassId = id; saveAccounts(accounts); }
+
+  if (!name) {
+    toast('Vui lòng nhập tên lớp.');
+    return;
+  }
+
+  // Lấy giáo viên đang đăng nhập thật từ Supabase
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    toast('Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.');
+    return;
+  }
+
+  // Tạo mã lớp 5 ký tự
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  function generateClassCode() {
+    let code = '';
+    for (let i = 0; i < 5; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  }
+
+  let classCode = generateClassCode();
+
+  // Kiểm tra mã lớp đã tồn tại chưa
+  let { data: existingClass } = await supabaseClient
+    .from('classes')
+    .select('id')
+    .eq('class_code', classCode)
+    .maybeSingle();
+
+  while (existingClass) {
+    classCode = generateClassCode();
+
+    const result = await supabaseClient
+      .from('classes')
+      .select('id')
+      .eq('class_code', classCode)
+      .maybeSingle();
+
+    existingClass = result.data;
+  }
+
+  // Lưu lớp vào Supabase
+  const { data, error } = await supabaseClient
+    .from('classes')
+    .insert({
+      name: name,
+      class_code: classCode,
+      teacher_id: user.id
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Lỗi tạo lớp:', error);
+    toast('Không tạo được lớp: ' + error.message);
+    return;
+  }
+
+  console.log('✅ Đã tạo lớp:', data);
+
+  // Đóng cửa sổ
   closeClassModal();
-  applyAccount(currentAccount);
-  toast('Đã tạo lớp ' + name + ' và chuyển sang lớp mới.');
+
+  toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${classCode}`);
+
+  // Tải lại trang để cập nhật dữ liệu
+  setTimeout(() => {
+    location.reload();
+  }, 800);
 });
 
 
