@@ -160,8 +160,15 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
       <label class="auth-label" for="className">Tên lớp</label>
       <input class="auth-input" id="className" placeholder="Ví dụ: 10A1">
     </div>
-    <label class="auth-label" for="username">Tài khoản</label>
-    <input class="auth-input" id="username" autocomplete="username" placeholder="Nhập tài khoản" required>
+   <label class="auth-label" for="username">Email</label>
+<input
+  class="auth-input"
+  id="username"
+  type="email"
+  autocomplete="email"
+  placeholder="Nhập email của bạn"
+  required
+>
     <label class="auth-label" for="password">Mật khẩu</label>
     <input class="auth-input" id="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
     <label class="auth-label" id="confirmLabel" for="confirmPassword" hidden>Nhập lại mật khẩu</label>
@@ -1171,18 +1178,30 @@ function updateDate() {
     date.charAt(0).toUpperCase() + date.slice(1) + ' · Hãy cùng quản lý lớp học nhé.';
 }
 
-document.getElementById('loginForm').addEventListener('submit', event => {
+document.getElementById('loginForm').addEventListener('submit', async event => {
   event.preventDefault();
+
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   const error = document.getElementById('authError');
 
-  if (username.length < 3) {
-    error.textContent = 'Tên đăng nhập phải có ít nhất 3 ký tự.';
+  error.textContent = '';
+
+  // Tài khoản Supabase Auth sử dụng email
+  if (!username || !username.includes('@')) {
+    error.textContent = 'Tài khoản phải là một địa chỉ email.';
     return;
   }
 
+  if (password.length < 6) {
+    error.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+    return;
+  }
+
+  // =========================
+  // ĐĂNG KÝ
+  // =========================
   if (isRegisterMode) {
     const teacherName = document.getElementById('teacherName').value.trim();
     const schoolName = document.getElementById('schoolName').value.trim();
@@ -1192,44 +1211,118 @@ document.getElementById('loginForm').addEventListener('submit', event => {
       error.textContent = 'Vui lòng nhập đầy đủ họ tên, trường và lớp.';
       return;
     }
-    if (usernameExists(username)) {
-      error.textContent = 'Tên đăng nhập này đã tồn tại. Hãy chọn tên khác.';
-      return;
-    }
-    if (password.length < 6) {
-      error.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
-      return;
-    }
+
     if (password !== confirmPassword) {
       error.textContent = 'Mật khẩu nhập lại không khớp.';
       return;
     }
 
-    const accounts = getAccounts();
-    const account = { username, password, name: teacherName, schoolName, className, role: 'Giáo viên chủ nhiệm' };
-    accounts.push(account);
-    saveAccounts(accounts);
-    sessionStorage.setItem(sessionKey, username);
+    try {
+      // Tạo tài khoản thật trên Supabase Auth
+      const { data, error: signUpError } =
+        await supabaseClient.auth.signUp({
+          email: username,
+          password: password
+        });
+
+      if (signUpError) {
+        console.error(signUpError);
+        error.textContent = signUpError.message;
+        return;
+      }
+
+      if (!data.user) {
+        error.textContent = 'Không thể tạo tài khoản.';
+        return;
+      }
+
+      // Lưu thông tin giáo viên
+      const { error: profileError } = await supabaseClient
+        .from('teacher_profiles')
+        .insert({
+          id: data.user.id,
+          full_name: teacherName
+        });
+
+      if (profileError) {
+        console.error(profileError);
+        error.textContent =
+          'Tạo tài khoản thành công nhưng không lưu được hồ sơ giáo viên.';
+        return;
+      }
+
+      // Tạo đối tượng tài khoản cho giao diện hiện tại
+      const account = {
+        username: username,
+        name: teacherName,
+        schoolName: schoolName,
+        className: className,
+        role: 'Giáo viên chủ nhiệm'
+      };
+
+      sessionStorage.setItem(sessionKey, username);
+      applyAccount(account);
+
+      document.getElementById('authScreen').classList.add('hidden');
+
+      toast('Đăng ký tài khoản giáo viên thành công!');
+    } catch (err) {
+      console.error(err);
+      error.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
+    }
+
+    return;
+  }
+
+  // =========================
+  // ĐĂNG NHẬP
+  // =========================
+  try {
+    const { data, error: signInError } =
+      await supabaseClient.auth.signInWithPassword({
+        email: username,
+        password: password
+      });
+
+    if (signInError) {
+      console.error(signInError);
+      error.textContent = 'Email hoặc mật khẩu không đúng.';
+      return;
+    }
+
+    const user = data.user;
+
+    // Lấy hồ sơ giáo viên
+    const { data: profile, error: profileError } =
+      await supabaseClient
+        .from('teacher_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError) {
+      console.error(profileError);
+    }
+
+    const account = {
+      username: user.email,
+      name: profile?.full_name || user.email,
+      schoolName: profile?.school_name || '',
+      className: profile?.class_name || '',
+      role: 'Giáo viên chủ nhiệm'
+    };
+
+    sessionStorage.setItem(sessionKey, user.email);
     applyAccount(account);
-    error.textContent = '';
+
     document.getElementById('authScreen').classList.add('hidden');
-    toast('Đăng ký và đăng nhập thành công!');
-    return;
-  }
 
-  const account = getAccounts().find(item => item.username.toLowerCase() === username.toLowerCase());
-  if (!account || account.password !== password) {
-    error.textContent = 'Tài khoản hoặc mật khẩu không đúng.';
-    return;
+    toast('Đăng nhập thành công!');
+  } catch (err) {
+    console.error(err);
+    error.textContent = 'Có lỗi xảy ra khi đăng nhập.';
   }
-
-  sessionStorage.setItem(sessionKey, account.username);
-  applyAccount(account);
-  error.textContent = '';
-  document.getElementById('authScreen').classList.add('hidden');
-  toast('Đăng nhập thành công!');
 });
-
 document.getElementById('switchAuth').addEventListener('click', () => {
   isRegisterMode = !isRegisterMode;
   document.getElementById('authTitle').textContent = isRegisterMode ? 'Đăng ký giáo viên' : 'Đăng nhập giáo viên';
