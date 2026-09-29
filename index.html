@@ -361,132 +361,37 @@ function isLoggedIn() {
   return Boolean(getCurrentAccount());
 }
 
-async function applyAccount(account) {
+function applyAccount(account) {
   if (!account) return;
-
-  // Lấy giáo viên đang đăng nhập từ Supabase
-  const { data: { user }, error: userError } =
-    await supabaseClient.auth.getUser();
-
-  if (userError || !user) {
-    console.error('Không lấy được tài khoản Supabase:', userError);
-    return;
-  }
-
-  // Lấy toàn bộ lớp của giáo viên từ Supabase
-  const { data: classes, error: classError } = await supabaseClient
-    .from('classes')
-    .select('*')
-    .eq('teacher_id', user.id)
-    .order('created_at', { ascending: true });
-
-  if (classError) {
-    console.error('❌ Không lấy được lớp:', classError);
-    toast('Không tải được danh sách lớp.');
-    return;
-  }
-
-  // Chuyển dữ liệu Supabase về cấu trúc mà giao diện hiện tại đang dùng
-  account.classes = (classes || []).map(item => ({
-    id: item.id,
-    name: item.name,
-    year: item.year || '2026-2027',
-    code: item.class_code
-  }));
-
-  currentAccount = account;
-
-  // Chọn lớp đang hoạt động
-  currentClass =
-    currentAccount.classes.find(
-      item => item.id === currentAccount.activeClassId
-    ) ||
-    currentAccount.classes[0] ||
-    null;
-
-  if (currentClass) {
-    currentAccount.activeClassId = currentClass.id;
-  }
-
-  const classLabel = currentClass
-    ? `${currentClass.name}`
-    : 'Chưa có lớp';
-
+  currentAccount = ensureAccountClasses(account);
+  currentClass = currentAccount.classes.find(item => item.id === currentAccount.activeClassId) || currentAccount.classes[0];
+  const classLabel = '🏫 ' + currentClass.name;
   const role = currentAccount.role || 'Giáo viên chủ nhiệm';
-
-  document.getElementById('dateText').textContent =
-    'Mã lớp dành cho học sinh: ' +
-    (currentClass?.code || '-----') +
-    ' · Hãy cùng quản lý lớp ' +
-    classLabel +
-    ' nhé!';
-
-  document.getElementById('profileName').textContent =
-    account.name || '';
-
-  document.getElementById('profileSchool').textContent =
-    (account.schoolName || '') + ' · ' + role;
-
-  document.getElementById('classSelect').innerHTML =
-    currentAccount.classes.map(item =>
-      `<option value="${item.id}" ${
-        item.id === currentClass?.id ? 'selected' : ''
-      }>🏫 ${item.name}</option>`
-    ).join('');
-
-  document.getElementById('classHeroText').textContent =
-    currentClass
-      ? `Hãy cùng quản lý và chăm sóc lớp ${currentClass.name} nhé!`
-      : 'Hãy tạo lớp đầu tiên của bạn để bắt đầu.';
-
-  if (currentClass) {
-    storageKey = getClassStorageKey('classpet-health', currentClass.id);
-    studentsKey = getClassStorageKey('classpet-students', currentClass.id);
-    activityKey = getClassStorageKey('classpet-activity', currentClass.id);
-    tasksKey = getClassStorageKey('classpet-tasks', currentClass.id);
-  }
-
-  // Cập nhật local account để giao diện cũ vẫn hoạt động
-  const accounts = getAccounts();
-  const accountIndex = accounts.findIndex(
-    item => item.username === account.username
-  );
-
-  if (accountIndex !== -1) {
-    accounts[accountIndex] = {
-      ...accounts[accountIndex],
-      ...account,
-      classes: account.classes,
-      activeClassId: currentAccount.activeClassId
-    };
-
+  document.getElementById('dateText').textContent = 'Mã lớp dành cho học sinh: ' + (currentClass.code || '-----') + ' · Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
+  storageKey = getClassStorageKey('classpet-health', currentClass.id);
+  studentsKey = getClassStorageKey('classpet-students', currentClass.id);
+  activityKey = getClassStorageKey('classpet-activity', currentClass.id);
+  tasksKey = getClassStorageKey('classpet-tasks', currentClass.id);
+  const accountIndex = getAccounts().findIndex(item => item.username === currentAccount.username);
+  if (accountIndex >= 0) {
+    const accounts = getAccounts();
+    accounts[accountIndex] = currentAccount;
     saveAccounts(accounts);
   }
-
-  renderKings();
+  document.getElementById('welcomeTitle').textContent = 'Chào giáo viên! 👋';
+  document.getElementById('profileName').textContent = account.name;
+  document.getElementById('profileSchool').textContent = account.schoolName + ' · ' + role;
+  document.getElementById('classSelect').innerHTML = currentAccount.classes.map(item => '<option value="' + item.id + '"' + (item.id === currentClass.id ? ' selected' : '') + '>🏫 ' + item.name + '</option>').join('');
+  document.getElementById('heroText').textContent = 'Hãy thêm học sinh và pet để bắt đầu quản lý lớp ' + currentClass.name + '.';
+  loadStudents();
+  renderRankings();
   renderActivity();
   renderTasks();
-
-  if (currentClass) {
-    document.getElementById('petsTitle').textContent =
-      '🐾 Học sinh & Pet của lớp ' + currentClass.name;
-
-    document.getElementById('feedModalText').textContent =
-      'Hành động này sẽ bổ sung thức ăn cho các pet trong lớp ' +
-      currentClass.name + '.';
-
-    document.querySelector('.classAlert').textContent =
-      '💡 Thông báo: chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp ' +
-      currentClass.name + '.';
-
-    document.getElementById('dateText').textContent =
-      '✓ Hãy cùng quản lý lớp ' +
-      currentClass.name +
-      ' nhé!';
-
-    document.getElementById('classCode').textContent =
-      currentClass.code || '';
-  }
+  document.getElementById('petsTitle').textContent = '👥 Học sinh & Pet của lớp ' + currentClass.name;
+  document.getElementById('feedModalText').textContent = 'Hành động này sẽ bổ sung thức ăn cho tất cả pet trong lớp ' + currentClass.name + '.';
+  document.getElementById('classAlert').querySelector('p').textContent = 'Thông báo chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp.';
+  document.getElementById('dateText').textContent = 'Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
+  document.getElementById('heroClassCode').textContent = currentClass.code || '-----';
 }
 
 function showStatistics() {
@@ -627,7 +532,10 @@ document.getElementById('classForm').addEventListener('submit', async event => {
   toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${classCode}`);
 
   // Tải lại trang để cập nhật dữ liệu
- 
+  setTimeout(() => {
+    location.reload();
+  }, 800);
+});
 
 
 const profileModal = document.getElementById('profileModal');
@@ -1473,7 +1381,7 @@ document.getElementById('loginForm').addEventListener('submit', async event => {
     };
 
     sessionStorage.setItem(sessionKey, user.email);
-    await applyAccount(account);
+    applyAccount(account);
 
     document.getElementById('authScreen').classList.add('hidden');
 
