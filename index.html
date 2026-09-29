@@ -627,7 +627,8 @@ document.getElementById('classForm').addEventListener('submit', async event => {
   toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${classCode}`);
 
   // Tải lại trang để cập nhật dữ liệu
-});
+ 
+
 
 const profileModal = document.getElementById('profileModal');
 const settingsModal = document.getElementById('settingsModal');
@@ -1420,9 +1421,9 @@ document.getElementById('loginForm').addEventListener('submit', async event => {
       };
 
       sessionStorage.setItem(sessionKey, username);
-await applyAccount(account);
+      applyAccount(account);
 
-document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('authScreen').classList.add('hidden');
 
       toast('Đăng ký tài khoản giáo viên thành công!');
     } catch (err) {
