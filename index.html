@@ -1421,9 +1421,9 @@ document.getElementById('loginForm').addEventListener('submit', async event => {
       };
 
       sessionStorage.setItem(sessionKey, username);
-      applyAccount(account);
+await applyAccount(account);
 
-      document.getElementById('authScreen').classList.add('hidden');
+document.getElementById('authScreen').classList.add('hidden');
 
       toast('Đăng ký tài khoản giáo viên thành công!');
     } catch (err) {
