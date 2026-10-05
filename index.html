@@ -453,18 +453,7 @@ async function applyAccount(account) {
 
     saveAccounts(accounts);
   }
-  const role = currentAccount.role || 'Giáo viên chủ nhiệm';
-  document.getElementById('dateText').textContent = 'Mã lớp dành cho học sinh: ' + (currentClass.code || '-----') + ' · Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
-  storageKey = getClassStorageKey('classpet-health', currentClass.id);
-  studentsKey = getClassStorageKey('classpet-students', currentClass.id);
-  activityKey = getClassStorageKey('classpet-activity', currentClass.id);
-  tasksKey = getClassStorageKey('classpet-tasks', currentClass.id);
-  const accountIndex = getAccounts().findIndex(item => item.username === currentAccount.username);
-  if (accountIndex >= 0) {
-    const accounts = getAccounts();
-    accounts[accountIndex] = currentAccount;
-    saveAccounts(accounts);
-  }
+ 
   document.getElementById('welcomeTitle').textContent = 'Chào giáo viên! 👋';
   document.getElementById('profileName').textContent = account.name;
   document.getElementById('profileSchool').textContent = account.schoolName + ' · ' + role;
