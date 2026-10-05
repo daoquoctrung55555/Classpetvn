@@ -601,12 +601,53 @@ document.getElementById('classForm').addEventListener('submit', async event => {
     return;
   }
 
-  console.log('✅ Đã tạo lớp:', data);
+ console.log('✅ Đã tạo lớp:', data);
 
-  // Đóng cửa sổ
-  closeClassModal();
+// Cập nhật lớp mới vào tài khoản hiện tại
+const newClass = {
+  id: data.id,
+  name: data.name,
+  year: data.year || year || '2026-2027',
+  code: data.class_code
+};
 
-  toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${classCode}`);
+currentAccount.classes = currentAccount.classes || [];
+currentAccount.classes.push(newClass);
+currentAccount.activeClassId = newClass.id;
+currentClass = newClass;
+
+// Lưu lại thông tin lớp vào localStorage để giao diện nhớ lớp
+const accounts = getAccounts();
+const accountIndex = accounts.findIndex(
+  item => item.username === currentAccount.username
+);
+
+if (accountIndex >= 0) {
+  accounts[accountIndex] = {
+    ...accounts[accountIndex],
+    classes: currentAccount.classes,
+    activeClassId: currentAccount.activeClassId
+  };
+
+  saveAccounts(accounts);
+}
+
+// Cập nhật mã lớp trên giao diện
+const classCodeElement = document.getElementById('classCode');
+if (classCodeElement) {
+  classCodeElement.textContent = newClass.code || '-----';
+}
+
+document.getElementById('dateText').textContent =
+  'Mã lớp dành cho học sinh: ' +
+  newClass.code +
+  ' · Hãy cùng quản lý lớp ' +
+  newClass.name +
+  ' nhé.';
+
+closeClassModal();
+
+toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${newClass.code}`);
 
   // Tải lại trang để cập nhật dữ liệu
   
