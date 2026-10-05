@@ -361,10 +361,99 @@ function isLoggedIn() {
   return Boolean(getCurrentAccount());
 }
 
-function applyAccount(account) {
+async function applyAccount(account) {
   if (!account) return;
-  currentAccount = ensureAccountClasses(account);
-  currentClass = currentAccount.classes.find(item => item.id === currentAccount.activeClassId) || currentAccount.classes[0];
+
+  // Lấy tài khoản đang đăng nhập thật từ Supabase
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    console.error('Không lấy được tài khoản Supabase:', userError);
+    return;
+  }
+
+  // Lấy các lớp ĐÃ TỒN TẠI của giáo viên này
+  const { data: classes, error: classError } =
+    await supabaseClient
+      .from('classes')
+      .select('*')
+      .eq('teacher_id', user.id)
+      .order('created_at', { ascending: true });
+
+  if (classError) {
+    console.error('Không lấy được danh sách lớp:', classError);
+    toast('Không tải được danh sách lớp.');
+    return;
+  }
+
+  // Lấy mã lớp trực tiếp từ Supabase
+  account.classes = (classes || []).map(item => ({
+    id: item.id,
+    name: item.name,
+    year: item.year || '2026-2027',
+    code: item.class_code
+  }));
+
+  currentAccount = account;
+
+  // Chọn lớp đang dùng
+  currentClass =
+    currentAccount.classes.find(
+      item => item.id === currentAccount.activeClassId
+    ) ||
+    currentAccount.classes[0] ||
+    null;
+
+  if (!currentClass) {
+    console.log('Giáo viên chưa có lớp nào.');
+    return;
+  }
+
+  currentAccount.activeClassId = currentClass.id;
+
+  const classLabel = '🏫 ' + currentClass.name;
+  const role = currentAccount.role || 'Giáo viên chủ nhiệm';
+
+  document.getElementById('dateText').textContent =
+    'Mã lớp dành cho học sinh: ' +
+    currentClass.code +
+    ' · Hãy cùng quản lý lớp ' +
+    currentClass.name +
+    ' nhé.';
+
+  // Dùng ID lớp thật trong Supabase
+  storageKey =
+    getClassStorageKey('classpet-health', currentClass.id);
+
+  studentsKey =
+    getClassStorageKey('classpet-students', currentClass.id);
+
+  activityKey =
+    getClassStorageKey('classpet-activity', currentClass.id);
+
+  tasksKey =
+    getClassStorageKey('classpet-tasks', currentClass.id);
+
+  // Lưu thông tin tài khoản local, nhưng KHÔNG tạo mã lớp mới
+  const accounts = getAccounts();
+
+  const accountIndex =
+    accounts.findIndex(
+      item => item.username === currentAccount.username
+    );
+
+  if (accountIndex >= 0) {
+    accounts[accountIndex] = {
+      ...accounts[accountIndex],
+      ...currentAccount,
+      classes: currentAccount.classes,
+      activeClassId: currentAccount.activeClassId
+    };
+
+    saveAccounts(accounts);
+  }
+}
   const classLabel = '🏫 ' + currentClass.name;
   const role = currentAccount.role || 'Giáo viên chủ nhiệm';
   document.getElementById('dateText').textContent = 'Mã lớp dành cho học sinh: ' + (currentClass.code || '-----') + ' · Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
