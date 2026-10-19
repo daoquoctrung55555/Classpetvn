@@ -1246,10 +1246,18 @@ document.getElementById('addForm').addEventListener('submit', async event => {
     // 3. HIỂN THỊ NGAY TRÊN WEB
     // ==============================
     addPetCard(
-      studentName,
-      petName,
-      petEmoji
-    );
+  studentName,
+  petName,
+  petEmoji,
+  pet.hunger ?? 100,
+  pet.level ?? 1,
+  pet.exp ?? 0,
+  pet.updated_at
+    ? new Date(pet.updated_at).getTime()
+    : Date.now(),
+  pet.status === 'dead',
+  pet.id
+);
 
     saveHealth();
     updateStats();
