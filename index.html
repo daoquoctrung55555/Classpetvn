@@ -849,12 +849,133 @@ function addPetActions(pet) {
   pet.appendChild(actionGroup);
   pet.addEventListener('click', event => { if (!event.target.closest('button')) openPetModal(pet); });
 }
-function loadStudents() {
-  const pets = document.getElementById('pets'); pets.innerHTML = '';
-  let students = [];
-  try { students = JSON.parse(localStorage.getItem(studentsKey) || '[]'); } catch (error) { students = []; }
-  students.forEach(item => addPetCard(item.student, item.pet, item.emoji, item.health ?? 100, item.level ?? 1, item.exp ?? 0, item.lastFedAt ?? Date.now(), item.dead ?? false, item.id));
-  updateStats();
+async function loadStudents() {
+  const petsContainer = document.getElementById('pets');
+
+  if (!petsContainer) return;
+
+  // Xóa dữ liệu đang hiển thị trước khi tải lớp mới
+  petsContainer.innerHTML = '';
+
+  // Phải xác định được lớp hiện tại
+  if (!currentClass || !currentClass.id) {
+    console.log('Chưa có lớp hiện tại để tải học sinh.');
+    updateStats();
+    return;
+  }
+
+  try {
+    console.log(
+      '🔄 Đang tải học sinh của lớp:',
+      currentClass.name,
+      currentClass.id
+    );
+
+    // ==========================================
+    // 1. CHỈ LẤY HỌC SINH CỦA LỚP HIỆN TẠI
+    // ==========================================
+    const { data: students, error: studentsError } =
+      await supabaseClient
+        .from('students')
+        .select('*')
+        .eq('class_id', currentClass.id)
+        .order('created_at', { ascending: true });
+
+    if (studentsError) {
+      console.error('❌ Lỗi tải học sinh:', studentsError);
+      toast('Không tải được danh sách học sinh.');
+      updateStats();
+      return;
+    }
+
+    if (!students || students.length === 0) {
+      console.log('Lớp này chưa có học sinh.');
+      updateStats();
+      renderRankings();
+      renderTasks();
+      return;
+    }
+
+    // ==========================================
+    // 2. LẤY ID CÁC HỌC SINH CỦA LỚP
+    // ==========================================
+    const studentIds = students.map(student => student.id);
+
+    // ==========================================
+    // 3. CHỈ LẤY PET CỦA NHỮNG HỌC SINH ĐÓ
+    // ==========================================
+    const { data: pets, error: petsError } =
+      await supabaseClient
+        .from('pets')
+        .select('*')
+        .in('student_id', studentIds);
+
+    if (petsError) {
+      console.error('❌ Lỗi tải Pet:', petsError);
+      toast('Không tải được danh sách Pet.');
+      updateStats();
+      return;
+    }
+
+    // ==========================================
+    // 4. GHÉP HỌC SINH VỚI ĐÚNG PET
+    // ==========================================
+    students.forEach(student => {
+
+      const pet = (pets || []).find(
+        item => item.student_id === student.id
+      );
+
+      // Học sinh chưa có Pet thì chưa tạo card
+      if (!pet) {
+        console.warn(
+          'Học sinh chưa có Pet:',
+          student.name
+        );
+        return;
+      }
+
+      // ========================================
+      // 5. HIỂN THỊ CARD
+      // ========================================
+      addPetCard(
+        student.name,
+        pet.name,
+        pet.emoji || '🐱',
+        pet.hunger ?? 100,
+        pet.level ?? 1,
+        pet.exp ?? 0,
+        pet.updated_at
+          ? new Date(pet.updated_at).getTime()
+          : Date.now(),
+        pet.status === 'dead',
+        pet.id
+      );
+    });
+
+    console.log(
+      '✅ Đã tải',
+      students.length,
+      'học sinh của lớp',
+      currentClass.name
+    );
+
+    // ==========================================
+    // 6. CẬP NHẬT GIAO DIỆN
+    // ==========================================
+    updateStats();
+    renderRankings();
+    renderTasks();
+    applyFilters();
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi loadStudents:',
+      error
+    );
+
+    toast('Có lỗi xảy ra khi tải dữ liệu lớp.');
+  }
 }
 
 function getPetData() {
