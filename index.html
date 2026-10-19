@@ -311,17 +311,21 @@ function createClassCode() {
 }
 
 function ensureAccountClasses(account) {
-  if (!Array.isArray(account.classes) || !account.classes.length) {
-    const classId = makeClassId(account.className);
-    account.classes = [{ id: classId, name: account.className, year: account.schoolYear || '2026–2027', code: createClassCode() }];
-    const username = account.username.toLowerCase();
-    const migrate = (prefix, oldKey) => { const newKey = prefix + '-' + username + '-' + classId; if (!localStorage.getItem(newKey) && localStorage.getItem(oldKey)) localStorage.setItem(newKey, localStorage.getItem(oldKey)); };
-    migrate('classpet-health', 'classpet-health-' + username);
-    migrate('classpet-students', 'classpet-students-' + username);
-    migrate('classpet-activity', 'classpet-activity-' + username);
+  // Không tạo lớp hoặc mã lớp ở localStorage nữa.
+  // Lớp và class_code chính thức được lấy từ Supabase.
+
+  if (!Array.isArray(account.classes)) {
+    account.classes = [];
   }
-  account.classes.forEach(item => { if (!item.code) item.code = createClassCode(); });
-  if (!account.activeClassId || !account.classes.some(item => item.id === account.activeClassId)) account.activeClassId = account.classes[0].id;
+
+  // Chỉ giữ activeClassId nếu lớp đó thực sự tồn tại
+  if (
+    account.activeClassId &&
+    !account.classes.some(item => item.id === account.activeClassId)
+  ) {
+    account.activeClassId = null;
+  }
+
   return account;
 }
 
