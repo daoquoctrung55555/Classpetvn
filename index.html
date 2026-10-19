@@ -1380,30 +1380,36 @@ async function feedPet(pet) {
   // LƯU VÀO SUPABASE TRƯỚC
   // ==========================
 
-  const { data: updatedPet, error } =
-    await supabaseClient
-      .from('pets')
-      .update({
-        hunger: newHunger,
-        exp: exp,
-        level: nextLevel,
-        status: 'ok',
-        updated_at: now.toISOString()
-      })
-      .eq('id', petId)
-      .select()
-      .single();
+  const { data: updatedPets, error } =
+  await supabaseClient
+    .from('pets')
+    .update({
+      hunger: newHunger,
+      exp: exp,
+      level: nextLevel,
+      status: 'ok',
+      updated_at: now.toISOString()
+    })
+    .eq('id', petId)
+    .select();
 
-  if (error) {
-    console.error('❌ Lỗi cập nhật Pet:', error);
+if (error) {
+  console.error('❌ Lỗi cập nhật Pet:', error);
+  console.log('Pet ID đang dùng:', petId);
 
-    toast(
-      'Không lưu được trạng thái Pet: ' +
-      error.message
-    );
+  toast('Không lưu được trạng thái Pet: ' + error.message);
+  return;
+}
 
-    return;
-  }
+if (!updatedPets || updatedPets.length === 0) {
+  console.error('❌ Không tìm thấy Pet để UPDATE.');
+  console.log('Pet ID trên giao diện:', petId);
+
+  toast('Không tìm thấy Pet này trong Supabase.');
+  return;
+}
+
+const updatedPet = updatedPets[0];
 
   console.log(
     '✅ Đã lưu Pet vào Supabase:',
