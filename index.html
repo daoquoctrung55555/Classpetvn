@@ -415,8 +415,36 @@ async function applyAccount(account) {
   }
 
   currentAccount.activeClassId = currentClass.id;
-  document.getElementById('classCode').textContent =
-  currentClass.code || '-----';
+
+// ===== HIỂN THỊ DANH SÁCH LỚP =====
+const classSelect = document.getElementById('classSelect');
+
+if (classSelect) {
+  classSelect.innerHTML = currentAccount.classes.map(item => `
+    <option value="${item.id}" ${item.id === currentClass.id ? 'selected' : ''}>
+      🏫 ${item.name}
+    </option>
+  `).join('');
+}
+
+// ===== HIỂN THỊ MÃ LỚP =====
+const classCodeElement = document.getElementById('classCode');
+
+if (classCodeElement) {
+  classCodeElement.textContent = currentClass.code || '-----';
+}
+
+// ===== HIỂN THỊ THÔNG TIN PHÍA TRÊN =====
+const dateText = document.getElementById('dateText');
+
+if (dateText) {
+  dateText.textContent =
+    'Mã lớp dành cho học sinh: ' +
+    (currentClass.code || '-----') +
+    ' · Hãy cùng quản lý lớp ' +
+    currentClass.name +
+    ' nhé.';
+}
   const classLabel = '🏫 ' + currentClass.name;
   const role = currentAccount.role || 'Giáo viên chủ nhiệm';
 
@@ -642,7 +670,6 @@ if (classCodeElement) {
   classCodeElement.textContent = newClass.code || '-----';
 }
 
-document.getElementById('dateText').textContent =
   'Mã lớp dành cho học sinh: ' +
   newClass.code +
   ' · Hãy cùng quản lý lớp ' +
