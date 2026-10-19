@@ -1541,27 +1541,125 @@ function deleteAllPets() {
   });
 }
 
-function checkPetLifetimes() {
+async function checkPetLifetimes() {
   const settings = getSettings();
   const limit = settings.deathDays * 24 * 60 * 60 * 1000;
-  document.querySelectorAll('.pet').forEach(pet => {
-    const lastFedAt = Number(pet.dataset.lastFedAt || Date.now());
+
+  const pets = [...document.querySelectorAll('.pet')];
+
+  for (const pet of pets) {
+    const lastFedAt = Number(
+      pet.dataset.lastFedAt || Date.now()
+    );
+
     const elapsed = Date.now() - lastFedAt;
     const days = Math.floor(elapsed / 86400000);
-    const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
+
+    const petName =
+      pet.querySelector('.meta span')
+        .textContent
+        .split(' · ')[0];
+
     pet.dataset.daysUnfed = days;
-    if (days >= 3 && days < 30 && pet.dataset.warning !== '3') {
+
+    // Cảnh báo
+    if (
+      days >= 3 &&
+      days < 7 &&
+      pet.dataset.warning !== '3'
+    ) {
       pet.dataset.warning = '3';
-      addActivity('⚠️ ' + petName + ' đã 3 ngày chưa được chăm sóc.');
-    } else if (days >= 7 && days < 30 && pet.dataset.warning !== '7') {
+
+      addActivity(
+        '⚠️ ' + petName +
+        ' đã 3 ngày chưa được chăm sóc.'
+      );
+    }
+
+    if (
+      days >= 7 &&
+      days < settings.deathDays &&
+      pet.dataset.warning !== '7'
+    ) {
       pet.dataset.warning = '7';
-      addActivity('⏰ ' + petName + ' đã 7 ngày chưa được chăm sóc, hãy chú ý!');
+
+      addActivity(
+        '⏰ ' + petName +
+        ' đã 7 ngày chưa được chăm sóc, hãy chú ý!'
+      );
     }
-    if (elapsed >= limit && pet.dataset.dead !== 'true') {
-      updatePetStatus(pet, 0, true);
-      addActivity(petName + ' đã qua đời vì không được chăm sóc trong ' + settings.deathDays + ' ngày.');
+
+    // Chưa đến thời gian chết
+    if (elapsed < limit) {
+      continue;
     }
-  });
+
+    // Đã chết rồi thì không UPDATE lại
+    if (pet.dataset.dead === 'true') {
+      continue;
+    }
+
+    const petId = pet.dataset.id;
+
+    if (!petId) {
+      console.error(
+        'Không xác định được ID của Pet:',
+        petName
+      );
+      continue;
+    }
+
+    // ==========================
+    // LƯU TRẠNG THÁI CHẾT
+    // ==========================
+
+    const { data: updatedPets, error } =
+      await supabaseClient
+        .from('pets')
+        .update({
+          hunger: 0,
+          status: 'dead',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', petId)
+        .select();
+
+    if (error) {
+      console.error(
+        '❌ Không lưu được trạng thái chết:',
+        error
+      );
+      continue;
+    }
+
+    if (!updatedPets || updatedPets.length === 0) {
+      console.error(
+        '❌ Không tìm thấy Pet để cập nhật:',
+        petId
+      );
+      continue;
+    }
+
+    // Supabase thành công rồi mới đổi giao diện
+    updatePetStatus(
+      pet,
+      0,
+      true
+    );
+
+    addActivity(
+      '💀 ' +
+      petName +
+      ' đã qua đời vì không được chăm sóc trong ' +
+      settings.deathDays +
+      ' ngày.'
+    );
+
+    console.log(
+      '💀 Đã lưu trạng thái Pet chết:',
+      petName
+    );
+  }
 }
 
 async function revivePet(pet) {
