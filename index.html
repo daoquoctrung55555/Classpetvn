@@ -945,9 +945,9 @@ async function loadStudents() {
         pet.hunger ?? 100,
         pet.level ?? 1,
         pet.exp ?? 0,
-        pet.updated_at
-          ? new Date(pet.updated_at).getTime()
-          : Date.now(),
+pet.last_fed_at
+  ? new Date(pet.last_fed_at).getTime()
+  : Date.now(),
         pet.status === 'dead',
         pet.id
       );
@@ -1388,6 +1388,7 @@ async function feedPet(pet) {
       exp: exp,
       level: nextLevel,
       status: 'ok',
+      last_fed_at: now.toISOString(),
       updated_at: now.toISOString()
     })
     .eq('id', petId)
@@ -1424,7 +1425,7 @@ const updatedPet = updatedPets[0];
   pet.dataset.level = updatedPet.level;
 
   pet.dataset.lastFedAt =
-    new Date(updatedPet.updated_at).getTime();
+  new Date(updatedPet.last_fed_at).getTime();
 
   pet.dataset.dead = 'false';
 
@@ -1563,12 +1564,57 @@ function checkPetLifetimes() {
   });
 }
 
-function revivePet(pet) {
+async function revivePet(pet) {
+  const petId = pet.dataset.id;
+
+  if (!petId) {
+    toast('Không xác định được Pet trong Supabase.');
+    return;
+  }
+
+  const now = new Date();
+
+  const { data: updatedPets, error } =
+    await supabaseClient
+      .from('pets')
+      .update({
+        hunger: 30,
+        status: 'ok',
+        last_fed_at: now.toISOString(),
+        updated_at: now.toISOString()
+      })
+      .eq('id', petId)
+      .select();
+
+  if (error) {
+    console.error('❌ Lỗi hồi sinh Pet:', error);
+    toast('Không hồi sinh được Pet: ' + error.message);
+    return;
+  }
+
+  if (!updatedPets || updatedPets.length === 0) {
+    console.error('Không tìm thấy Pet:', petId);
+    toast('Không tìm thấy Pet trong Supabase.');
+    return;
+  }
+
+  const updatedPet = updatedPets[0];
+
   pet.dataset.dead = 'false';
-  pet.dataset.lastFedAt = Date.now();
-  updatePetStatus(pet, 30, false);
-  saveStudents(); saveHealth(); updateStats();
-  toast('💚 Đã hồi sinh pet!');
+
+  pet.dataset.lastFedAt =
+    new Date(updatedPet.last_fed_at).getTime();
+
+  updatePetStatus(
+    pet,
+    updatedPet.hunger,
+    false
+  );
+
+  updateStats();
+  renderRankings();
+
+  toast('💚 Đã hồi sinh Pet!');
 }
 
 function updateClassProgress() {
