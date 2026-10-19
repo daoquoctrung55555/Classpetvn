@@ -1039,10 +1039,123 @@ document.getElementById('profileForm').addEventListener('submit', event => {
   toast('Đã cập nhật thông tin hồ sơ.');
 });
 
-document.getElementById('addForm').addEventListener('submit', event => {
+document.getElementById('addForm').addEventListener('submit', async event => {
   event.preventDefault();
-  addPetCard(document.getElementById('studentName').value.trim(), document.getElementById('petName').value.trim(), document.getElementById('petEmoji').value.trim() || '🐱');
-  saveHealth(); saveStudents(); updateStats(); renderRankings(); renderTasks(); closeAddModal(); toast('Đã thêm học sinh và pet vào lớp!');
+
+  const studentName =
+    document.getElementById('studentName').value.trim();
+
+  const petName =
+    document.getElementById('petName').value.trim();
+
+  const petEmoji =
+    document.getElementById('petEmoji').value.trim() || '🐱';
+
+  // Phải có lớp đang được chọn
+  if (!currentClass || !currentClass.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+
+  if (!studentName || !petName) {
+    toast('Vui lòng nhập tên học sinh và tên Pet.');
+    return;
+  }
+
+  try {
+
+    // ==============================
+    // 1. TẠO HỌC SINH ĐÚNG LỚP
+    // ==============================
+    const { data: student, error: studentError } =
+      await supabaseClient
+        .from('students')
+        .insert({
+          class_id: currentClass.id,
+          name: studentName
+        })
+        .select()
+        .single();
+
+    if (studentError) {
+      console.error('Lỗi tạo học sinh:', studentError);
+      toast('Không thêm được học sinh: ' + studentError.message);
+      return;
+    }
+
+    console.log('✅ Đã tạo học sinh:', student);
+
+
+    // ==============================
+    // 2. TẠO PET CHO HỌC SINH ĐÓ
+    // ==============================
+    const { data: pet, error: petError } =
+      await supabaseClient
+        .from('pets')
+        .insert({
+          student_id: student.id,
+          name: petName,
+          emoji: petEmoji,
+          level: 1,
+          exp: 0,
+          hunger: 100,
+          status: 'ok'
+        })
+        .select()
+        .single();
+
+    if (petError) {
+      console.error('Lỗi tạo Pet:', petError);
+
+      // Pet lỗi thì xóa học sinh vừa tạo
+      // để tránh học sinh bị lưu mà không có Pet
+      await supabaseClient
+        .from('students')
+        .delete()
+        .eq('id', student.id);
+
+      toast('Không tạo được Pet: ' + petError.message);
+      return;
+    }
+
+    console.log('✅ Đã tạo Pet:', pet);
+
+
+    // ==============================
+    // 3. HIỂN THỊ NGAY TRÊN WEB
+    // ==============================
+    addPetCard(
+      studentName,
+      petName,
+      petEmoji
+    );
+
+    saveHealth();
+    updateStats();
+    renderRankings();
+    renderTasks();
+
+    closeAddModal();
+
+    // Xóa nội dung cũ trong form
+    document.getElementById('studentName').value = '';
+    document.getElementById('petName').value = '';
+    document.getElementById('petEmoji').value = '🐱';
+
+    toast(
+      '🎉 Đã thêm ' +
+      studentName +
+      ' và Pet ' +
+      petName +
+      ' vào lớp ' +
+      currentClass.name +
+      '!'
+    );
+
+  } catch (error) {
+    console.error('Lỗi thêm học sinh và Pet:', error);
+    toast('Có lỗi xảy ra khi thêm học sinh và Pet.');
+  }
 });
 
 function updatePetStatus(pet, health, dead = false) {
