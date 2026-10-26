@@ -1667,22 +1667,106 @@ async function deletePet(pet) {
   });
 }
 
-function deleteAllPets() {
-  const pets = document.querySelectorAll('.pet');
+async function deleteAllPets() {
+  const pets = [...document.querySelectorAll('.pet')];
+
   if (!pets.length) {
-    toast('Lớp hiện chưa có pet nào.');
+    toast('Lớp hiện chưa có Pet nào.');
     return;
   }
-  requestPassword('xóa tất cả Pet trong lớp', () => {
-    if (!confirm('Bạn có chắc muốn xoá tất cả ' + pets.length + ' pet trong lớp?')) return;
-    document.getElementById('pets').innerHTML = '';
-    localStorage.removeItem(studentsKey);
-    localStorage.removeItem(storageKey);
-    updateStats();
-    renderRankings();
-    renderTasks();
-    toast('Đã xoá tất cả pet trong lớp.');
-  });
+
+  if (!currentClass || !currentClass.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+
+  requestPassword(
+    'xóa tất cả Pet trong lớp',
+    async () => {
+
+      const confirmed = confirm(
+        'Bạn có chắc muốn xoá tất cả ' +
+        pets.length +
+        ' Pet trong lớp ' +
+        currentClass.name +
+        '? Hành động này không thể hoàn tác.'
+      );
+
+      if (!confirmed) return;
+
+      try {
+        // Lấy ID Pet đang hiển thị trong đúng lớp hiện tại
+        const petIds = pets
+          .map(pet => pet.dataset.id)
+          .filter(Boolean);
+
+        if (!petIds.length) {
+          toast('Không tìm thấy Pet để xóa.');
+          return;
+        }
+
+        // Chỉ DELETE các Pet có ID thuộc lớp đang hiển thị
+        const { data: deletedPets, error } =
+          await supabaseClient
+            .from('pets')
+            .delete()
+            .in('id', petIds)
+            .select();
+
+        if (error) {
+          console.error(
+            '❌ Lỗi xóa tất cả Pet:',
+            error
+          );
+
+          toast(
+            'Không xóa được Pet: ' +
+            error.message
+          );
+
+          return;
+        }
+
+        if (!deletedPets || deletedPets.length === 0) {
+          console.error(
+            '❌ Supabase không xóa Pet nào.'
+          );
+
+          toast(
+            'Không xóa được Pet khỏi Supabase.'
+          );
+
+          return;
+        }
+
+        console.log(
+          '✅ Đã xóa Pet:',
+          deletedPets
+        );
+
+        // Tải lại từ Supabase thay vì tự xóa giao diện
+        await loadStudents();
+
+        toast(
+          '🗑️ Đã xoá ' +
+          deletedPets.length +
+          ' Pet khỏi lớp ' +
+          currentClass.name +
+          '.'
+        );
+
+      } catch (error) {
+        console.error(
+          '❌ Lỗi deleteAllPets:',
+          error
+        );
+
+        toast(
+          'Có lỗi xảy ra khi xóa tất cả Pet.'
+        );
+      }
+    }
+  );
 }
 
 async function checkPetLifetimes() {
