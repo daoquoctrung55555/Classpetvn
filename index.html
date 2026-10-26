@@ -745,8 +745,80 @@ const settingsModal = document.getElementById('settingsModal');
 const settingsKey = 'classpet-settings';
 const defaultSettings = { feedExp: 5, taskExp: 20, levelBaseExp: 100, levelMultiplier: 1, feedHunger: 10, dailyLimit: 3, deathDays: 30, bulkFeed: true, revive: true, showExp: true, levelNotice: true, noticeDeath: true, noticeHungry: true, noticeLevel: true, noticeBrowser: false, animation: true, sound: true };
 function getSettings() { try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem(settingsKey) || '{}') }; } catch (error) { return { ...defaultSettings }; } }
-function saveSettings(settings) { localStorage.setItem(settingsKey, JSON.stringify(settings)); }
+async function saveSettings(settings) {
+  // Vẫn lưu localStorage làm cache
+  localStorage.setItem(
+    settingsKey,
+    JSON.stringify(settings)
+  );
 
+  try {
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    // Nếu chưa đăng nhập thì chỉ lưu localStorage
+    if (userError || !user) {
+      console.log(
+        'Chưa đăng nhập Supabase, Settings chỉ được lưu localStorage.'
+      );
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+        .from('teacher_settings')
+        .upsert({
+          teacher_id: user.id,
+
+          feed_exp: settings.feedExp,
+task_exp: settings.taskExp,
+
+          level_base_exp: settings.levelBaseExp,
+          level_multiplier: settings.levelMultiplier,
+
+          feed_hunger: settings.feedHunger,
+          daily_limit: settings.dailyLimit,
+          death_days: settings.deathDays,
+
+          bulk_feed: settings.bulkFeed,
+          revive: settings.revive,
+          show_exp: settings.showExp,
+          level_notice: settings.levelNotice,
+
+          notice_death: settings.noticeDeath,
+          notice_hungry: settings.noticeHungry,
+          notice_level: settings.noticeLevel,
+          notice_browser: settings.noticeBrowser,
+
+          animation: settings.animation,
+          sound: settings.sound,
+
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'teacher_id'
+        });
+
+    if (error) {
+      console.error(
+        '❌ Không lưu được Settings lên Supabase:',
+        error
+      );
+      return;
+    }
+
+    console.log(
+      '✅ Settings đã được lưu lên Supabase.'
+    );
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi saveSettings:',
+      error
+    );
+  }
+}
 let audioContext;
 function getAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -754,6 +826,127 @@ function getAudioContext() {
   if (!audioContext) audioContext = new AudioContextClass();
   if (audioContext.state === 'suspended') audioContext.resume();
   return audioContext;
+}
+  async function loadSettingsFromSupabase() {
+  try {
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      console.log('Chưa đăng nhập, dùng Settings hiện tại.');
+      return getSettings();
+    }
+
+    // Tìm Settings của giáo viên
+    const { data, error } =
+      await supabaseClient
+        .from('teacher_settings')
+        .select('*')
+        .eq('teacher_id', user.id)
+        .maybeSingle();
+
+    if (error) {
+      console.error('❌ Lỗi tải Settings:', error);
+      return getSettings();
+    }
+
+    // Nếu chưa có Settings → tạo mặc định
+    if (!data) {
+      const settings = getSettings();
+
+      const { error: insertError } =
+        await supabaseClient
+          .from('teacher_settings')
+          .insert({
+            teacher_id: user.id,
+            feed_exp: settings.feedExp,
+            task_exp: settings.taskExp,
+
+            level_base_exp: settings.levelBaseExp,
+            level_multiplier: settings.levelMultiplier,
+
+            feed_hunger: settings.feedHunger,
+            daily_limit: settings.dailyLimit,
+            death_days: settings.deathDays,
+
+            bulk_feed: settings.bulkFeed,
+            revive: settings.revive,
+            show_exp: settings.showExp,
+            level_notice: settings.levelNotice,
+
+            notice_death: settings.noticeDeath,
+            notice_hungry: settings.noticeHungry,
+            notice_level: settings.noticeLevel,
+            notice_browser: settings.noticeBrowser,
+
+            animation: settings.animation,
+            sound: settings.sound
+          });
+
+      if (insertError) {
+        console.error(
+          '❌ Không tạo được Settings:',
+          insertError
+        );
+
+        return settings;
+      }
+
+      console.log(
+        '✅ Đã tạo Settings mặc định trên Supabase.'
+      );
+
+      return settings;
+    }
+
+    // Chuyển tên cột Supabase → tên Settings của website
+    const settings = {
+  feedExp: Number(data.feed_exp),
+  taskExp: Number(data.task_exp),
+
+  levelBaseExp: Number(data.level_base_exp),
+  levelMultiplier: Number(data.level_multiplier),
+      feedHunger: Number(data.feed_hunger),
+      dailyLimit: Number(data.daily_limit),
+      deathDays: Number(data.death_days),
+
+      bulkFeed: data.bulk_feed,
+      revive: data.revive,
+      showExp: data.show_exp,
+      levelNotice: data.level_notice,
+
+      noticeDeath: data.notice_death,
+      noticeHungry: data.notice_hungry,
+      noticeLevel: data.notice_level,
+      noticeBrowser: data.notice_browser,
+
+      animation: data.animation,
+      sound: data.sound
+    };
+
+    // Cache lại localStorage để code cũ tiếp tục hoạt động
+    localStorage.setItem(
+  settingsKey,
+  JSON.stringify(settings)
+);
+
+    console.log(
+      '✅ Đã tải Settings từ Supabase:',
+      settings
+    );
+
+    return settings;
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi loadSettingsFromSupabase:',
+      error
+    );
+
+    return getSettings();
+  }
 }
 function playTone(frequency, duration = .08, type = 'sine', volume = .035, delay = 0) {
   if (!getSettings().sound) return;
@@ -1337,11 +1530,7 @@ function addActivity(text) {
   if (typeof renderDashboardInsights === 'function') renderDashboardInsights();
 }
 const taskModal = document.getElementById('taskModal');
-function getTasks() {
-  try { const tasks = JSON.parse(localStorage.getItem(tasksKey) || '[]'); return Array.isArray(tasks) ? tasks : []; }
-  catch (error) { return []; }
-}
-function saveTasks(tasks) { localStorage.setItem(tasksKey, JSON.stringify(tasks)); }
+
 function openTaskModal() { if (currentAccount) { document.getElementById('taskExp').value = getSettings().taskExp; taskModal.classList.add('show'); } }
 function closeTaskModal() { taskModal.classList.remove('show'); document.getElementById('taskForm').reset(); document.getElementById('taskExp').value = getSettings().taskExp; }
 function getLevelCost(level) { const settings = getSettings(); return Math.max(1, Math.round(settings.levelBaseExp * level * settings.levelMultiplier)); }
@@ -1364,38 +1553,6 @@ function showEvolutionNotice(pet, petName, newLevel) {
   toast('🎉 PET TIẾN HÓA! ' + petName + ' đã đạt cấp độ ' + newLevel + ' – ' + stage);
 }
 
-function awardTaskExp(studentName, expReward, taskTitle, petId = '') {
-  const pet = [...document.querySelectorAll('.pet')].find(item => petId
-    ? item.dataset.id === petId
-    : item.querySelector('h4').textContent === studentName);
-  if (!pet || pet.dataset.dead === 'true') { toast('Không thể trao EXP cho Pet đã qua đời.'); return false; }
-  const oldLevel = parseInt(pet.dataset.level || '1', 10);
-  const currentHealth = parseInt(pet.querySelector('.meta b').textContent, 10);
-  let exp = parseInt(pet.dataset.exp || '0', 10) + expReward;
-  let level = oldLevel;
-  while (exp >= getLevelCost(level)) { exp -= getLevelCost(level); level++; }
-  pet.dataset.exp = exp; pet.dataset.level = level;
-  pet.dataset.lastFedAt = Date.now();
-  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
-  pet.querySelector('.meta span').textContent = petName + ' · Lv.' + level;
-  const levelBadge = pet.querySelector('.level-badge strong');
-  if (levelBadge) levelBadge.textContent = level;
-  playAnimalSound(pet.querySelector('.pet-face').textContent);
-  updatePetStatus(pet, Math.min(100, currentHealth + getSettings().feedHunger));
-  if (level > oldLevel) showEvolutionNotice(pet, petName, level);
-  saveStudents(); renderRankings(); updateStats();
-  addActivity(studentName + ' hoàn thành nhiệm vụ "' + taskTitle + '" · +' + expReward + ' EXP cho ' + petName + ' và tăng độ no.');
-  return true;
-}
-function getTaskPetKey(pet) {
-  return pet?.dataset?.id || '';
-}
-
-function isTaskCompleted(task, pet) {
-  const petKey = getTaskPetKey(pet);
-  return (Array.isArray(task.completedPetIds) && task.completedPetIds.includes(petKey)) ||
-    (Array.isArray(task.completed) && task.completed.includes(pet.querySelector('h4').textContent));
-}
 
 async function completeTask(taskId, petId) {
   if (!taskId || !petId) {
@@ -1404,140 +1561,78 @@ async function completeTask(taskId, petId) {
   }
 
   try {
-    // 1. Lấy nhiệm vụ từ Supabase
-    const { data: task, error: taskError } =
-      await supabaseClient
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .single();
-
-    if (taskError || !task) {
-      console.error('❌ Không lấy được nhiệm vụ:', taskError);
-      toast('Không tìm thấy nhiệm vụ.');
-      return;
-    }
-
-    // 2. Tìm card Pet
-    const petCard =
+    const pet =
       [...document.querySelectorAll('.pet')]
         .find(item => item.dataset.id === petId);
 
-    if (!petCard) {
-      toast('Không tìm thấy Pet.');
+    const studentName =
+      pet?.querySelector('h4')?.textContent || 'Học sinh';
+
+    // Gọi RPC Supabase
+    const { data, error } =
+      await supabaseClient.rpc(
+        'complete_task_for_pet',
+        {
+          p_task_id: taskId,
+          p_pet_id: petId
+        }
+      );
+
+    if (error) {
+      console.error(
+        '❌ Lỗi hoàn thành nhiệm vụ:',
+        error
+      );
+
+      toast(
+        'Không thể hoàn thành nhiệm vụ: ' +
+        error.message
+      );
+
       return;
     }
 
-    // 3. Kiểm tra đã hoàn thành chưa
-    const { data: existingCompletion, error: checkError } =
-      await supabaseClient
-        .from('task_completions')
-        .select('id')
-        .eq('task_id', taskId)
-        .eq('pet_id', petId)
-        .maybeSingle();
+    // Đã hoàn thành trước đó
+    if (data?.already_completed) {
+      toast(
+        studentName +
+        ' đã nhận EXP từ nhiệm vụ này rồi.'
+      );
 
-    if (checkError) {
-      console.error('❌ Lỗi kiểm tra hoàn thành:', checkError);
-      toast('Không kiểm tra được trạng thái nhiệm vụ.');
-      return;
-    }
-
-    if (existingCompletion) {
-      toast('Pet này đã nhận EXP từ nhiệm vụ này rồi.');
       await renderTasks();
       return;
     }
 
-    // 4. Lấy dữ liệu Pet mới nhất
-    const { data: petData, error: petError } =
-      await supabaseClient
-        .from('pets')
-        .select('*')
-        .eq('id', petId)
-        .single();
-
-    if (petError || !petData) {
-      console.error('❌ Không lấy được Pet:', petError);
-      toast('Không tải được dữ liệu Pet.');
+    if (!data?.success) {
+      toast('Không thể hoàn thành nhiệm vụ.');
       return;
     }
 
-    // 5. Tính EXP và level mới
-    let newLevel = Number(petData.level || 1);
-    let newExp =
-      Number(petData.exp || 0) +
-      Number(task.exp || 0);
-
-    while (newExp >= getLevelCost(newLevel)) {
-      newExp -= getLevelCost(newLevel);
-      newLevel++;
-    }
-
-    // Nhiệm vụ cũng tăng độ no
-    const newHunger = Math.min(
-      100,
-      Number(petData.hunger || 0) + 10
-    );
-
-    // 6. Cập nhật Pet
-    const { error: updateError } =
-      await supabaseClient
-        .from('pets')
-        .update({
-          exp: newExp,
-          level: newLevel,
-          hunger: newHunger,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', petId);
-
-    if (updateError) {
-      console.error('❌ Lỗi cộng EXP:', updateError);
-      toast('Không cộng được EXP cho Pet.');
-      return;
-    }
-
-    // 7. Ghi nhận đã hoàn thành
-    const { error: completionError } =
-      await supabaseClient
-        .from('task_completions')
-        .insert({
-          task_id: taskId,
-          pet_id: petId
-        });
-
-    if (completionError) {
-      console.error(
-        '❌ Lỗi lưu trạng thái hoàn thành:',
-        completionError
-      );
-
-      toast('Đã cộng EXP nhưng chưa lưu được trạng thái hoàn thành.');
-      return;
-    }
-
-    const studentName =
-      petCard.querySelector('h4').textContent;
-
-    // 8. Tải lại dữ liệu thật từ Supabase
+    // Tải lại Pet từ Supabase
     await loadStudents();
+
+    // Tải lại trạng thái nhiệm vụ
     await renderTasks();
 
     toast(
       '🎉 ' +
       studentName +
       ' nhận +' +
-      task.exp +
+      data.reward_exp +
       ' EXP!'
     );
 
   } catch (error) {
-    console.error('❌ Lỗi completeTask:', error);
-    toast('Có lỗi xảy ra khi hoàn thành nhiệm vụ.');
+    console.error(
+      '❌ Lỗi completeTask:',
+      error
+    );
+
+    toast(
+      'Có lỗi xảy ra khi hoàn thành nhiệm vụ.'
+    );
   }
 }
-
 async function completeTaskForAll(taskId) {
   if (!taskId) {
     toast('Không xác định được nhiệm vụ.');
@@ -1545,11 +1640,11 @@ async function completeTaskForAll(taskId) {
   }
 
   try {
-    // 1. Lấy nhiệm vụ
+    // Lấy thông tin nhiệm vụ
     const { data: task, error: taskError } =
       await supabaseClient
         .from('tasks')
-        .select('*')
+        .select('id, title, exp')
         .eq('id', taskId)
         .single();
 
@@ -1559,7 +1654,7 @@ async function completeTaskForAll(taskId) {
       return;
     }
 
-    // 2. Lấy tất cả Pet đang hiển thị trong lớp
+    // Các Pet của lớp đang hiển thị
     const pets =
       [...document.querySelectorAll('.pet')];
 
@@ -1568,12 +1663,7 @@ async function completeTaskForAll(taskId) {
       return;
     }
 
-    const petIds =
-      pets
-        .map(pet => pet.dataset.id)
-        .filter(Boolean);
-
-    // 3. Lấy những Pet đã hoàn thành nhiệm vụ
+    // Lấy danh sách Pet đã hoàn thành
     const { data: completions, error: completionError } =
       await supabaseClient
         .from('task_completions')
@@ -1582,7 +1672,7 @@ async function completeTaskForAll(taskId) {
 
     if (completionError) {
       console.error(
-        '❌ Lỗi tải trạng thái hoàn thành:',
+        '❌ Lỗi kiểm tra hoàn thành:',
         completionError
       );
 
@@ -1590,30 +1680,29 @@ async function completeTaskForAll(taskId) {
       return;
     }
 
-    const completedPetIds =
-      new Set(
-        (completions || []).map(item => item.pet_id)
-      );
+    const completedIds = new Set(
+      (completions || []).map(item => item.pet_id)
+    );
 
-    // 4. Chỉ lấy Pet chưa hoàn thành
-    const remainingPetIds =
-      petIds.filter(
-        petId => !completedPetIds.has(petId)
-      );
+    // Chỉ lấy Pet chưa nhận thưởng
+    const remainingPets = pets.filter(
+      pet =>
+        pet.dataset.id &&
+        !completedIds.has(pet.dataset.id)
+    );
 
-    if (!remainingPetIds.length) {
+    if (!remainingPets.length) {
       toast(
         'Tất cả học sinh đã hoàn thành nhiệm vụ này.'
       );
       return;
     }
 
-    // 5. Xác nhận
     const confirmed = confirm(
       'Trao +' +
       task.exp +
       ' EXP cho ' +
-      remainingPetIds.length +
+      remainingPets.length +
       ' Pet chưa hoàn thành nhiệm vụ "' +
       task.title +
       '"?'
@@ -1622,102 +1711,58 @@ async function completeTaskForAll(taskId) {
     if (!confirmed) return;
 
     let awarded = 0;
+    let failed = 0;
 
-    // 6. Hoàn thành lần lượt từng Pet
-    for (const petId of remainingPetIds) {
+    // Mỗi Pet đều đi qua RPC an toàn
+    for (const pet of remainingPets) {
+      const petId = pet.dataset.id;
 
-      // Lấy Pet mới nhất từ database
-      const { data: petData, error: petError } =
-        await supabaseClient
-          .from('pets')
-          .select('*')
-          .eq('id', petId)
-          .single();
-
-      if (petError || !petData) {
-        console.error(
-          '❌ Không lấy được Pet:',
-          petId,
-          petError
+      const { data, error } =
+        await supabaseClient.rpc(
+          'complete_task_for_pet',
+          {
+            p_task_id: taskId,
+            p_pet_id: petId
+          }
         );
 
+      if (error) {
+        console.error(
+          '❌ Không trao được EXP cho Pet:',
+          petId,
+          error
+        );
+
+        failed++;
         continue;
       }
 
-      // Tính EXP + level
-      let newLevel =
-        Number(petData.level || 1);
-
-      let newExp =
-        Number(petData.exp || 0) +
-        Number(task.exp || 0);
-
-      while (newExp >= getLevelCost(newLevel)) {
-        newExp -= getLevelCost(newLevel);
-        newLevel++;
+      if (data?.success) {
+        awarded++;
       }
-
-      const newHunger =
-        Math.min(
-          100,
-          Number(petData.hunger || 0) + 10
-        );
-
-      // Cộng EXP
-      const { error: updateError } =
-        await supabaseClient
-          .from('pets')
-          .update({
-            exp: newExp,
-            level: newLevel,
-            hunger: newHunger,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', petId);
-
-      if (updateError) {
-        console.error(
-          '❌ Không cộng được EXP:',
-          petId,
-          updateError
-        );
-
-        continue;
-      }
-
-      // Ghi nhận hoàn thành
-      const { error: insertError } =
-        await supabaseClient
-          .from('task_completions')
-          .insert({
-            task_id: taskId,
-            pet_id: petId
-          });
-
-      if (insertError) {
-        console.error(
-          '❌ Không lưu được hoàn thành:',
-          petId,
-          insertError
-        );
-
-        continue;
-      }
-
-      awarded++;
     }
 
-    // 7. Tải lại dữ liệu
+    // Tải lại dữ liệu thật
     await loadStudents();
     await renderTasks();
 
-    toast(
-      '🎉 Đã trao +' +
-      task.exp +
-      ' EXP cho ' +
-      awarded +
-      ' Pet!'
-    );
+    if (failed > 0) {
+      toast(
+        '🎉 Đã trao EXP cho ' +
+        awarded +
+        ' Pet. Có ' +
+        failed +
+        ' Pet bị lỗi.'
+      );
+    } else {
+      toast(
+        '🎉 Đã trao +' +
+        task.exp +
+        ' EXP cho ' +
+        awarded +
+        ' Pet!'
+      );
+    }
 
   } catch (error) {
     console.error(
@@ -3332,11 +3377,16 @@ document.getElementById('loginForm').addEventListener('submit', async event => {
     };
 
     sessionStorage.setItem(sessionKey, user.email);
-    applyAccount(account);
 
-    document.getElementById('authScreen').classList.add('hidden');
+// Tải Settings của giáo viên từ Supabase trước
+await loadSettingsFromSupabase();
 
-    toast('Đăng nhập thành công!');
+// Sau khi Settings đã sẵn sàng mới tải tài khoản/lớp/Pet
+await applyAccount(account);
+
+document.getElementById('authScreen').classList.add('hidden');
+
+toast('Đăng nhập thành công!');
   } catch (err) {
     console.error(err);
     error.textContent = 'Có lỗi xảy ra khi đăng nhập.';
