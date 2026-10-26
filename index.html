@@ -871,11 +871,25 @@ function saveStudents() {
     dead: pet.dataset.dead === 'true'
   }))));
 }
-function addPetCard(student, petName, emoji, health = 100, level = 1, exp = 0, lastFedAt = Date.now(), dead = false, id = '') {
+function addPetCard(
+  student,
+  petName,
+  emoji,
+  health = 100,
+  level = 1,
+  exp = 0,
+  lastFedAt = Date.now(),
+  dead = false,
+  id = '',
+  studentId = ''
+) {
   const pet = document.createElement('article');
   pet.className = 'pet';
-  pet.dataset.id = id || (crypto.randomUUID ? crypto.randomUUID() : 'pet-' + Date.now() + '-' + Math.random().toString(36).slice(2));
-  pet.dataset.name = student + ' ' + petName;
+ pet.dataset.id = id || (crypto.randomUUID ? crypto.randomUUID() : 'pet-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+
+pet.dataset.studentId = studentId;
+
+pet.dataset.name = student + ' ' + petName;
   pet.dataset.level = level;
   pet.innerHTML = '<div class="pet-top"><div class="pet-face">' + escapeHtml(emoji) + '</div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
   document.getElementById('pets').appendChild(pet);
@@ -1004,7 +1018,8 @@ pet.last_fed_at
   ? new Date(pet.last_fed_at).getTime()
   : Date.now(),
         pet.status === 'dead',
-        pet.id
+pet.id,
+student.id
       );
     });
 
