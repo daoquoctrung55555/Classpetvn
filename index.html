@@ -1562,19 +1562,108 @@ function saveHealth() {
   localStorage.setItem(storageKey, JSON.stringify(health));
 }
 
-function deletePet(pet) {
-  const petName = pet.querySelector('.meta span').textContent.split(' · ')[0];
-  const studentName = pet.querySelector('h4').textContent;
-  requestPassword('xóa Pet ' + petName, () => {
-    if (!confirm('Bạn có chắc muốn xoá pet ' + petName + ' của ' + studentName + '? Dữ liệu Pet cũng sẽ bị xóa.')) return;
-    if (selectedPet === pet) closePetModal();
-    pet.remove();
-    saveStudents();
-    saveHealth();
-    updateStats();
-    renderRankings();
-    applyFilters();
-    toast('Đã xoá pet của ' + studentName + '.');
+async function deletePet(pet) {
+  const petId = pet.dataset.id;
+
+  const petName =
+    pet.querySelector('.meta span')
+      .textContent
+      .split(' · ')[0];
+
+  const studentName =
+    pet.querySelector('h4').textContent;
+
+  if (!petId) {
+    toast('Không xác định được Pet trong Supabase.');
+    return;
+  }
+
+  requestPassword('xóa Pet ' + petName, async () => {
+
+    const confirmed = confirm(
+      'Bạn có chắc muốn xoá Pet ' +
+      petName +
+      ' của ' +
+      studentName +
+      '? Dữ liệu Pet sẽ bị xóa khỏi hệ thống.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // ==========================
+      // XÓA PET KHỎI SUPABASE
+      // ==========================
+
+      const { data: deletedPets, error } =
+        await supabaseClient
+          .from('pets')
+          .delete()
+          .eq('id', petId)
+          .select();
+
+      if (error) {
+        console.error('❌ Lỗi xóa Pet:', error);
+
+        toast(
+          'Không xóa được Pet: ' +
+          error.message
+        );
+
+        return;
+      }
+
+      // Nếu Supabase không xóa bản ghi nào
+      if (!deletedPets || deletedPets.length === 0) {
+        console.error(
+          '❌ Không có Pet nào được xóa. ID:',
+          petId
+        );
+
+        toast(
+          'Không xóa được Pet khỏi Supabase.'
+        );
+
+        return;
+      }
+
+      console.log(
+        '✅ Đã xóa Pet khỏi Supabase:',
+        deletedPets[0]
+      );
+
+      // ==========================
+      // SUPABASE XÓA THÀNH CÔNG
+      // MỚI XÓA KHỎI GIAO DIỆN
+      // ==========================
+
+      if (selectedPet === pet) {
+        closePetModal();
+      }
+
+      pet.remove();
+
+      updateStats();
+      renderRankings();
+      renderTasks();
+      applyFilters();
+
+      toast(
+        '🗑️ Đã xoá Pet ' +
+        petName +
+        ' của ' +
+        studentName +
+        '.'
+      );
+
+    } catch (error) {
+      console.error(
+        '❌ Lỗi khi xóa Pet:',
+        error
+      );
+
+      toast('Có lỗi xảy ra khi xóa Pet.');
+    }
   });
 }
 
