@@ -908,13 +908,27 @@ function addPetActions(pet) {
   deleteButton.className = 'pet-delete';
   deleteButton.textContent = '🗑️ Xoá pet';
   deleteButton.addEventListener('click', event => { event.stopPropagation(); deletePet(pet); });
+  const deleteStudentButton = document.createElement('button');
+deleteStudentButton.type = 'button';
+deleteStudentButton.className = 'pet-delete student-delete';
+deleteStudentButton.textContent = '👤 Xoá học sinh';
+
+deleteStudentButton.addEventListener('click', event => {
+  event.stopPropagation();
+  deleteStudent(pet);
+});
   const reviveButton = document.createElement('button');
   reviveButton.type = 'button'; reviveButton.className = 'pet-action revive'; reviveButton.textContent = '💚 Hồi sinh';
   reviveButton.addEventListener('click', event => { event.stopPropagation(); revivePet(pet); reviveButton.hidden = true; feedButton.hidden = false; });
   feedButton.hidden = pet.dataset.dead === 'true'; reviveButton.hidden = !feedButton.hidden;
   const actionGroup = document.createElement('div');
   actionGroup.className = 'pet-actions';
-  actionGroup.append(feedButton, reviveButton, deleteButton);
+ actionGroup.append(
+  feedButton,
+  reviveButton,
+  deleteButton,
+  deleteStudentButton
+);
   pet.appendChild(actionGroup);
   pet.addEventListener('click', event => { if (!event.target.closest('button')) openPetModal(pet); });
 }
