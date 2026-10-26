@@ -1020,6 +1020,88 @@ async function createPetForStudent(student) {
     toast('Có lỗi xảy ra khi tạo Pet.');
   }
 }
+
+async function deleteStudentWithoutPet(card) {
+  const studentId = card.dataset.studentId;
+
+  const studentName =
+    card.querySelector('h4')?.textContent || 'học sinh';
+
+  if (!studentId) {
+    toast('Không xác định được học sinh.');
+    return;
+  }
+
+  requestPassword(
+    'xóa học sinh ' + studentName,
+    async () => {
+
+      const confirmed = confirm(
+        'Bạn có chắc muốn xoá học sinh ' +
+        studentName +
+        ' khỏi lớp?\n\n' +
+        'Hành động này không thể hoàn tác.'
+      );
+
+      if (!confirmed) return;
+
+      try {
+        const { data: deletedStudents, error } =
+          await supabaseClient
+            .from('students')
+            .delete()
+            .eq('id', studentId)
+            .select();
+
+        if (error) {
+          console.error(
+            '❌ Lỗi xóa học sinh:',
+            error
+          );
+
+          toast(
+            'Không thể xóa học sinh: ' +
+            error.message
+          );
+
+          return;
+        }
+
+        if (!deletedStudents || deletedStudents.length === 0) {
+          console.error(
+            '❌ Không có học sinh nào được xóa:',
+            studentId
+          );
+
+          toast('Không xóa được học sinh khỏi Supabase.');
+          return;
+        }
+
+        console.log(
+          '✅ Đã xóa học sinh:',
+          deletedStudents[0]
+        );
+
+        // Tải lại danh sách từ Supabase
+        await loadStudents();
+
+        toast(
+          '🗑️ Đã xoá học sinh ' +
+          studentName +
+          ' khỏi lớp.'
+        );
+
+      } catch (error) {
+        console.error(
+          '❌ Lỗi deleteStudentWithoutPet:',
+          error
+        );
+
+        toast('Có lỗi xảy ra khi xóa học sinh.');
+      }
+    }
+  );
+}
   
 function addPetCard(
   student,
