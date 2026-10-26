@@ -930,6 +930,97 @@ function addStudentWithoutPetCard(student) {
   document.getElementById('pets').appendChild(card);
 }
 
+async function createPetForStudent(student) {
+  if (!student || !student.id) {
+    toast('Không xác định được học sinh.');
+    return;
+  }
+
+  const petName = prompt(
+    'Nhập tên Pet cho học sinh ' + student.name + ':'
+  );
+
+  if (petName === null) return;
+
+  const cleanPetName = petName.trim();
+
+  if (!cleanPetName) {
+    toast('Vui lòng nhập tên Pet.');
+    return;
+  }
+
+  const emojiInput = prompt(
+    'Nhập emoji cho Pet:',
+    '🐱'
+  );
+
+  if (emojiInput === null) return;
+
+  const petEmoji = emojiInput.trim() || '🐱';
+
+  try {
+    // Kiểm tra học sinh đã có Pet chưa
+    const { data: existingPet, error: checkError } =
+      await supabaseClient
+        .from('pets')
+        .select('id')
+        .eq('student_id', student.id)
+        .maybeSingle();
+
+    if (checkError) {
+      console.error('Lỗi kiểm tra Pet:', checkError);
+      toast('Không kiểm tra được dữ liệu Pet.');
+      return;
+    }
+
+    if (existingPet) {
+      toast('Học sinh này đã có Pet.');
+      await loadStudents();
+      return;
+    }
+
+    // Tạo Pet mới
+    const { data: pet, error: petError } =
+      await supabaseClient
+        .from('pets')
+        .insert({
+          student_id: student.id,
+          name: cleanPetName,
+          emoji: petEmoji,
+          level: 1,
+          exp: 0,
+          hunger: 100,
+          status: 'ok',
+          last_fed_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+    if (petError) {
+      console.error('❌ Lỗi tạo Pet:', petError);
+      toast('Không tạo được Pet: ' + petError.message);
+      return;
+    }
+
+    console.log('✅ Đã tạo Pet:', pet);
+
+    // Tải lại từ Supabase
+    await loadStudents();
+
+    toast(
+      '🎉 Đã tạo Pet ' +
+      cleanPetName +
+      ' cho ' +
+      student.name +
+      '!'
+    );
+
+  } catch (error) {
+    console.error('❌ Lỗi createPetForStudent:', error);
+    toast('Có lỗi xảy ra khi tạo Pet.');
+  }
+}
+  
 function addPetCard(
   student,
   petName,
