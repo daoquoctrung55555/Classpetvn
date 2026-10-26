@@ -1397,16 +1397,145 @@ function isTaskCompleted(task, pet) {
     (Array.isArray(task.completed) && task.completed.includes(pet.querySelector('h4').textContent));
 }
 
-function completeTask(taskId, petId) {
-  const tasks = getTasks();
-  const task = tasks.find(item => item.id === taskId);
-  const pet = [...document.querySelectorAll('.pet')].find(item => item.dataset.id === petId);
-  if (!task || !pet || isTaskCompleted(task, pet)) return;
-  const studentName = pet.querySelector('h4').textContent;
-  if (!awardTaskExp(studentName, task.exp, task.title, petId)) return;
-  task.completedPetIds = Array.isArray(task.completedPetIds) ? task.completedPetIds : [];
-  task.completedPetIds.push(petId);
-  saveTasks(tasks); renderTasks(); toast('🎉 ' + studentName + ' nhận +' + task.exp + ' EXP và tăng độ no!');
+async function completeTask(taskId, petId) {
+  if (!taskId || !petId) {
+    toast('Không xác định được nhiệm vụ hoặc Pet.');
+    return;
+  }
+
+  try {
+    // 1. Lấy nhiệm vụ từ Supabase
+    const { data: task, error: taskError } =
+      await supabaseClient
+        .from('tasks')
+        .select('*')
+        .eq('id', taskId)
+        .single();
+
+    if (taskError || !task) {
+      console.error('❌ Không lấy được nhiệm vụ:', taskError);
+      toast('Không tìm thấy nhiệm vụ.');
+      return;
+    }
+
+    // 2. Tìm card Pet
+    const petCard =
+      [...document.querySelectorAll('.pet')]
+        .find(item => item.dataset.id === petId);
+
+    if (!petCard) {
+      toast('Không tìm thấy Pet.');
+      return;
+    }
+
+    // 3. Kiểm tra đã hoàn thành chưa
+    const { data: existingCompletion, error: checkError } =
+      await supabaseClient
+        .from('task_completions')
+        .select('id')
+        .eq('task_id', taskId)
+        .eq('pet_id', petId)
+        .maybeSingle();
+
+    if (checkError) {
+      console.error('❌ Lỗi kiểm tra hoàn thành:', checkError);
+      toast('Không kiểm tra được trạng thái nhiệm vụ.');
+      return;
+    }
+
+    if (existingCompletion) {
+      toast('Pet này đã nhận EXP từ nhiệm vụ này rồi.');
+      await renderTasks();
+      return;
+    }
+
+    // 4. Lấy dữ liệu Pet mới nhất
+    const { data: petData, error: petError } =
+      await supabaseClient
+        .from('pets')
+        .select('*')
+        .eq('id', petId)
+        .single();
+
+    if (petError || !petData) {
+      console.error('❌ Không lấy được Pet:', petError);
+      toast('Không tải được dữ liệu Pet.');
+      return;
+    }
+
+    // 5. Tính EXP và level mới
+    let newLevel = Number(petData.level || 1);
+    let newExp =
+      Number(petData.exp || 0) +
+      Number(task.exp || 0);
+
+    while (newExp >= getLevelCost(newLevel)) {
+      newExp -= getLevelCost(newLevel);
+      newLevel++;
+    }
+
+    // Nhiệm vụ cũng tăng độ no
+    const newHunger = Math.min(
+      100,
+      Number(petData.hunger || 0) + 10
+    );
+
+    // 6. Cập nhật Pet
+    const { error: updateError } =
+      await supabaseClient
+        .from('pets')
+        .update({
+          exp: newExp,
+          level: newLevel,
+          hunger: newHunger,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', petId);
+
+    if (updateError) {
+      console.error('❌ Lỗi cộng EXP:', updateError);
+      toast('Không cộng được EXP cho Pet.');
+      return;
+    }
+
+    // 7. Ghi nhận đã hoàn thành
+    const { error: completionError } =
+      await supabaseClient
+        .from('task_completions')
+        .insert({
+          task_id: taskId,
+          pet_id: petId
+        });
+
+    if (completionError) {
+      console.error(
+        '❌ Lỗi lưu trạng thái hoàn thành:',
+        completionError
+      );
+
+      toast('Đã cộng EXP nhưng chưa lưu được trạng thái hoàn thành.');
+      return;
+    }
+
+    const studentName =
+      petCard.querySelector('h4').textContent;
+
+    // 8. Tải lại dữ liệu thật từ Supabase
+    await loadStudents();
+    await renderTasks();
+
+    toast(
+      '🎉 ' +
+      studentName +
+      ' nhận +' +
+      task.exp +
+      ' EXP!'
+    );
+
+  } catch (error) {
+    console.error('❌ Lỗi completeTask:', error);
+    toast('Có lỗi xảy ra khi hoàn thành nhiệm vụ.');
+  }
 }
 
 function completeTaskForAll(taskId) {
