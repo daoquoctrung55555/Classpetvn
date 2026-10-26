@@ -538,12 +538,67 @@ const classModal = document.getElementById('classModal');
 function openClassModal() { if (currentAccount) classModal.classList.add('show'); }
 function closeClassModal() { classModal.classList.remove('show'); document.getElementById('classForm').reset(); document.getElementById('newClassYear').value = '2026–2027'; }
 
-function requestPassword(action, callback) {
-  if (!currentAccount) return;
-  const password = prompt('Nhập mật khẩu đăng nhập để ' + action + ':');
+async function requestPassword(action, callback) {
+  const password = prompt(
+    'Nhập mật khẩu đăng nhập để ' + action + ':'
+  );
+
   if (password === null) return;
-  if (password !== currentAccount.password) { toast('Mật khẩu không đúng.'); return; }
-  callback();
+
+  if (!password) {
+    toast('Vui lòng nhập mật khẩu.');
+    return;
+  }
+
+  try {
+    // Lấy tài khoản Supabase đang đăng nhập
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user || !user.email) {
+      console.error(
+        'Không lấy được tài khoản Supabase:',
+        userError
+      );
+
+      toast('Không xác định được tài khoản đang đăng nhập.');
+      return;
+    }
+
+    // Xác thực lại bằng email + mật khẩu vừa nhập
+    const { error: loginError } =
+      await supabaseClient.auth.signInWithPassword({
+        email: user.email,
+        password: password
+      });
+
+    if (loginError) {
+      console.error(
+        'Xác thực mật khẩu thất bại:',
+        loginError
+      );
+
+      toast('Mật khẩu không đúng.');
+      return;
+    }
+
+    console.log(
+      '✅ Xác thực mật khẩu thành công.'
+    );
+
+    // Mật khẩu đúng → cho phép thực hiện hành động
+    await callback();
+
+  } catch (error) {
+    console.error(
+      'Lỗi xác thực mật khẩu:',
+      error
+    );
+
+    toast('Không thể xác thực mật khẩu.');
+  }
 }
 
 function deleteCurrentClass() {
