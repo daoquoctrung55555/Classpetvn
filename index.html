@@ -1784,6 +1784,136 @@ async function deleteAllPets() {
   );
 }
 
+  async function deleteStudent(pet) {
+  const studentId = pet.dataset.studentId;
+  const petId = pet.dataset.id;
+
+  const studentName =
+    pet.querySelector('h4')?.textContent || 'học sinh';
+
+  const petName =
+    pet.querySelector('.meta span')
+      ?.textContent
+      .split(' · ')[0] || 'Pet';
+
+  if (!studentId) {
+    console.error('Không có studentId trên card:', pet);
+    toast('Không xác định được học sinh trong Supabase.');
+    return;
+  }
+
+  requestPassword(
+    'xóa học sinh ' + studentName,
+    async () => {
+
+      const confirmed = confirm(
+        'Bạn có chắc muốn xoá học sinh ' +
+        studentName +
+        '?\n\nPet ' +
+        petName +
+        ' của học sinh này cũng sẽ bị xoá.\n\n' +
+        'Hành động này không thể hoàn tác.'
+      );
+
+      if (!confirmed) return;
+
+      try {
+        // ======================================
+        // 1. XÓA PET CỦA HỌC SINH TRƯỚC
+        // ======================================
+
+        if (petId) {
+          const { error: petError } =
+            await supabaseClient
+              .from('pets')
+              .delete()
+              .eq('id', petId);
+
+          if (petError) {
+            console.error(
+              '❌ Lỗi xóa Pet của học sinh:',
+              petError
+            );
+
+            toast(
+              'Không thể xóa Pet của học sinh: ' +
+              petError.message
+            );
+
+            return;
+          }
+        }
+
+        // ======================================
+        // 2. XÓA HỌC SINH
+        // ======================================
+
+        const { data: deletedStudents, error: studentError } =
+          await supabaseClient
+            .from('students')
+            .delete()
+            .eq('id', studentId)
+            .select();
+
+        if (studentError) {
+          console.error(
+            '❌ Lỗi xóa học sinh:',
+            studentError
+          );
+
+          toast(
+            'Không thể xóa học sinh: ' +
+            studentError.message
+          );
+
+          return;
+        }
+
+        if (!deletedStudents || deletedStudents.length === 0) {
+          console.error(
+            '❌ Không có học sinh nào được xóa:',
+            studentId
+          );
+
+          toast(
+            'Không xóa được học sinh khỏi Supabase.'
+          );
+
+          return;
+        }
+
+        // ======================================
+        // 3. CẬP NHẬT GIAO DIỆN
+        // ======================================
+
+        if (selectedPet === pet) {
+          closePetModal();
+        }
+
+        await loadStudents();
+
+        toast(
+          '🗑️ Đã xoá học sinh ' +
+          studentName +
+          ' và Pet ' +
+          petName +
+          '.'
+        );
+
+      } catch (error) {
+        console.error(
+          '❌ Lỗi deleteStudent:',
+          error
+        );
+
+        toast(
+          'Có lỗi xảy ra khi xóa học sinh.'
+        );
+      }
+    }
+  );
+}
+  
 async function checkPetLifetimes() {
   const settings = getSettings();
   const limit = settings.deathDays * 24 * 60 * 60 * 1000;
