@@ -871,6 +871,65 @@ function saveStudents() {
     dead: pet.dataset.dead === 'true'
   }))));
 }
+
+function addStudentWithoutPetCard(student) {
+  const card = document.createElement('article');
+
+  card.className = 'student-no-pet';
+  card.dataset.studentId = student.id;
+
+  card.innerHTML = `
+    <div class="pet-top">
+      <div class="pet-face">👤</div>
+      <span class="badge">CHƯA CÓ PET</span>
+    </div>
+
+    <h4>${escapeHtml(student.name)}</h4>
+
+    <div class="meta">
+      <span>Học sinh chưa có Pet</span>
+    </div>
+
+    <div class="pet-stage">
+      Hãy tạo một Pet mới cho học sinh này.
+    </div>
+  `;
+
+  // Nút tạo Pet
+  const createButton = document.createElement('button');
+  createButton.type = 'button';
+  createButton.className = 'pet-action';
+  createButton.textContent = '➕ Tạo Pet';
+
+  createButton.addEventListener('click', event => {
+    event.stopPropagation();
+    createPetForStudent(student);
+  });
+
+  // Nút xóa học sinh
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'pet-delete';
+  deleteButton.textContent = '👤 Xoá học sinh';
+
+  deleteButton.addEventListener('click', event => {
+    event.stopPropagation();
+    deleteStudentWithoutPet(card);
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'pet-actions';
+
+  actions.append(
+    createButton,
+    deleteButton
+  );
+
+  card.appendChild(actions);
+
+  document.getElementById('pets').appendChild(card);
+}
+
 function addPetCard(
   student,
   petName,
@@ -1011,12 +1070,14 @@ async function loadStudents() {
 
       // Học sinh chưa có Pet thì chưa tạo card
       if (!pet) {
-        console.warn(
-          'Học sinh chưa có Pet:',
-          student.name
-        );
-        return;
-      }
+  console.log(
+    '👤 Học sinh chưa có Pet:',
+    student.name
+  );
+
+  addStudentWithoutPetCard(student);
+  return;
+}
 
       // ========================================
       // 5. HIỂN THỊ CARD
@@ -1329,21 +1390,21 @@ document.getElementById('addForm').addEventListener('submit', async event => {
     // ==============================
     // 3. HIỂN THỊ NGAY TRÊN WEB
     // ==============================
-    addPetCard(
+   addPetCard(
   studentName,
   petName,
   petEmoji,
   pet.hunger ?? 100,
   pet.level ?? 1,
   pet.exp ?? 0,
-  pet.updated_at
-    ? new Date(pet.updated_at).getTime()
+  pet.last_fed_at
+    ? new Date(pet.last_fed_at).getTime()
     : Date.now(),
   pet.status === 'dead',
-  pet.id
+  pet.id,
+  student.id
 );
-
-    saveHealth();
+    
     updateStats();
     renderRankings();
     renderTasks();
@@ -2153,8 +2214,17 @@ function updateStats() {
   checkPetLifetimes();
   const counts = { ok: 0, hungry: 0, danger: 0 };
   document.querySelectorAll('.pet').forEach(pet => counts[pet.dataset.status]++);
-  const total = document.querySelectorAll('.pet').length;
-  document.getElementById('studentCount').textContent = total;
+  const totalPets =
+  document.querySelectorAll('.pet').length;
+
+const studentsWithoutPet =
+  document.querySelectorAll('.student-no-pet').length;
+
+const totalStudents =
+  totalPets + studentsWithoutPet;
+
+document.getElementById('studentCount').textContent =
+  totalStudents;
   document.getElementById('healthyCount').textContent = counts.ok;
   document.getElementById('hungryCount').textContent = counts.hungry;
   const levels = [...document.querySelectorAll('.pet')].map(pet => parseInt(pet.dataset.level || '1', 10));
