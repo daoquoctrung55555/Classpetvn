@@ -1538,25 +1538,197 @@ async function completeTask(taskId, petId) {
   }
 }
 
-function completeTaskForAll(taskId) {
-  const tasks = getTasks();
-  const task = tasks.find(item => item.id === taskId);
-  if (!task) return;
-  const students = [...document.querySelectorAll('.pet')].map(pet => pet.querySelector('h4').textContent);
-  task.completedPetIds = Array.isArray(task.completedPetIds) ? task.completedPetIds : [];
-  const remaining = [...document.querySelectorAll('.pet')].filter(pet => !isTaskCompleted(task, pet));
-  if (!remaining.length) { toast('Tất cả học sinh đã hoàn thành nhiệm vụ này.'); return; }
-  let awarded = 0;
-  remaining.forEach(pet => {
-    const student = pet.querySelector('h4').textContent;
-    if (awardTaskExp(student, task.exp, task.title, pet.dataset.id)) {
-      task.completedPetIds.push(pet.dataset.id);
+async function completeTaskForAll(taskId) {
+  if (!taskId) {
+    toast('Không xác định được nhiệm vụ.');
+    return;
+  }
+
+  try {
+    // 1. Lấy nhiệm vụ
+    const { data: task, error: taskError } =
+      await supabaseClient
+        .from('tasks')
+        .select('*')
+        .eq('id', taskId)
+        .single();
+
+    if (taskError || !task) {
+      console.error('❌ Không lấy được nhiệm vụ:', taskError);
+      toast('Không tìm thấy nhiệm vụ.');
+      return;
+    }
+
+    // 2. Lấy tất cả Pet đang hiển thị trong lớp
+    const pets =
+      [...document.querySelectorAll('.pet')];
+
+    if (!pets.length) {
+      toast('Lớp chưa có học sinh có Pet.');
+      return;
+    }
+
+    const petIds =
+      pets
+        .map(pet => pet.dataset.id)
+        .filter(Boolean);
+
+    // 3. Lấy những Pet đã hoàn thành nhiệm vụ
+    const { data: completions, error: completionError } =
+      await supabaseClient
+        .from('task_completions')
+        .select('pet_id')
+        .eq('task_id', taskId);
+
+    if (completionError) {
+      console.error(
+        '❌ Lỗi tải trạng thái hoàn thành:',
+        completionError
+      );
+
+      toast('Không kiểm tra được trạng thái nhiệm vụ.');
+      return;
+    }
+
+    const completedPetIds =
+      new Set(
+        (completions || []).map(item => item.pet_id)
+      );
+
+    // 4. Chỉ lấy Pet chưa hoàn thành
+    const remainingPetIds =
+      petIds.filter(
+        petId => !completedPetIds.has(petId)
+      );
+
+    if (!remainingPetIds.length) {
+      toast(
+        'Tất cả học sinh đã hoàn thành nhiệm vụ này.'
+      );
+      return;
+    }
+
+    // 5. Xác nhận
+    const confirmed = confirm(
+      'Trao +' +
+      task.exp +
+      ' EXP cho ' +
+      remainingPetIds.length +
+      ' Pet chưa hoàn thành nhiệm vụ "' +
+      task.title +
+      '"?'
+    );
+
+    if (!confirmed) return;
+
+    let awarded = 0;
+
+    // 6. Hoàn thành lần lượt từng Pet
+    for (const petId of remainingPetIds) {
+
+      // Lấy Pet mới nhất từ database
+      const { data: petData, error: petError } =
+        await supabaseClient
+          .from('pets')
+          .select('*')
+          .eq('id', petId)
+          .single();
+
+      if (petError || !petData) {
+        console.error(
+          '❌ Không lấy được Pet:',
+          petId,
+          petError
+        );
+
+        continue;
+      }
+
+      // Tính EXP + level
+      let newLevel =
+        Number(petData.level || 1);
+
+      let newExp =
+        Number(petData.exp || 0) +
+        Number(task.exp || 0);
+
+      while (newExp >= getLevelCost(newLevel)) {
+        newExp -= getLevelCost(newLevel);
+        newLevel++;
+      }
+
+      const newHunger =
+        Math.min(
+          100,
+          Number(petData.hunger || 0) + 10
+        );
+
+      // Cộng EXP
+      const { error: updateError } =
+        await supabaseClient
+          .from('pets')
+          .update({
+            exp: newExp,
+            level: newLevel,
+            hunger: newHunger,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', petId);
+
+      if (updateError) {
+        console.error(
+          '❌ Không cộng được EXP:',
+          petId,
+          updateError
+        );
+
+        continue;
+      }
+
+      // Ghi nhận hoàn thành
+      const { error: insertError } =
+        await supabaseClient
+          .from('task_completions')
+          .insert({
+            task_id: taskId,
+            pet_id: petId
+          });
+
+      if (insertError) {
+        console.error(
+          '❌ Không lưu được hoàn thành:',
+          petId,
+          insertError
+        );
+
+        continue;
+      }
+
       awarded++;
     }
-  });
-  saveTasks(tasks);
-  renderTasks();
-  toast('🎉 Đã trao EXP và tăng độ no cho ' + awarded + ' học sinh!');
+
+    // 7. Tải lại dữ liệu
+    await loadStudents();
+    await renderTasks();
+
+    toast(
+      '🎉 Đã trao +' +
+      task.exp +
+      ' EXP cho ' +
+      awarded +
+      ' Pet!'
+    );
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi completeTaskForAll:',
+      error
+    );
+
+    toast(
+      'Có lỗi xảy ra khi hoàn thành nhiệm vụ.'
+    );
+  }
 }
 async function deleteTask(taskId) {
   if (!taskId) {
