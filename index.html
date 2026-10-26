@@ -1429,37 +1429,336 @@ function completeTaskForAll(taskId) {
   renderTasks();
   toast('🎉 Đã trao EXP và tăng độ no cho ' + awarded + ' học sinh!');
 }
-function deleteTask(taskId) {
-  requestPassword('xóa nhiệm vụ', () => {
-    const tasks = getTasks().filter(task => task.id !== taskId);
-    saveTasks(tasks); renderTasks(); toast('Đã xóa nhiệm vụ.');
+async function deleteTask(taskId) {
+  if (!taskId) {
+    toast('Không xác định được nhiệm vụ.');
+    return;
+  }
+
+  requestPassword('xóa nhiệm vụ', async () => {
+
+    if (!confirm('Bạn có chắc muốn xóa nhiệm vụ này?')) {
+      return;
+    }
+
+    try {
+      const { data: deletedTasks, error } =
+        await supabaseClient
+          .from('tasks')
+          .delete()
+          .eq('id', taskId)
+          .select();
+
+      if (error) {
+        console.error('❌ Lỗi xóa nhiệm vụ:', error);
+        toast('Không xóa được nhiệm vụ: ' + error.message);
+        return;
+      }
+
+      if (!deletedTasks || deletedTasks.length === 0) {
+        toast('Không xóa được nhiệm vụ khỏi Supabase.');
+        return;
+      }
+
+      console.log('✅ Đã xóa nhiệm vụ:', deletedTasks[0]);
+
+      await renderTasks();
+
+      toast('🗑️ Đã xóa nhiệm vụ.');
+
+    } catch (error) {
+      console.error('❌ Lỗi deleteTask:', error);
+      toast('Có lỗi xảy ra khi xóa nhiệm vụ.');
+    }
   });
 }
-function deleteAllTasks() {
-  const tasks = getTasks();
-  if (!tasks.length) { toast('Lớp hiện chưa có nhiệm vụ.'); return; }
-  requestPassword('xóa tất cả nhiệm vụ', () => {
-    if (!confirm('Bạn có chắc muốn xóa tất cả ' + tasks.length + ' nhiệm vụ trong lớp?')) return;
-    saveTasks([]); renderTasks(); toast('Đã xóa tất cả nhiệm vụ.');
-  });
+async function deleteAllTasks() {
+  if (!currentClass || !currentClass.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+
+  try {
+    // Đếm nhiệm vụ của đúng lớp hiện tại
+    const { data: tasks, error: loadError } =
+      await supabaseClient
+        .from('tasks')
+        .select('id')
+        .eq('class_id', currentClass.id);
+
+    if (loadError) {
+      console.error('❌ Lỗi tải nhiệm vụ:', loadError);
+      toast('Không kiểm tra được danh sách nhiệm vụ.');
+      return;
+    }
+
+    if (!tasks || tasks.length === 0) {
+      toast('Lớp hiện chưa có nhiệm vụ.');
+      return;
+    }
+
+    requestPassword(
+      'xóa tất cả nhiệm vụ',
+      async () => {
+
+        const confirmed = confirm(
+          'Bạn có chắc muốn xóa tất cả ' +
+          tasks.length +
+          ' nhiệm vụ trong lớp ' +
+          currentClass.name +
+          '?'
+        );
+
+        if (!confirmed) return;
+
+        const { data: deletedTasks, error } =
+          await supabaseClient
+            .from('tasks')
+            .delete()
+            .eq('class_id', currentClass.id)
+            .select();
+
+        if (error) {
+          console.error(
+            '❌ Lỗi xóa tất cả nhiệm vụ:',
+            error
+          );
+
+          toast(
+            'Không xóa được nhiệm vụ: ' +
+            error.message
+          );
+
+          return;
+        }
+
+        if (!deletedTasks || deletedTasks.length === 0) {
+          toast('Không có nhiệm vụ nào được xóa.');
+          return;
+        }
+
+        console.log(
+          '✅ Đã xóa tất cả nhiệm vụ:',
+          deletedTasks
+        );
+
+        await renderTasks();
+
+        toast(
+          '🗑️ Đã xóa ' +
+          deletedTasks.length +
+          ' nhiệm vụ trong lớp.'
+        );
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi deleteAllTasks:',
+      error
+    );
+
+    toast('Có lỗi xảy ra khi xóa nhiệm vụ.');
+  }
 }
-function renderTasks() {
+async function renderTasks() {
   const list = document.getElementById('taskList');
+
   if (!list) return;
-  const tasks = getTasks();
-  if (!tasks.length) { list.innerHTML = '<div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div>'; return; }
-  const pets = [...document.querySelectorAll('.pet')];
-  list.innerHTML = tasks.map(task => '<article class="task-item"><div class="task-item-head"><div><h4>🎯 ' + escapeHtml(task.title) + '</h4><p>' + escapeHtml(task.description || 'Nhiệm vụ của lớp') + '</p></div><div><span class="task-exp">+' + task.exp + ' EXP</span><button class="task-delete" type="button" onclick="deleteTask(\'' + task.id + '\')">Xóa</button></div></div><button class="primary task-all-button" type="button" onclick="completeTaskForAll(\'' + task.id + '\')">✓ Tất cả hoàn thành</button><div class="task-students">' + (pets.length ? pets.map(pet => { const student = pet.querySelector('h4').textContent; const petName = pet.querySelector('.meta span').textContent.split(' · ')[0]; const done = isTaskCompleted(task, pet); return '<div class="task-student"><span>👤 ' + escapeHtml(student) + ' · 🐾 ' + escapeHtml(petName) + '</span><button class="' + (done ? 'done' : '') + '" type="button" ' + (done ? 'disabled' : '') + ' onclick="completeTask(\'' + task.id + '\',\'' + pet.dataset.id + '\')">' + (done ? '✓ Đã nhận EXP' : 'Hoàn thành') + '</button></div>'; }).join('') : '<div class="task-empty">Hãy thêm học sinh để giao nhiệm vụ.</div>') + '</div></article>').join('');
+
+  if (!currentClass || !currentClass.id) {
+    list.innerHTML =
+      '<div class="task-empty">Chưa chọn lớp.</div>';
+    return;
+  }
+
+  try {
+    // Lấy nhiệm vụ đúng lớp hiện tại từ Supabase
+    const { data: tasks, error } =
+      await supabaseClient
+        .from('tasks')
+        .select('*')
+        .eq('class_id', currentClass.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Lỗi tải nhiệm vụ:', error);
+
+      list.innerHTML =
+        '<div class="task-empty">Không tải được nhiệm vụ.</div>';
+
+      return;
+    }
+
+    if (!tasks || tasks.length === 0) {
+      list.innerHTML =
+        '<div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div>';
+      return;
+    }
+
+    const pets = [...document.querySelectorAll('.pet')];
+
+    list.innerHTML = tasks.map(task => {
+
+      const dueDate = task.due_date
+        ? new Intl.DateTimeFormat('vi-VN').format(
+            new Date(task.due_date + 'T00:00:00')
+          )
+        : '';
+
+      return `
+        <article class="task-item">
+
+          <div class="task-item-head">
+
+            <div>
+              <h4>🎯 ${escapeHtml(task.title)}</h4>
+
+              <p>
+                ${escapeHtml(
+                  task.description || 'Nhiệm vụ của lớp'
+                )}
+                ${dueDate ? ' · Hạn: ' + dueDate : ''}
+              </p>
+            </div>
+
+            <div>
+              <span class="task-exp">
+                +${task.exp} EXP
+              </span>
+
+              <button
+                class="task-delete"
+                type="button"
+                onclick="deleteTask('${task.id}')">
+                Xóa
+              </button>
+            </div>
+
+          </div>
+
+          <button
+            class="primary task-all-button"
+            type="button"
+            onclick="completeTaskForAll('${task.id}')">
+            ✓ Tất cả hoàn thành
+          </button>
+
+          <div class="task-students">
+
+            ${
+              pets.length
+                ? pets.map(pet => {
+
+                    const student =
+                      pet.querySelector('h4').textContent;
+
+                    const petName =
+                      pet.querySelector('.meta span')
+                        .textContent
+                        .split(' · ')[0];
+
+                    return `
+                      <div class="task-student">
+
+                        <span>
+                          👤 ${escapeHtml(student)}
+                          · 🐾 ${escapeHtml(petName)}
+                        </span>
+
+                        <button
+                          type="button"
+                          onclick="completeTask('${task.id}', '${pet.dataset.id}')">
+                          Hoàn thành
+                        </button>
+
+                      </div>
+                    `;
+
+                  }).join('')
+
+                : '<div class="task-empty">Chưa có học sinh có Pet.</div>'
+            }
+
+          </div>
+
+        </article>
+      `;
+
+    }).join('');
+
+  } catch (error) {
+    console.error('❌ Lỗi renderTasks:', error);
+
+    list.innerHTML =
+      '<div class="task-empty">Có lỗi khi tải nhiệm vụ.</div>';
+  }
 }
-document.getElementById('taskForm').addEventListener('submit', event => {
+document.getElementById('taskForm').addEventListener('submit', async event => {
   event.preventDefault();
-  const title = document.getElementById('taskTitle').value.trim();
-  const description = document.getElementById('taskDescription').value.trim();
-  const exp = Math.max(1, Number(document.getElementById('taskExp').value) || getSettings().taskExp);
-  if (!title) return;
-  const tasks = getTasks();
-  tasks.unshift({ id: 'task-' + Date.now(), title, description, exp, dueDate: document.getElementById('taskDueDate').value, completed: [], createdAt: Date.now() });
-  saveTasks(tasks); closeTaskModal(); renderTasks(); updateStats(); toast('🎯 Đã tạo nhiệm vụ mới.');
+
+  const title =
+    document.getElementById('taskTitle').value.trim();
+
+  const description =
+    document.getElementById('taskDescription').value.trim();
+
+  const exp = Math.max(
+    1,
+    Number(document.getElementById('taskExp').value) ||
+    getSettings().taskExp
+  );
+
+  const dueDate =
+    document.getElementById('taskDueDate').value || null;
+
+  if (!title) {
+    toast('Vui lòng nhập tên nhiệm vụ.');
+    return;
+  }
+
+  if (!currentClass || !currentClass.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+
+  try {
+    const { data: task, error } =
+      await supabaseClient
+        .from('tasks')
+        .insert({
+          class_id: currentClass.id,
+          title: title,
+          description: description,
+          exp: exp,
+          due_date: dueDate
+        })
+        .select()
+        .single();
+
+    if (error) {
+      console.error('❌ Lỗi tạo nhiệm vụ:', error);
+      toast('Không tạo được nhiệm vụ: ' + error.message);
+      return;
+    }
+
+    console.log('✅ Đã tạo nhiệm vụ:', task);
+
+    closeTaskModal();
+
+    // Xóa dữ liệu form
+    document.getElementById('taskForm').reset();
+
+    await renderTasks();
+
+    updateStats();
+
+    toast('🎯 Đã tạo nhiệm vụ mới.');
+
+  } catch (error) {
+    console.error('❌ Lỗi tạo nhiệm vụ:', error);
+    toast('Có lỗi xảy ra khi tạo nhiệm vụ.');
+  }
 });
 
 document.getElementById('profileForm').addEventListener('submit', event => {
