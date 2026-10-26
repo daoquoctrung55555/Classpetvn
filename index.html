@@ -1702,20 +1702,18 @@ async function renderTasks() {
   }
 
   try {
-    // Lấy nhiệm vụ đúng lớp hiện tại từ Supabase
-    const { data: tasks, error } =
+    // 1. Lấy nhiệm vụ của lớp hiện tại
+    const { data: tasks, error: tasksError } =
       await supabaseClient
         .from('tasks')
         .select('*')
         .eq('class_id', currentClass.id)
         .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('❌ Lỗi tải nhiệm vụ:', error);
-
+    if (tasksError) {
+      console.error('❌ Lỗi tải nhiệm vụ:', tasksError);
       list.innerHTML =
         '<div class="task-empty">Không tải được nhiệm vụ.</div>';
-
       return;
     }
 
@@ -1725,8 +1723,31 @@ async function renderTasks() {
       return;
     }
 
-    const pets = [...document.querySelectorAll('.pet')];
+    // 2. Lấy trạng thái hoàn thành của các nhiệm vụ này
+    const taskIds = tasks.map(task => task.id);
 
+    const { data: completions, error: completionError } =
+      await supabaseClient
+        .from('task_completions')
+        .select('task_id, pet_id')
+        .in('task_id', taskIds);
+
+    if (completionError) {
+      console.error(
+        '❌ Lỗi tải trạng thái hoàn thành:',
+        completionError
+      );
+
+      list.innerHTML =
+        '<div class="task-empty">Không tải được trạng thái nhiệm vụ.</div>';
+
+      return;
+    }
+
+    const pets =
+      [...document.querySelectorAll('.pet')];
+
+    // 3. Hiển thị nhiệm vụ
     list.innerHTML = tasks.map(task => {
 
       const dueDate = task.due_date
@@ -1741,7 +1762,9 @@ async function renderTasks() {
           <div class="task-item-head">
 
             <div>
-              <h4>🎯 ${escapeHtml(task.title)}</h4>
+              <h4>
+                🎯 ${escapeHtml(task.title)}
+              </h4>
 
               <p>
                 ${escapeHtml(
@@ -1787,18 +1810,33 @@ async function renderTasks() {
                         .textContent
                         .split(' · ')[0];
 
+                    // Pet này đã hoàn thành task chưa?
+                    const done =
+                      (completions || []).some(
+                        completion =>
+                          completion.task_id === task.id &&
+                          completion.pet_id === pet.dataset.id
+                      );
+
                     return `
                       <div class="task-student">
 
                         <span>
                           👤 ${escapeHtml(student)}
-                          · 🐾 ${escapeHtml(petName)}
+                          ·
+                          🐾 ${escapeHtml(petName)}
                         </span>
 
                         <button
+                          class="${done ? 'done' : ''}"
                           type="button"
+                          ${done ? 'disabled' : ''}
                           onclick="completeTask('${task.id}', '${pet.dataset.id}')">
-                          Hoàn thành
+                          ${
+                            done
+                              ? '✓ Đã nhận EXP'
+                              : 'Hoàn thành'
+                          }
                         </button>
 
                       </div>
