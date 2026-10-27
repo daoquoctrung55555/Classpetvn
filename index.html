@@ -2585,13 +2585,7 @@ async function feedPet(pet) {
     toast('Có lỗi xảy ra khi cho Pet ăn.');
   }
 }
-function saveHealth() {
-  const health = {};
-  document.querySelectorAll('.pet').forEach(pet => {
-    health[pet.dataset.id] = parseInt(pet.querySelector('.meta b').textContent, 10);
-  });
-  localStorage.setItem(storageKey, JSON.stringify(health));
-}
+
 
 async function deletePet(pet) {
   const petId = pet.dataset.id;
@@ -3551,10 +3545,27 @@ function applyFilters() {
 function searchPets() { applyFilters(); }
 function filterStatus() { applyFilters(); }
 
-function feedAll() {
-  document.querySelectorAll('.pet').forEach(pet => feedPet(pet));
+async function feedAll() {
+  const pets = [...document.querySelectorAll('.pet')];
+
+  if (!pets.length) {
+    closeModal();
+    toast('Lớp hiện chưa có Pet nào.');
+    return;
+  }
+
   closeModal();
-  toast('🍖 Đã cho toàn bộ pet trong lớp ăn!');
+
+  for (const pet of pets) {
+    await feedPet(pet);
+  }
+
+  await renderActivity();
+  await updateStats();
+  renderRankings();
+  await renderDashboardInsights();
+
+  toast('🍖 Đã xử lý cho cả lớp ăn!');
 }
 
 const petModal = document.getElementById('petModal');
@@ -3854,28 +3865,7 @@ document.getElementById('switchAuth').addEventListener('click', () => {
   document.getElementById('authError').textContent = '';
 });
 
-let savedHealth = {};
-try {
-  savedHealth = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
-} catch (error) {
-  localStorage.removeItem(storageKey);
-}
 
-document.querySelectorAll('.pet').forEach((pet, index) => {
-  const health = savedHealth[index];
-  if (Number.isFinite(health)) updatePetStatus(pet, health);
-  const feedButton = document.createElement('button');
-  feedButton.type = 'button';
-  feedButton.className = 'pet-action';
-  feedButton.textContent = '🍖 Cho ăn';
-  feedButton.addEventListener('click', event => {
-    event.stopPropagation();
-    const current = parseInt(pet.querySelector('.meta b').textContent, 10);
-    updatePetStatus(pet, Math.min(100, current + settings.feedHunger));
-    saveHealth();
-    updateStats();
-    toast('🍖 Đã cho ' + pet.querySelector('h4').textContent + ' ăn!');
-  });
   pet.appendChild(feedButton);
   pet.addEventListener('click', event => {
     if (event.target.closest('button')) return;
