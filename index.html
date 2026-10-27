@@ -3673,20 +3673,87 @@ function renderStudentPortal(classItem, account) {
 }
 function studentScroll(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function studentLogout() { document.getElementById('studentPortal').classList.remove('show'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('studentClassCode').value = ''; document.getElementById('studentNameLogin').value = ''; document.getElementById('studentPetNameLogin').value = ''; window.studentAccount = null; window.studentClassItem = null; }
-function enterStudentClass() { const code = document.getElementById('studentClassCode').value.trim().toUpperCase(); const studentName = document.getElementById('studentNameLogin').value.trim(); const studentPetName = document.getElementById('studentPetNameLogin').value.trim(); const error = document.getElementById('studentAuthError'); const accounts = getAccounts(); accounts.forEach(ensureAccountClasses); saveAccounts(accounts); const found = accounts.flatMap(account => account.classes.map(classItem => ({ account, classItem }))).find(item => item.classItem.code === code); if (!found) { error.textContent = 'Mã lớp không đúng hoặc không tồn tại.'; return; }
-  if (!studentName || !studentPetName) { error.textContent = 'Vui lòng nhập cả tên học sinh và tên Pet.'; return; }
-  const students = JSON.parse(localStorage.getItem('classpet-students-' + found.account.username.toLowerCase() + '-' + found.classItem.id) || '[]');
-  const match = students.find(item => item.student.toLowerCase() === studentName.toLowerCase() && item.pet.toLowerCase() === studentPetName.toLowerCase());
-  if (!match) { error.textContent = 'Tên học sinh hoặc tên Pet chưa đúng. Hãy kiểm tra lại cả hai thông tin.'; return; }
-  found.account.studentName = match.student;
-  found.account.studentPetName = match.pet;
-  found.account.studentPetId = match.id || '';
-  error.textContent = ''; document.getElementById('authScreen').classList.add('hidden'); document.getElementById('studentPortal').classList.add('show'); renderStudentPortal(found.classItem, found.account); }
-document.getElementById('studentEnterButton').addEventListener('click', enterStudentClass);
-document.getElementById('studentClassCode').addEventListener('input', event => { event.target.value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
-document.getElementById('studentModeButton').addEventListener('click', () => { document.getElementById('teacherModeButton').classList.remove('active'); document.getElementById('studentModeButton').classList.add('active'); document.getElementById('teacherLoginFields').style.display = 'none'; document.getElementById('studentLoginFields').classList.add('active'); });
-document.getElementById('teacherModeButton').addEventListener('click', () => { document.getElementById('studentModeButton').classList.remove('active'); document.getElementById('teacherModeButton').classList.add('active'); document.getElementById('studentLoginFields').classList.remove('active'); document.getElementById('teacherLoginFields').style.display = 'block'; });
+async function enterStudentClass() {
+  const codeInput = document.getElementById('studentClassCode');
 
+  if (!codeInput) {
+    toast('Không tìm thấy ô nhập mã lớp.');
+    return;
+  }
+
+  const code = codeInput.value
+    .trim()
+    .toUpperCase();
+
+  // Kiểm tra đúng định dạng 5 ký tự
+  if (!/^[A-Z0-9]{5}$/.test(code)) {
+    toast('Mã lớp phải gồm đúng 5 chữ cái hoặc số.');
+    return;
+  }
+
+  try {
+    // Tìm lớp thật trong Supabase
+    const { data: classItem, error } =
+      await supabaseClient
+        .from('classes')
+        .select('id, name, class_code')
+        .eq('class_code', code)
+        .maybeSingle();
+
+    if (error) {
+      console.error(
+        '❌ Lỗi tìm lớp:',
+        error
+      );
+
+      toast('Không thể kiểm tra mã lớp.');
+      return;
+    }
+
+    if (!classItem) {
+      toast('Không tìm thấy lớp có mã ' + code + '.');
+      return;
+    }
+
+    // Chuẩn hóa dữ liệu cho giao diện học sinh hiện tại
+    const studentClass = {
+      id: classItem.id,
+      name: classItem.name,
+      code: classItem.class_code
+    };
+
+    window.studentClassItem = studentClass;
+
+    // Ẩn màn hình đăng nhập
+    document
+      .getElementById('authScreen')
+      ?.classList.add('hidden');
+
+    // Hiện cổng học sinh
+    document
+      .getElementById('studentPortal')
+      ?.classList.add('show');
+
+    toast(
+      '🎉 Đã vào lớp ' +
+      studentClass.name +
+      '!'
+    );
+
+    console.log(
+      '✅ Học sinh đã vào lớp:',
+      studentClass
+    );
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi enterStudentClass:',
+      error
+    );
+
+    toast('Có lỗi xảy ra khi vào lớp.');
+  }
+}
 function updateDate() {
   const date = new Intl.DateTimeFormat('vi-VN', {
     weekday: 'long', day: 'numeric', month: 'long'
