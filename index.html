@@ -1714,19 +1714,22 @@ async function completeTask(taskId, petId) {
       return;
     }
 
-    // Tải lại Pet từ Supabase
-    await loadStudents();
+   // Tải lại Pet từ Supabase
+await loadStudents();
 
-    // Tải lại trạng thái nhiệm vụ
-    await renderTasks();
+// Tải lại trạng thái nhiệm vụ
+await renderTasks();
 
-    toast(
-      '🎉 ' +
-      studentName +
-      ' nhận +' +
-      data.reward_exp +
-      ' EXP!'
-    );
+// Tải lại hoạt động gần đây
+await renderActivity();
+
+toast(
+  '🎉 ' +
+  studentName +
+  ' nhận +' +
+  data.reward_exp +
+  ' EXP!'
+);
 
   } catch (error) {
     console.error(
