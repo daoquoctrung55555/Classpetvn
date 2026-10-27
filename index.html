@@ -1723,6 +1723,8 @@ await renderTasks();
 // Tải lại hoạt động gần đây
 await renderActivity();
 
+await renderDashboardInsights();
+    
 toast(
   '🎉 ' +
   studentName +
@@ -1854,6 +1856,8 @@ async function completeTaskForAll(taskId) {
     // Tải lại dữ liệu thật
     await loadStudents();
     await renderTasks();
+    await renderActivity();
+    await renderDashboardInsights();
 
     if (failed > 0) {
       toast(
