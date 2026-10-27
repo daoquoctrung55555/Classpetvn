@@ -1509,25 +1509,131 @@ function renderRankings() {
   list.innerHTML = pets.map((pet, index) => '<div class="rankrow"><span class="num">' + (index + 1) + '</span><span class="rpet">' + pet.emoji + '</span><span class="rname">' + pet.pet + '<small style="display:block;color:var(--muted);font-size:10px">' + pet.student + '</small></span><span class="lv">Lv.' + pet.level + '</span></div>').join('');
 }
 
-function renderActivity() {
+async function renderActivity() {
   const list = document.getElementById('activityList');
-  let activities = [];
-  try { activities = JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { activities = []; }
-  activities = activities.slice(0, 20);
-  if (!activities.length) {
-    list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có lịch sử cho ăn.</p>';
+
+  if (!list) return;
+
+  if (!currentClass || !currentClass.id) {
+    list.innerHTML =
+      '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa chọn lớp.</p>';
     return;
   }
-  list.innerHTML = activities.map(item => '<div class="event"><div class="event-icon">🍖</div><div><b>' + item.text + '</b><p>' + item.time + '</p></div></div>').join('');
+
+  try {
+    const { data: activities, error } =
+      await supabaseClient
+        .from('activities')
+        .select('*')
+        .eq('class_id', currentClass.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+    if (error) {
+      console.error(
+        '❌ Lỗi tải lịch sử hoạt động:',
+        error
+      );
+
+      list.innerHTML =
+        '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Không tải được lịch sử hoạt động.</p>';
+
+      return;
+    }
+
+    if (!activities || activities.length === 0) {
+      list.innerHTML =
+        '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có hoạt động nào.</p>';
+
+      return;
+    }
+
+    list.innerHTML = activities.map(item => {
+
+      const time = item.created_at
+        ? new Intl.DateTimeFormat('vi-VN', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          }).format(new Date(item.created_at))
+        : '';
+
+      return `
+        <div class="event">
+
+          <div class="event-icon">
+            🐾
+          </div>
+
+          <div>
+            <b>${escapeHtml(item.action || '')}</b>
+            <p>${time}</p>
+          </div>
+
+        </div>
+      `;
+
+    }).join('');
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi renderActivity:',
+      error
+    );
+
+    list.innerHTML =
+      '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Có lỗi khi tải lịch sử hoạt động.</p>';
+  }
 }
 
-function addActivity(text) {
-  let activities = [];
-  try { activities = JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { activities = []; }
-  activities.unshift({ text, time: new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date()), timestamp: Date.now() });
-  localStorage.setItem(activityKey, JSON.stringify(activities.slice(0, 20)));
-  renderActivity();
-  if (typeof renderDashboardInsights === 'function') renderDashboardInsights();
+async function addActivity(text, studentId = null) {
+  if (!currentClass || !currentClass.id) {
+    console.log(
+      'Chưa có lớp hiện tại, không thể lưu hoạt động.'
+    );
+    return;
+  }
+
+  if (!text || !text.trim()) return;
+
+  try {
+    const { data, error } =
+      await supabaseClient
+        .from('activities')
+        .insert({
+          class_id: currentClass.id,
+          student_id: studentId || null,
+          action: text.trim()
+        })
+        .select()
+        .single();
+
+    if (error) {
+      console.error(
+        '❌ Không lưu được hoạt động:',
+        error
+      );
+      return;
+    }
+
+    console.log(
+      '✅ Đã lưu hoạt động:',
+      data
+    );
+
+    await renderActivity();
+
+    if (
+      typeof renderDashboardInsights === 'function'
+    ) {
+      renderDashboardInsights();
+    }
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi addActivity:',
+      error
+    );
+  }
 }
 const taskModal = document.getElementById('taskModal');
 
