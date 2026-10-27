@@ -3936,13 +3936,6 @@ document.getElementById('switchAuth').addEventListener('click', () => {
 });
 
 
-  pet.appendChild(feedButton);
-  pet.addEventListener('click', event => {
-    if (event.target.closest('button')) return;
-    openPetModal(pet);
-  });
-});
-
 document.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (button && !button.closest('.pet')) playUiSound('click');
