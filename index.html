@@ -2439,7 +2439,6 @@ async function feedPet(pet) {
     return;
   }
 
-  // ID này phải là UUID thật của bảng pets
   const petId = pet.dataset.id;
 
   if (!petId) {
@@ -2448,170 +2447,143 @@ async function feedPet(pet) {
     return;
   }
 
-  playAnimalSound(
-    pet.querySelector('.pet-face').textContent
-  );
-
-  const current = parseInt(
-    pet.querySelector('.meta b').textContent,
-    10
-  );
-
   const petName =
     pet.querySelector('.meta span')
       .textContent
       .split(' · ')[0];
 
-  const studentName =
-    pet.querySelector('h4').textContent;
-
-  const level =
+  const oldLevel =
     parseInt(pet.dataset.level || '1', 10);
 
-  const settings = getSettings();
+  try {
+    // Supabase tự kiểm tra giới hạn và cộng EXP
+    const { data, error } =
+      await supabaseClient.rpc(
+        'feed_pet',
+        {
+          p_pet_id: petId
+        }
+      );
 
-  // ==========================
-  // TÍNH EXP + LEVEL MỚI
-  // ==========================
+    if (error) {
+      console.error('❌ Lỗi feed_pet:', error);
+      toast('Không thể cho Pet ăn: ' + error.message);
+      return;
+    }
 
-  let exp =
-    parseInt(pet.dataset.exp || '0', 10)
-    + settings.feedExp;
+    if (!data?.success) {
 
-  let nextLevel = level;
+      if (data?.dead) {
+        playUiSound('error');
+        toast('Pet đã qua đời. Hãy hồi sinh trước.');
+        return;
+      }
 
-  while (exp >= getLevelCost(nextLevel)) {
-    exp -= getLevelCost(nextLevel);
-    nextLevel++;
-  }
+      if (data?.limit_reached) {
+        playUiSound('error');
 
-  const newHunger =
-    Math.min(100, current + settings.feedHunger);
+        toast(
+          '🍖 ' +
+          petName +
+          ' đã được cho ăn đủ ' +
+          data.daily_limit +
+          ' lần hôm nay.'
+        );
 
-  const now = new Date();
+        return;
+      }
 
-  // ==========================
-  // LƯU VÀO SUPABASE TRƯỚC
-  // ==========================
+      toast(
+        data?.message ||
+        'Không thể cho Pet ăn.'
+      );
 
-  const { data: updatedPets, error } =
-  await supabaseClient
-    .from('pets')
-    .update({
-      hunger: newHunger,
-      exp: exp,
-      level: nextLevel,
-      status: 'ok',
-      last_fed_at: now.toISOString(),
-      updated_at: now.toISOString()
-    })
-    .eq('id', petId)
-    .select();
+      return;
+    }
 
-if (error) {
-  console.error('❌ Lỗi cập nhật Pet:', error);
-  console.log('Pet ID đang dùng:', petId);
+    // Phát âm thanh chỉ khi cho ăn thành công
+    playAnimalSound(
+      pet.querySelector('.pet-face').textContent
+    );
 
-  toast('Không lưu được trạng thái Pet: ' + error.message);
-  return;
-}
+    // Cập nhật dữ liệu Pet trên giao diện
+    pet.dataset.exp = data.exp;
+    pet.dataset.level = data.level;
+    pet.dataset.lastFedAt = Date.now();
+    pet.dataset.dead = 'false';
 
-if (!updatedPets || updatedPets.length === 0) {
-  console.error('❌ Không tìm thấy Pet để UPDATE.');
-  console.log('Pet ID trên giao diện:', petId);
+    pet.querySelector('.meta span').textContent =
+      petName + ' · Lv.' + data.level;
 
-  toast('Không tìm thấy Pet này trong Supabase.');
-  return;
-}
+    const levelBadge =
+      pet.querySelector('.level-badge strong');
 
-const updatedPet = updatedPets[0];
+    if (levelBadge) {
+      levelBadge.textContent = data.level;
+    }
 
-  console.log(
-    '✅ Đã lưu Pet vào Supabase:',
-    updatedPet
-  );
-
-  // ==========================
-  // CẬP NHẬT GIAO DIỆN
-  // ==========================
-
-  pet.dataset.exp = updatedPet.exp;
-  pet.dataset.level = updatedPet.level;
-
-  pet.dataset.lastFedAt =
-  new Date(updatedPet.last_fed_at).getTime();
-
-  pet.dataset.dead = 'false';
-
-  pet.querySelector('.meta span').textContent =
-    petName + ' · Lv.' + updatedPet.level;
-
-  const levelBadge =
-    pet.querySelector('.level-badge strong');
-
-  if (levelBadge) {
-    levelBadge.textContent = updatedPet.level;
-  }
-
-  updatePetStatus(
-    pet,
-    updatedPet.hunger,
-    false
-  );
-
-  showFeedEffect(pet);
-
-  pet.classList.add(
-    'fed',
-    'eating'
-  );
-
-  if (updatedPet.level > level) {
-    showEvolutionNotice(
+    updatePetStatus(
       pet,
-      petName,
-      updatedPet.level
+      data.hunger,
+      false
     );
-  }
 
-  setTimeout(() => {
-    pet.classList.remove(
+    showFeedEffect(pet);
+
+    pet.classList.add(
       'fed',
-      'eating',
-      'level-up'
+      'eating'
     );
-  }, 900);
 
-  // ==========================
-  // THÔNG BÁO
-  // ==========================
+    if (data.level > oldLevel) {
+      showEvolutionNotice(
+        pet,
+        petName,
+        data.level
+      );
+    }
 
-  toast(
-    updatedPet.level > level
-      ? '✨ PET TIẾN HÓA! ' +
+    setTimeout(() => {
+      pet.classList.remove(
+        'fed',
+        'eating',
+        'level-up'
+      );
+    }, 900);
+
+    // RPC đã tự ghi activity
+    await renderActivity();
+
+    await updateStats();
+    renderRankings();
+    await renderDashboardInsights();
+
+    if (data.level > oldLevel) {
+      toast(
+        '✨ PET TIẾN HÓA! ' +
         petName +
         ' đã lên cấp ' +
-        updatedPet.level +
+        data.level +
         '!'
-      : '🍖 ' +
+      );
+    } else {
+      toast(
+        '🍖 ' +
         petName +
         ' vừa được chăm sóc, +' +
-        settings.feedExp +
-        ' EXP!'
-  );
+        data.feed_exp +
+        ' EXP! (' +
+        data.today_count +
+        '/' +
+        data.daily_limit +
+        ' lần hôm nay)'
+      );
+    }
 
-  updateStats();
-  renderRankings();
-
-  addActivity(
-    'Đã cho ' +
-    petName +
-    ' của ' +
-    studentName +
-    ' ăn · +' +
-    settings.feedExp +
-    ' EXP.'
-  );
+  } catch (error) {
+    console.error('❌ Lỗi feedPet:', error);
+    toast('Có lỗi xảy ra khi cho Pet ăn.');
+  }
 }
 function saveHealth() {
   const health = {};
