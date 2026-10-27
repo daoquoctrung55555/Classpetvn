@@ -288,6 +288,9 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
     <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+  
 <script>
 const modal = document.getElementById('modal');
 const sessionKey = 'classpet-session';
@@ -3978,7 +3981,5 @@ window.addEventListener('click', event => {
   .getElementById('studentEnterButton')
   .addEventListener('click', enterStudentClass);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
 </body>
 </html>
