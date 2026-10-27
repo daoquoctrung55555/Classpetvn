@@ -3532,7 +3532,7 @@ async function renderDashboardInsights() {
   }
 }
 
-function updateStats() {
+async function updateStats() {
   checkPetLifetimes();
   const counts = { ok: 0, hungry: 0, danger: 0 };
   document.querySelectorAll('.pet').forEach(pet => counts[pet.dataset.status]++);
