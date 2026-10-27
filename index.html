@@ -3148,28 +3148,388 @@ function toggleTheme() {
   document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
 }
 
-function renderDashboardInsights() {
-  const pets = [...document.querySelectorAll('.pet')];
-  const activities = (() => { try { return JSON.parse(localStorage.getItem(activityKey) || '[]'); } catch (error) { return []; } })();
-  const now = Date.now();
-  const week = activities.filter(item => now - Number(item.timestamp || 0) <= 7 * 86400000);
-  const month = activities.filter(item => now - Number(item.timestamp || 0) <= 30 * 86400000);
-  const expFrom = items => items.reduce((sum, item) => { const match = String(item.text).match(/\+(\d+)\s*EXP/); return sum + (match ? Number(match[1]) : 0); }, 0);
-  document.getElementById('weeklyExp').textContent = expFrom(week);
-  document.getElementById('monthlyExp').textContent = expFrom(month);
-  const tasks = getTasks();
-  document.getElementById('completedTasks').textContent = tasks.reduce((sum, task) => sum + task.completed.length, 0);
-  document.getElementById('evolvedPets').textContent = pets.filter(pet => Number(pet.dataset.level || 1) >= 11).length;
-  const chart = document.getElementById('expChart');
-  const values = Array.from({ length: 7 }, (_, index) => { const start = new Date(now - (6 - index) * 86400000); start.setHours(0, 0, 0, 0); const end = start.getTime() + 86400000; return activities.filter(item => Number(item.timestamp || 0) >= start.getTime() && Number(item.timestamp || 0) < end).reduce((sum, item) => sum + expFrom([item]), 0); });
-  const max = Math.max(...values, 1);
-  chart.innerHTML = values.map((value, index) => '<i style="height:' + Math.max(8, value / max * 100) + '%"><span>' + (index === 6 ? 'Hôm nay' : '-' + (6 - index)) + '</span></i>').join('');
-  const notices = pets.filter(pet => pet.dataset.dead === 'true' || Number(pet.querySelector('.meta b').textContent) < 50).slice(0, 5);
-  document.getElementById('noticeList').innerHTML = notices.length ? notices.map(pet => '<div class="notice-item">' + (pet.dataset.dead === 'true' ? '💀' : '⚠️') + '<div><b>' + pet.querySelector('.meta span').textContent.split(' · ')[0] + '</b><small>' + (pet.dataset.dead === 'true' ? 'Pet đã qua đời, cần hồi sinh.' : 'Pet đang đói hoặc nguy hiểm.') + '</small></div></div>').join('') : '<div class="notice-item">✅<div><b>Lớp đang ổn định</b><small>Không có cảnh báo chăm sóc mới.</small></div></div>';
-  const badges = [{ icon: '🍖', title: 'Chăm sóc tận tâm', text: 'Có Pet được chăm sóc', unlocked: pets.length > 0 }, { icon: '🎯', title: 'Người giao nhiệm vụ', text: 'Tạo nhiệm vụ cho lớp', unlocked: tasks.length > 0 }, { icon: '✨', title: 'Nhà tiến hóa', text: 'Có Pet đạt Lv.11+', unlocked: pets.some(pet => Number(pet.dataset.level || 1) >= 11) }, { icon: '👑', title: 'Huyền thoại', text: 'Có Pet đạt Lv.31+', unlocked: pets.some(pet => Number(pet.dataset.level || 1) >= 31) }];
-  document.getElementById('achievementList').innerHTML = badges.map(badge => '<div class="achievement ' + (badge.unlocked ? '' : 'locked') + '"><b>' + badge.icon + ' ' + badge.title + '</b><small>' + badge.text + '</small></div>').join('');
-  const top = pets.sort((a, b) => Number(b.dataset.level || 1) - Number(a.dataset.level || 1) || Number(b.dataset.exp || 0) - Number(a.dataset.exp || 0)).slice(0, 3);
-  document.getElementById('topThreeList').innerHTML = top.length ? top.map((pet, index) => '<div class="rankrow"><span class="num">' + (index + 1) + '</span><span class="rpet">' + pet.querySelector('.pet-face').textContent + '</span><span class="rname">' + pet.querySelector('.meta span').textContent.split(' · ')[0] + '<small style="display:block;color:var(--muted);font-size:10px">' + pet.querySelector('h4').textContent + '</small></span><span class="lv">Lv.' + pet.dataset.level + '</span></div>').join('') : '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px">Chưa có Pet.</p>';
+async function renderDashboardInsights() {
+  const pets =
+    [...document.querySelectorAll('.pet')];
+
+  if (!currentClass || !currentClass.id) {
+    return;
+  }
+
+  try {
+    // 1. Lấy activities từ Supabase
+    const { data: activities, error: activityError } =
+      await supabaseClient
+        .from('activities')
+        .select('*')
+        .eq('class_id', currentClass.id)
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+    if (activityError) {
+      console.error(
+        '❌ Lỗi tải Dashboard activities:',
+        activityError
+      );
+    }
+
+    // 2. Lấy tasks
+    const { data: tasks, error: taskError } =
+      await supabaseClient
+        .from('tasks')
+        .select('id')
+        .eq('class_id', currentClass.id);
+
+    if (taskError) {
+      console.error(
+        '❌ Lỗi tải Dashboard tasks:',
+        taskError
+      );
+    }
+
+    const taskIds =
+      (tasks || []).map(task => task.id);
+
+    // 3. Lấy số lượt hoàn thành nhiệm vụ
+    let completions = [];
+
+    if (taskIds.length) {
+      const { data, error } =
+        await supabaseClient
+          .from('task_completions')
+          .select('task_id, pet_id')
+          .in('task_id', taskIds);
+
+      if (error) {
+        console.error(
+          '❌ Lỗi tải task completions:',
+          error
+        );
+      } else {
+        completions = data || [];
+      }
+    }
+
+    const activityData = activities || [];
+    const taskData = tasks || [];
+
+    const now = Date.now();
+
+    // 4. Hoạt động 7 ngày / 30 ngày
+    const week = activityData.filter(item => {
+      const timestamp =
+        new Date(item.created_at).getTime();
+
+      return (
+        now - timestamp <=
+        7 * 86400000
+      );
+    });
+
+    const month = activityData.filter(item => {
+      const timestamp =
+        new Date(item.created_at).getTime();
+
+      return (
+        now - timestamp <=
+        30 * 86400000
+      );
+    });
+
+    // Tìm +XX EXP trong nội dung activity
+    const expFrom = items =>
+      items.reduce((sum, item) => {
+
+        const match =
+          String(item.action || '')
+            .match(/\+(\d+)\s*EXP/i);
+
+        return (
+          sum +
+          (match ? Number(match[1]) : 0)
+        );
+
+      }, 0);
+
+    document.getElementById('weeklyExp').textContent =
+      expFrom(week);
+
+    document.getElementById('monthlyExp').textContent =
+      expFrom(month);
+
+    // 5. Tổng lượt hoàn thành nhiệm vụ
+    document.getElementById(
+      'completedTasks'
+    ).textContent = completions.length;
+
+    // 6. Pet tiến hóa
+    document.getElementById(
+      'evolvedPets'
+    ).textContent =
+      pets.filter(
+        pet =>
+          Number(pet.dataset.level || 1) >= 11
+      ).length;
+
+    // 7. Biểu đồ EXP 7 ngày
+    const chart =
+      document.getElementById('expChart');
+
+    const values =
+      Array.from(
+        { length: 7 },
+        (_, index) => {
+
+          const start =
+            new Date(
+              now -
+              (6 - index) * 86400000
+            );
+
+          start.setHours(0, 0, 0, 0);
+
+          const end =
+            start.getTime() + 86400000;
+
+          const items =
+            activityData.filter(item => {
+
+              const timestamp =
+                new Date(
+                  item.created_at
+                ).getTime();
+
+              return (
+                timestamp >= start.getTime() &&
+                timestamp < end
+              );
+            });
+
+          return expFrom(items);
+        }
+      );
+
+    const max =
+      Math.max(...values, 1);
+
+    chart.innerHTML =
+      values.map((value, index) => `
+        <i style="height:${
+          Math.max(
+            8,
+            value / max * 100
+          )
+        }%">
+          <span>
+            ${
+              index === 6
+                ? 'Hôm nay'
+                : '-' + (6 - index)
+            }
+          </span>
+        </i>
+      `).join('');
+
+    // 8. Cảnh báo Pet
+    const notices =
+      pets.filter(pet =>
+        pet.dataset.dead === 'true' ||
+        Number(
+          pet.querySelector('.meta b')
+            .textContent
+        ) < 50
+      ).slice(0, 5);
+
+    document.getElementById(
+      'noticeList'
+    ).innerHTML =
+      notices.length
+        ? notices.map(pet => `
+            <div class="notice-item">
+              ${
+                pet.dataset.dead === 'true'
+                  ? '💀'
+                  : '⚠️'
+              }
+
+              <div>
+                <b>
+                  ${
+                    escapeHtml(
+                      pet.querySelector(
+                        '.meta span'
+                      ).textContent
+                        .split(' · ')[0]
+                    )
+                  }
+                </b>
+
+                <small>
+                  ${
+                    pet.dataset.dead === 'true'
+                      ? 'Pet đã qua đời, cần hồi sinh.'
+                      : 'Pet đang đói hoặc nguy hiểm.'
+                  }
+                </small>
+              </div>
+            </div>
+          `).join('')
+
+        : `
+          <div class="notice-item">
+            ✅
+            <div>
+              <b>Lớp đang ổn định</b>
+              <small>
+                Không có cảnh báo chăm sóc mới.
+              </small>
+            </div>
+          </div>
+        `;
+
+    // 9. Thành tựu
+    const badges = [
+      {
+        icon: '🍖',
+        title: 'Chăm sóc tận tâm',
+        text: 'Có Pet được chăm sóc',
+        unlocked: pets.length > 0
+      },
+      {
+        icon: '🎯',
+        title: 'Người giao nhiệm vụ',
+        text: 'Tạo nhiệm vụ cho lớp',
+        unlocked: taskData.length > 0
+      },
+      {
+        icon: '✨',
+        title: 'Nhà tiến hóa',
+        text: 'Có Pet đạt Lv.11+',
+        unlocked: pets.some(
+          pet =>
+            Number(
+              pet.dataset.level || 1
+            ) >= 11
+        )
+      },
+      {
+        icon: '👑',
+        title: 'Huyền thoại',
+        text: 'Có Pet đạt Lv.31+',
+        unlocked: pets.some(
+          pet =>
+            Number(
+              pet.dataset.level || 1
+            ) >= 31
+        )
+      }
+    ];
+
+    document.getElementById(
+      'achievementList'
+    ).innerHTML =
+      badges.map(badge => `
+        <div class="achievement ${
+          badge.unlocked
+            ? ''
+            : 'locked'
+        }">
+          <b>
+            ${badge.icon}
+            ${badge.title}
+          </b>
+
+          <small>
+            ${badge.text}
+          </small>
+        </div>
+      `).join('');
+
+    // 10. Top 3 Pet
+    const top =
+      [...pets]
+        .sort(
+          (a, b) =>
+            Number(b.dataset.level || 1) -
+            Number(a.dataset.level || 1) ||
+
+            Number(b.dataset.exp || 0) -
+            Number(a.dataset.exp || 0)
+        )
+        .slice(0, 3);
+
+    document.getElementById(
+      'topThreeList'
+    ).innerHTML =
+      top.length
+        ? top.map((pet, index) => `
+            <div class="rankrow">
+
+              <span class="num">
+                ${index + 1}
+              </span>
+
+              <span class="rpet">
+                ${
+                  pet.querySelector(
+                    '.pet-face'
+                  ).textContent
+                }
+              </span>
+
+              <span class="rname">
+                ${
+                  escapeHtml(
+                    pet.querySelector(
+                      '.meta span'
+                    ).textContent
+                      .split(' · ')[0]
+                  )
+                }
+
+                <small
+                  style="
+                    display:block;
+                    color:var(--muted);
+                    font-size:10px
+                  "
+                >
+                  ${
+                    escapeHtml(
+                      pet.querySelector(
+                        'h4'
+                      ).textContent
+                    )
+                  }
+                </small>
+              </span>
+
+              <span class="lv">
+                Lv.${pet.dataset.level}
+              </span>
+
+            </div>
+          `).join('')
+
+        : `
+          <p
+            style="
+              color:var(--muted);
+              font-size:12px;
+              text-align:center;
+              padding:15px
+            "
+          >
+            Chưa có Pet.
+          </p>
+        `;
+
+  } catch (error) {
+    console.error(
+      '❌ Lỗi renderDashboardInsights:',
+      error
+    );
+  }
 }
 
 function updateStats() {
@@ -3196,7 +3556,7 @@ document.getElementById('studentCount').textContent =
   document.getElementById('totalLevel').textContent = totalLevel;
   updateClassProgress();
   renderCareAlerts();
-  renderDashboardInsights();
+  await renderDashboardInsights();
 }
 
 function applyFilters() {
