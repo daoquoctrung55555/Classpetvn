@@ -3973,6 +3973,27 @@ window.addEventListener('click', event => {
   document
   .getElementById('studentEnterButton')
   .addEventListener('click', enterStudentClass);
+
+  const teacherModeButton = document.getElementById('teacherModeButton');
+const studentModeButton = document.getElementById('studentModeButton');
+const teacherLoginFields = document.getElementById('teacherLoginFields');
+const studentLoginFields = document.getElementById('studentLoginFields');
+
+teacherModeButton.addEventListener('click', () => {
+  teacherModeButton.classList.add('active');
+  studentModeButton.classList.remove('active');
+
+  teacherLoginFields.style.display = 'block';
+  studentLoginFields.classList.remove('active');
+});
+
+studentModeButton.addEventListener('click', () => {
+  studentModeButton.classList.add('active');
+  teacherModeButton.classList.remove('active');
+
+  teacherLoginFields.style.display = 'none';
+  studentLoginFields.classList.add('active');
+});
 </script>
 </body>
 </html>
