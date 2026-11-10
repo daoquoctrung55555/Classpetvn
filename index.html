@@ -418,7 +418,11 @@ function usernameExists(username) {
 
 function getCurrentAccount() {
   const username = sessionStorage.getItem(sessionKey);
-  return getAccounts().find(account => account.username === username) || null;
+  if (!username) return null;
+  const normalizedUsername = String(username).trim().toLowerCase();
+  return getAccounts().find(account =>
+    String(account.username || '').trim().toLowerCase() === normalizedUsername
+  ) || null;
 }
 
 function isLoggedIn() {
@@ -536,16 +540,15 @@ if (dateText) {
       item => item.username === currentAccount.username
     );
 
-  if (accountIndex >= 0) {
-    accounts[accountIndex] = {
-      ...accounts[accountIndex],
-      ...currentAccount,
-      classes: currentAccount.classes,
-      activeClassId: currentAccount.activeClassId
-    };
-
-    saveAccounts(accounts);
-  }
+  const accountToPersist = {
+    ...(accountIndex >= 0 ? accounts[accountIndex] : {}),
+    ...currentAccount,
+    classes: currentAccount.classes,
+    activeClassId: currentAccount.activeClassId
+  };
+  if (accountIndex >= 0) accounts[accountIndex] = accountToPersist;
+  else accounts.push(accountToPersist);
+  saveAccounts(accounts);
  
   document.getElementById('welcomeTitle').textContent = 'Chào giáo viên! 👋';
   document.getElementById('profileName').textContent = account.name;
@@ -795,8 +798,11 @@ closeClassModal();
 
 toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${newClass.code}`);
 
-  // Tải lại trang để cập nhật dữ liệu
-  
+  // Đồng bộ lại danh sách lớp, Pet, học sinh và thống kê từ Supabase.
+  // Không tải lại toàn bộ trang để tránh mất phiên đăng nhập.
+  await applyAccount(currentAccount);
+  closeClassModal();
+  toast(`🎉 Đã tạo lớp ${name} — Mã lớp: ${newClass.code}`);
 });
 
 
@@ -3421,7 +3427,7 @@ async function renderDashboardInsights() {
         icon: '🎯',
         title: 'Người giao nhiệm vụ',
         text: 'Tạo nhiệm vụ cho lớp',
-        unlocked: taskData.length > 0
+        unlocked: (tasks || []).length > 0
       },
       {
         icon: '✨',
