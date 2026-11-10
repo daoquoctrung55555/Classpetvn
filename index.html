@@ -4310,11 +4310,47 @@ if (localStorage.getItem('classpet-theme') === 'dark') {
   document.getElementById('themeToggle').textContent = '☀️';
 }
 
-const loggedInAccount = getCurrentAccount();
-if (loggedInAccount) {
-  applyAccount(loggedInAccount);
-  document.getElementById('authScreen').classList.add('hidden');
+// Khôi phục phiên giáo viên từ Supabase Auth trên mọi thiết bị/trình duyệt.
+// Supabase JS tự lưu và làm mới refresh token; không phụ thuộc sessionStorage.
+async function restoreTeacherSession() {
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+
+    const user = data?.session?.user;
+    if (!user) {
+      sessionStorage.removeItem(sessionKey);
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('teacher_profiles')
+      .select('full_name, school_name, class_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+
+    const account = {
+      username: user.email || '',
+      name: profile?.full_name || user.email || 'Giáo viên',
+      schoolName: profile?.school_name || '',
+      className: profile?.class_name || '',
+      role: 'Giáo viên chủ nhiệm'
+    };
+
+    await loadSettingsFromSupabase();
+    await applyAccount(account);
+    sessionStorage.setItem(sessionKey, account.username);
+    document.getElementById('authScreen')?.classList.add('hidden');
+  } catch (error) {
+    console.error('Không thể khôi phục phiên Supabase:', error);
+    sessionStorage.removeItem(sessionKey);
+    document.getElementById('authScreen')?.classList.remove('hidden');
+  }
 }
+
+restoreTeacherSession();
 window.addEventListener('click', event => {
   if (event.target === modal) closeModal();
   if (event.target === profileModal) closeProfileModal();
