@@ -3612,43 +3612,107 @@ function feedSelectedPet() {
   toast('🍖 Đã chăm sóc ' + name);
 }
 
-function getStudentRewardKey(account, classItem, studentName, petName) { return 'classpet-student-reward-' + account.username.toLowerCase() + '-' + classItem.id + '-' + encodeURIComponent((studentName || 'student') + '-' + (petName || 'pet')); }
-function getTodayKey() { return new Date().toISOString().slice(0, 10); }
-function getStudentRewardData(account, classItem, studentName, petName) { try { return JSON.parse(localStorage.getItem(getStudentRewardKey(account, classItem, studentName, petName)) || '{}'); } catch (error) { return {}; } }
-function saveStudentRewardData(account, classItem, studentName, petName, data) { localStorage.setItem(getStudentRewardKey(account, classItem, studentName, petName), JSON.stringify(data)); }
 function updateStudentRewardUI(pets, account, classItem) {
   const select = document.getElementById('studentRewardPet');
   const ownPets = pets.filter(pet => account.studentPetId
     ? pet.id === account.studentPetId
     : pet.student === account.studentName && pet.pet === account.studentPetName);
-  const selectedPet = ownPets[0];
-  const today = getTodayKey(); const data = getStudentRewardData(account, classItem, account.studentName, account.studentPetName);
-  const used = data.date === today;
-  select.innerHTML = ownPets.length ? ownPets.map((pet, index) => '<option value="' + pets.indexOf(pet) + '">' + pet.emoji + ' ' + pet.pet + ' · ' + (Number(data.petUses && data.petUses[pets.indexOf(pet)] || 0)) + '/3 lượt hôm nay</option>').join('') : '<option>Em chưa có Pet</option>';
-  const button = document.getElementById('studentRewardButton'); button.disabled = used || !pets.length;
-  document.getElementById('studentRewardStatus').textContent = used ? 'Em đã sử dụng lượt quay miễn phí hôm nay.' : (ownPets.length ? 'Mỗi học sinh được quay 1 lần mỗi ngày cho Pet của mình.' : 'Em chưa được gán Pet trong lớp.');
+  select.innerHTML = ownPets.length
+    ? ownPets.map(pet => '<option value="' + escapeHtml(pet.id) + '">' + escapeHtml(pet.emoji || '🐱') + ' ' + escapeHtml(pet.pet) + '</option>').join('')
+    : '<option value="">Em chưa có Pet</option>';
+
+  const button = document.getElementById('studentRewardButton');
+  if (button) button.disabled = !ownPets.length;
+  const status = document.getElementById('studentRewardStatus');
+  if (status) status.textContent = ownPets.length
+    ? 'Mỗi học sinh được quay 1 lần mỗi ngày. Phần thưởng sẽ được lưu trên hệ thống.'
+    : 'Em chưa được gán Pet trong lớp.';
 }
-function spinStudentReward() {
-  const classItem = window.studentClassItem, account = window.studentAccount; if (!classItem || !account) return;
-  const username = account.username.toLowerCase(), key = 'classpet-students-' + username + '-' + classItem.id; let pets = [];
-  if (!account.studentName || !account.studentPetName) { toast('Thiếu thông tin học sinh hoặc Pet.'); return; }
-  try { pets = JSON.parse(localStorage.getItem(key) || '[]'); } catch (error) { pets = []; }
-  const selectedIndex = Number(document.getElementById('studentRewardPet').value); if (!pets[selectedIndex] || pets[selectedIndex].student !== account.studentName || pets[selectedIndex].pet !== account.studentPetName) return;
-  const today = getTodayKey(), data = getStudentRewardData(account, classItem, account.studentName, account.studentPetName);
-  if (data.date === today) { toast('Em đã quay EXP hôm nay rồi.'); return; }
-  data.date = today; data.petUses = data.petUses || {};
-  Object.keys(data.petUses).forEach(index => { if (Number(data.petUses[index]) >= 3) delete data.petUses[index]; });
-  if (Number(data.petUses[selectedIndex] || 0) >= 3) { toast('Pet này đã nhận đủ 3 lượt EXP hôm nay.'); return; }
-  const reward = [10, 20, 30, 50][Math.floor(Math.random() * 4)]; const pet = pets[selectedIndex];
-  let level = Number(pet.level || 1);
-  let exp = Number(pet.exp || 0) + reward;
-  while (exp >= getLevelCost(level)) { exp -= getLevelCost(level); level++; }
-  pet.exp = exp;
-  pet.level = level;
-  data.petUses[selectedIndex] = Number(data.petUses[selectedIndex] || 0) + 1;
-  localStorage.setItem(key, JSON.stringify(pets)); saveStudentRewardData(account, classItem, account.studentName, account.studentPetName, data);
-  const card = document.getElementById('studentRewardCard'); card.classList.add('spinning');
-  setTimeout(() => { card.classList.remove('spinning'); document.getElementById('studentRewardStatus').textContent = '🎉 ' + pet.pet + ' nhận +' + reward + ' EXP!'; renderStudentPortal(classItem, account); }, 1100);
+
+async function spinStudentReward() {
+  const classItem = window.studentClassItem;
+  const account = window.studentAccount;
+  if (!classItem || !account || !account.studentName || !account.studentPetName) {
+    toast('Thiếu thông tin học sinh hoặc Pet.');
+    return;
+  }
+
+  const button = document.getElementById('studentRewardButton');
+  const status = document.getElementById('studentRewardStatus');
+  const selectedPetId = document.getElementById('studentRewardPet')?.value;
+  if (selectedPetId !== account.studentPetId) {
+    toast('Em chỉ có thể quay thưởng cho Pet của mình.');
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'ĐANG QUAY...';
+  }
+
+  try {
+    const { data, error } = await supabaseClient.rpc('student_spin_reward', {
+      p_class_code: classItem.code,
+      p_student_name: account.studentName,
+      p_pet_name: account.studentPetName
+    });
+
+    if (error) throw error;
+
+    if (!data?.success) {
+      if (data?.already_used) {
+        if (status) status.textContent = 'Em đã sử dụng lượt quay miễn phí hôm nay.';
+        toast(data.message || 'Em đã quay thưởng hôm nay rồi.');
+        return;
+      }
+      throw new Error(data?.message || 'Không thể quay thưởng.');
+    }
+
+    const { data: petsData, error: petsError } = await supabaseClient.rpc(
+      'student_get_class_pets',
+      {
+        p_class_code: classItem.code,
+        p_student_name: account.studentName,
+        p_pet_name: account.studentPetName
+      }
+    );
+    if (petsError) throw petsError;
+    if (!petsData?.success || !Array.isArray(petsData.pets)) {
+      throw new Error('Đã nhận thưởng nhưng chưa tải lại được danh sách Pet.');
+    }
+
+    const classPets = petsData.pets.map(pet => ({
+      id: pet.id,
+      pet: pet.pet,
+      student: pet.student,
+      emoji: pet.emoji || '🐱',
+      level: Number(pet.level || 1),
+      exp: Number(pet.exp || 0),
+      health: Number(pet.health ?? 100),
+      status: pet.status || 'alive'
+    }));
+
+    const card = document.getElementById('studentRewardCard');
+    if (card) card.classList.add('spinning');
+    if (status) status.textContent = '🎉 ' + account.studentPetName + ' nhận +' + data.reward_exp + ' EXP!';
+    renderStudentPortal(classItem, account, classPets, window.studentPortalTasks || []);
+
+    if (card) {
+      card.classList.add('spinning');
+      setTimeout(() => card.classList.remove('spinning'), 1100);
+    }
+    if (button) button.textContent = 'ĐÃ QUAY HÔM NAY';
+    toast('🎉 Pet nhận +' + data.reward_exp + ' EXP! Đã lưu lên hệ thống.');
+  } catch (error) {
+    console.error('Lỗi quay thưởng Supabase:', error);
+    toast('Không thể quay thưởng: ' + error.message);
+    if (status) status.textContent = 'Chưa quay được. Em hãy thử lại.';
+  } finally {
+    if (button && button.textContent !== 'ĐÃ QUAY HÔM NAY') {
+      button.disabled = false;
+      button.textContent = 'QUAY NGAY';
+    }
+  }
 }
 function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTasks = null) {
   window.studentClassItem = classItem; window.studentAccount = account;
@@ -3659,10 +3723,16 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   try {
     pets = Array.isArray(suppliedPets)
       ? suppliedPets
-      : JSON.parse(localStorage.getItem(studentKey) || '[]');
+      : (Array.isArray(window.studentPortalPets)
+          ? window.studentPortalPets
+          : JSON.parse(localStorage.getItem(studentKey) || '[]'));
     tasks = Array.isArray(suppliedTasks)
       ? suppliedTasks
-      : JSON.parse(localStorage.getItem(taskStorageKey) || '[]');
+      : (Array.isArray(window.studentPortalTasks)
+          ? window.studentPortalTasks
+          : JSON.parse(localStorage.getItem(taskStorageKey) || '[]'));
+    window.studentPortalPets = pets;
+    window.studentPortalTasks = tasks;
   } catch (error) {
     console.error('Không đọc được dữ liệu cổng học sinh:', error);
   }
