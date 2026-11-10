@@ -3197,7 +3197,27 @@ async function renderDashboardInsights() {
       nowDate.getMonth(),
       1
     );
-    const monthStartIso = monthStart.toISOString();
+    const weekStartForQuery = new Date(
+      nowDate.getFullYear(),
+      nowDate.getMonth(),
+      nowDate.getDate()
+    );
+    weekStartForQuery.setDate(
+      weekStartForQuery.getDate() - ((weekStartForQuery.getDay() + 6) % 7)
+    );
+
+    const chartStartForQuery = new Date(
+      nowDate.getFullYear(),
+      nowDate.getMonth(),
+      nowDate.getDate() - 6
+    );
+
+    const queryStart = new Date(Math.min(
+      monthStart.getTime(),
+      weekStartForQuery.getTime(),
+      chartStartForQuery.getTime()
+    ));
+    const queryStartIso = queryStart.toISOString();
 
     let activityData = [];
     const pageSize = 1000;
@@ -3208,7 +3228,7 @@ async function renderDashboardInsights() {
         .from('activities')
         .select('id, action, exp_delta, created_at')
         .eq('class_id', currentClass.id)
-        .gte('created_at', monthStartIso)
+        .gte('created_at', queryStartIso)
         .order('created_at', { ascending: true })
         .range(activityFrom, activityFrom + pageSize - 1);
 
