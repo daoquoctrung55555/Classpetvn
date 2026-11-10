@@ -3738,27 +3738,45 @@ async function enterStudentClass() {
       studentPetName: data.pet_name
     };
 
-    // Chuẩn hóa Pet từ dữ liệu Supabase cho giao diện học sinh hiện tại.
-    const ownPet = {
-      id: data.pet_id,
-      pet: data.pet_name,
-      student: data.student_name,
-      emoji: data.pet_emoji || '🐱',
-      level: Number(data.level || 1),
-      exp: Number(data.exp || 0),
-      health: Number(data.hunger ?? 100)
-    };
-
     window.studentClassItem = studentClass;
     window.studentAccount = studentAccount;
 
-    // Hiển thị cổng học sinh sau khi xác thực thành công.
+    // Lấy danh sách Pet toàn lớp sau khi xác thực học sinh thành công.
+    const { data: classPetsData, error: classPetsError } = await supabaseClient.rpc(
+      'student_get_class_pets',
+      {
+        p_class_code: code,
+        p_student_name: name,
+        p_pet_name: petName
+      }
+    );
+
+    if (classPetsError) {
+      console.error('Lỗi student_get_class_pets:', classPetsError);
+      if (errorBox) errorBox.textContent = 'Đăng nhập thành công nhưng chưa tải được danh sách Pet của lớp: ' + classPetsError.message;
+      return;
+    }
+
+    if (!classPetsData?.success || !Array.isArray(classPetsData.pets)) {
+      if (errorBox) errorBox.textContent = classPetsData?.message || 'Không tải được danh sách Pet của lớp.';
+      return;
+    }
+
+    const classPets = classPetsData.pets.map(pet => ({
+      id: pet.id,
+      pet: pet.pet,
+      student: pet.student,
+      emoji: pet.emoji || '🐱',
+      level: Number(pet.level || 1),
+      exp: Number(pet.exp || 0),
+      health: Number(pet.health ?? 100),
+      status: pet.status || 'alive'
+    }));
+
+    // Hiển thị toàn bộ Pet trong lớp từ Supabase.
     document.getElementById('authScreen')?.classList.add('hidden');
     document.getElementById('studentPortal')?.classList.add('show');
-
-    // Tạm thời hiển thị Pet đã xác thực; dữ liệu Pet/nhiệm vụ toàn lớp
-    // sẽ được chuyển sang Supabase ở bước tiếp theo.
-    renderStudentPortal(studentClass, studentAccount, [ownPet]);
+    renderStudentPortal(studentClass, studentAccount, classPets);
 
     document.getElementById('studentWelcome').textContent =
       'Chào ' + data.student_name + '! 👋';
