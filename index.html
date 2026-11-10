@@ -3677,84 +3677,99 @@ function renderStudentPortal(classItem, account) {
 function studentScroll(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function studentLogout() { document.getElementById('studentPortal').classList.remove('show'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('studentClassCode').value = ''; document.getElementById('studentNameLogin').value = ''; document.getElementById('studentPetNameLogin').value = ''; window.studentAccount = null; window.studentClassItem = null; }
 async function enterStudentClass() {
-  const codeInput = document.getElementById('studentClassCode');
+  const name = document.getElementById('studentNameLogin')?.value.trim() || '';
+  const petName = document.getElementById('studentPetNameLogin')?.value.trim() || '';
+  const code = document.getElementById('studentClassCode')?.value.trim().toUpperCase() || '';
+  const errorBox = document.getElementById('studentAuthError');
 
-  if (!codeInput) {
-    toast('Không tìm thấy ô nhập mã lớp.');
+  if (errorBox) errorBox.textContent = '';
+
+  if (!name || !petName || !/^[A-Z0-9]{5}$/.test(code)) {
+    if (errorBox) errorBox.textContent = 'Vui lòng nhập tên học sinh, tên Pet và mã lớp gồm đúng 5 ký tự.';
     return;
   }
 
-  const code = codeInput.value
-    .trim()
-    .toUpperCase();
-
-  // Kiểm tra đúng định dạng 5 ký tự
-  if (!/^[A-Z0-9]{5}$/.test(code)) {
-    toast('Mã lớp phải gồm đúng 5 chữ cái hoặc số.');
-    return;
+  const enterButton = document.getElementById('studentEnterButton');
+  if (enterButton) {
+    enterButton.disabled = true;
+    enterButton.textContent = 'Đang kiểm tra...';
   }
 
   try {
-    // Tìm lớp thật trong Supabase
-    const { data: classItem, error } =
-      await supabaseClient
-        .from('classes')
-        .select('id, name, class_code')
-        .eq('class_code', code)
-        .maybeSingle();
+    // Xác thực đồng thời mã lớp, tên học sinh và tên Pet bằng RPC bảo mật.
+    const { data, error } = await supabaseClient.rpc(
+      'student_login_by_class_code',
+      {
+        p_class_code: code,
+        p_student_name: name,
+        p_pet_name: petName
+      }
+    );
 
     if (error) {
-      console.error(
-        '❌ Lỗi tìm lớp:',
-        error
-      );
-
-      toast('Không thể kiểm tra mã lớp.');
+      console.error('Lỗi student_login_by_class_code:', error);
+      if (errorBox) errorBox.textContent = 'Không thể đăng nhập học sinh: ' + error.message;
       return;
     }
 
-    if (!classItem) {
-      toast('Không tìm thấy lớp có mã ' + code + '.');
+    if (!data || !data.success) {
+      if (errorBox) errorBox.textContent = data?.message || 'Thông tin đăng nhập không chính xác.';
       return;
     }
 
-    // Chuẩn hóa dữ liệu cho giao diện học sinh hiện tại
     const studentClass = {
-      id: classItem.id,
-      name: classItem.name,
-      code: classItem.class_code
+      id: data.class_id,
+      name: data.class_name,
+      code: data.class_code
+    };
+
+    const studentAccount = {
+      username: name.toLowerCase(),
+      studentId: data.student_id,
+      studentName: data.student_name,
+      studentPetId: data.pet_id,
+      studentPetName: data.pet_name
+    };
+
+    // Chuẩn hóa Pet từ dữ liệu Supabase cho giao diện học sinh hiện tại.
+    const ownPet = {
+      id: data.pet_id,
+      pet: data.pet_name,
+      student: data.student_name,
+      emoji: data.pet_emoji || '🐱',
+      level: Number(data.level || 1),
+      exp: Number(data.exp || 0),
+      health: Number(data.hunger ?? 100)
     };
 
     window.studentClassItem = studentClass;
+    window.studentAccount = studentAccount;
 
-    // Ẩn màn hình đăng nhập
-    document
-      .getElementById('authScreen')
-      ?.classList.add('hidden');
+    // Hiển thị cổng học sinh sau khi xác thực thành công.
+    document.getElementById('authScreen')?.classList.add('hidden');
+    document.getElementById('studentPortal')?.classList.add('show');
 
-    // Hiện cổng học sinh
-    document
-      .getElementById('studentPortal')
-      ?.classList.add('show');
+    // Tạm thời hiển thị Pet đã xác thực; dữ liệu Pet/nhiệm vụ toàn lớp
+    // sẽ được chuyển sang Supabase ở bước tiếp theo.
+    renderStudentPortal(studentClass, studentAccount, [ownPet]);
 
-    toast(
-      '🎉 Đã vào lớp ' +
-      studentClass.name +
-      '!'
-    );
+    document.getElementById('studentWelcome').textContent =
+      'Chào ' + data.student_name + '! 👋';
 
-    console.log(
-      '✅ Học sinh đã vào lớp:',
-      studentClass
-    );
-
-  } catch (error) {
-    console.error(
-      '❌ Lỗi enterStudentClass:',
-      error
-    );
-
-    toast('Có lỗi xảy ra khi vào lớp.');
+    toast('🎉 Đăng nhập thành công! Chào mừng em đến lớp ' + data.class_name + '.');
+    console.log('Học sinh đăng nhập thành công:', {
+      classId: data.class_id,
+      studentId: data.student_id,
+      petId: data.pet_id
+    });
+  } catch (err) {
+    console.error('Lỗi enterStudentClass:', err);
+    if (errorBox) errorBox.textContent = 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.';
+  } finally {
+    if (enterButton) {
+      enterButton.disabled = false;
+      enterButton.textContent = 'Vào lớp';
+    }
   }
 }
 function updateDate() {
