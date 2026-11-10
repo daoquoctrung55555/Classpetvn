@@ -10,17 +10,5 @@ const supabaseClient = window.supabase.createClient(
 // JavaScript của ClassPet được tải inline trong index.html.
 // File này được giữ để chuẩn bị tách toàn bộ logic sang script.js.
 
-async function testSupabase() {
-  const { data, error } = await supabaseClient
-    .from("classes")
-    .select("*");
-
-  if (error) {
-    console.error("❌ Supabase lỗi:", error);
-  } else {
-    console.log("✅ Supabase đã kết nối!");
-    console.log("Dữ liệu classes:", data);
-  }
-}
-
-testSupabase();
+// Không tự truy vấn dữ liệu lớp khi tải trang.
+// Các truy vấn chỉ được thực hiện sau khi người dùng đăng nhập và theo đúng lớp được chọn.
