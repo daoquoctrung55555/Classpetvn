@@ -1053,7 +1053,60 @@ function openSettings() { if (!currentAccount) return; const s = getSettings(); 
 function closeSettings() { settingsModal.classList.remove('show'); }
 function settingsValue(key) { const el = getSettingsElement(key); return el.type === 'checkbox' ? el.checked : Number(el.value); }
 function saveSettingsAccount() { const accounts = getAccounts(); const account = accounts.find(item => item.username === currentAccount.username); account.name = document.getElementById('settingsTeacherName').value.trim(); account.schoolName = document.getElementById('settingsSchoolName').value.trim(); account.role = document.getElementById('settingsRoleName').value.trim(); saveAccounts(accounts); applyAccount(account); toast('Đã lưu thông tin tài khoản.'); }
-function saveSettingsClass() { const accounts = getAccounts(); const account = accounts.find(item => item.username === currentAccount.username); const name = document.getElementById('settingsClassName').value.trim(); if (!name) return; const classItem = account.classes.find(item => item.id === account.activeClassId); if (classItem) { classItem.name = name; classItem.year = document.getElementById('settingsSchoolYear').value.trim() || classItem.year; } account.className = name; saveAccounts(accounts); applyAccount(account); toast('Đã lưu cài đặt lớp học.'); }
+async function saveSettingsClass() {
+  if (!currentAccount || !currentClass?.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+
+  const name = document.getElementById('settingsClassName').value.trim();
+  if (!name) {
+    toast('Vui lòng nhập tên lớp.');
+    return;
+  }
+
+  try {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) throw userError || new Error('Phiên đăng nhập đã hết.');
+
+    const { data: updatedClass, error } = await supabaseClient
+      .from('classes')
+      .update({ name })
+      .eq('id', currentClass.id)
+      .eq('teacher_id', user.id)
+      .select('id, name, class_code')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!updatedClass) throw new Error('Không tìm thấy lớp hoặc bạn không có quyền cập nhật lớp này.');
+
+    currentClass.name = updatedClass.name;
+    currentClass.code = updatedClass.class_code || currentClass.code;
+    currentAccount.classes = (currentAccount.classes || []).map(item =>
+      item.id === updatedClass.id ? { ...item, name: updatedClass.name } : item
+    );
+
+    const accounts = getAccounts();
+    const accountIndex = accounts.findIndex(item =>
+      String(item.username || '').toLowerCase() === String(currentAccount.username || '').toLowerCase()
+    );
+    const persisted = {
+      ...(accountIndex >= 0 ? accounts[accountIndex] : {}),
+      ...currentAccount,
+      classes: currentAccount.classes,
+      activeClassId: currentClass.id
+    };
+    if (accountIndex >= 0) accounts[accountIndex] = persisted;
+    else accounts.push(persisted);
+    saveAccounts(accounts);
+
+    await applyAccount(currentAccount);
+    toast('Đã cập nhật tên lớp trên hệ thống.');
+  } catch (error) {
+    console.error('Lỗi cập nhật tên lớp:', error);
+    toast('Không lưu được tên lớp: ' + (error.message || 'Lỗi không xác định'));
+  }
+}
 function saveSettingsPet() { const s = getSettings(); s.feedExp = Math.max(0, Math.min(1000, Number(document.getElementById('settingsFeedExpPet').value) || 0)); ['feedHunger','dailyLimit','deathDays','bulkFeed','revive'].forEach(key => s[key] = settingsValue(key)); saveSettings(s); const expInput = document.getElementById('settingsFeedExp'); if (expInput) expInput.value = s.feedExp; toast('✅ Đã lưu cài đặt hệ thống Pet.'); }
 function saveSettingsExp() { const s = getSettings(); s.feedExp = Math.max(0, Math.min(1000, Number(document.getElementById('settingsFeedExp').value) || defaultSettings.feedExp)); s.taskExp = Math.max(1, Math.min(1000, Number(document.getElementById('settingsTaskExp').value) || defaultSettings.taskExp)); s.levelBaseExp = Math.max(1, Math.min(10000, Number(document.getElementById('settingsLevelBaseExp').value) || defaultSettings.levelBaseExp)); s.levelMultiplier = Math.max(.1, Math.min(100, Number(document.getElementById('settingsLevelMultiplier').value) || defaultSettings.levelMultiplier)); s.showExp = settingsValue('showExp'); s.levelNotice = settingsValue('levelNotice'); saveSettings(s); document.getElementById('taskExp').value = s.taskExp; document.querySelectorAll('.exp-value').forEach(el => { const pet = el.closest('.pet'); const level = Number(pet.dataset.level || 1); el.textContent = (Number(pet.dataset.exp || 0)) + ' / ' + getLevelCost(level); }); toast('✅ Đã lưu cài đặt EXP & Level.'); }
 function saveSettingsNotifications() { const s = getSettings(); ['noticeDeath','noticeHungry','noticeLevel','noticeBrowser'].forEach(key => s[key] = settingsValue(key)); saveSettings(s); toast('Đã lưu cài đặt thông báo.'); }
@@ -1077,12 +1130,18 @@ function closeProfileModal() {
   profileModal.classList.remove('show');
 }
 
-function logout() {
-  sessionStorage.removeItem(sessionKey);
-  document.getElementById('authScreen').classList.remove('hidden');
-  document.getElementById('password').value = '';
-  currentAccount = null;
-  toast('Đã đăng xuất');
+async function logout() {
+  try {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) console.error('Lỗi đăng xuất Supabase:', error);
+  } finally {
+    sessionStorage.removeItem(sessionKey);
+    currentAccount = null;
+    currentClass = null;
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('password').value = '';
+    toast('Đã đăng xuất');
+  }
 }
 
 function escapeHtml(value) {
