@@ -59,6 +59,23 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
 .student-reward{margin-top:14px;padding:18px;border-radius:17px;background:linear-gradient(135deg,#fff8df,#fff2ca);border:1px solid #f2d98b;display:flex;align-items:center;gap:15px;box-shadow:0 8px 18px #f5a62318}.student-reward-wheel{width:104px;height:104px;flex:none;position:relative;display:grid;place-items:center;border-radius:50%;font-size:27px;background:conic-gradient(#6757f5 0 25%,#ffcf56 25% 50%,#43c596 50% 75%,#ff7f91 75%);box-shadow:inset 0 0 0 7px #fff,0 8px 18px #f5a62345}.reward-wheel-center{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:0 2px 8px #23264a25;z-index:2}.reward-wheel-label{position:absolute;color:#fff;font-size:11px;font-weight:900;text-shadow:0 1px 3px #23264a80;z-index:1}.reward-10{top:16px;left:14px}.reward-20{top:16px;right:14px}.reward-30{bottom:16px;right:13px}.reward-50{bottom:16px;left:13px}.student-reward-info{min-width:0}.student-reward h3{margin:0 0 4px;font-size:14px}.student-reward p{margin:0;color:#8b7447;font-size:11px}.reward-range{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:9px}.reward-range b{width:100%;font-size:10px;color:#806933}.reward-range span{padding:4px 6px;border-radius:7px;background:#fff;color:var(--purple);font-size:10px;font-weight:850;border:1px solid #f1dda7}.student-reward button{margin-left:auto;white-space:nowrap;border:0;border-radius:10px;background:var(--purple);color:#fff;padding:10px 13px;font-size:11px;font-weight:800;cursor:pointer}.student-reward button:disabled{opacity:.55;cursor:default}
 .student-pet-card{position:relative;transition:.2s;background:linear-gradient(145deg,#fff,#f5f3ff);box-shadow:0 7px 17px #23264a08}.student-pet-card:hover{transform:translateY(-3px);box-shadow:0 12px 25px #6757f51c}.student-pet-card.mine:before{content:'PET CỦA EM';position:absolute;top:10px;right:10px;color:var(--purple);font-size:8px;font-weight:850;letter-spacing:.5px}.student-pet-card .face{filter:drop-shadow(0 7px 7px #6757f526)}
 .student-task{background:linear-gradient(110deg,#fff,#faf9ff);box-shadow:0 5px 14px #23264a08}.student-task b{color:#30364d}.student-ranking-list,.student-member-list{background:#fbfcff;border-radius:13px;padding:0 13px}.student-rank-row:first-child{color:#bd8615;font-weight:800}.student-rank-row strong{font-size:11px}.student-progress{height:11px;margin-top:10px;background:#e9edf5}.student-progress i{border-radius:99px;transition:width .5s ease}
+.student-reward-result{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,22,42,.62);backdrop-filter:blur(7px)}
+.student-reward-result.show{display:flex;animation:rewardResultFade .22s ease both}
+.student-reward-result-card{position:relative;width:min(390px,100%);padding:30px 24px 25px;border-radius:27px;text-align:center;background:radial-gradient(circle at 50% 0%,#fff8d9 0,#fff 48%);border:1px solid #fff;box-shadow:0 25px 90px #17142e55;animation:rewardResultPop .38s cubic-bezier(.2,.85,.25,1.15) both;overflow:hidden}
+.student-reward-result-close{position:absolute;right:13px;top:10px;width:34px;height:34px;border:0;border-radius:50%;background:#f1efff;color:#6555df;font-size:24px;cursor:pointer}
+.student-reward-result-sparkle{font-size:21px;letter-spacing:8px;color:#e7a923}
+.student-reward-result-pet{width:112px;height:112px;margin:13px auto 10px;display:grid;place-items:center;border-radius:35px;background:linear-gradient(145deg,#eeeaff,#fff2c9);font-size:72px;filter:drop-shadow(0 9px 10px #6757f52b);animation:rewardPetBounce 1.1s ease-in-out infinite alternate}
+.student-reward-result-eyebrow{margin:8px 0 5px;color:#d49a22;font-size:10px;font-weight:900;letter-spacing:2px}
+.student-reward-result-card h2{margin:0;color:#292b48;font-size:20px}
+.student-reward-result-exp{display:inline-block;margin:15px 0 8px;padding:9px 22px;border-radius:16px;background:linear-gradient(135deg,#6757f5,#9487ff);color:#fff;font-size:35px;font-weight:950;box-shadow:0 8px 22px #6757f54a}
+.student-reward-result-exp small{font-size:13px;letter-spacing:1px}
+.student-reward-result-level{min-height:20px;margin:4px 0 18px;color:#77718e;font-size:12px;font-weight:700}
+.student-reward-result-level.level-up{color:#e49a17;font-size:14px}
+.student-reward-result-button{width:100%;border:0;border-radius:13px;padding:13px;background:linear-gradient(135deg,#6757f5,#8274ff);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 8px 18px #6757f538}
+@keyframes rewardResultFade{from{opacity:0}to{opacity:1}}
+@keyframes rewardResultPop{from{opacity:0;transform:translateY(18px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes rewardPetBounce{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-7px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.student-reward-result.show,.student-reward-result-card,.student-reward-result-pet{animation:none}}
 @keyframes rewardSpin{to{transform:rotate(720deg) scale(1.08)}}.student-reward.spinning .student-reward-wheel{animation:rewardSpin 1.1s cubic-bezier(.2,.8,.2,1)}
 @media(max-width:800px){.student-overview-grid{grid-template-columns:1fr}}@media(max-width:520px){.student-kpi-grid{grid-template-columns:1fr 1fr}.student-kpi:last-child{grid-column:span 2}.student-reward{align-items:flex-start;flex-wrap:wrap}.student-reward button{margin-left:77px;margin-top:-4px}}
 </style>
@@ -276,6 +293,18 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
     <section class="student-section" id="studentRanking"><h2>🏆 Xếp hạng</h2><p>Thứ hạng Pet theo Level và EXP.</p><div id="studentRankingList"></div></section>
     <section class="student-section" id="studentProgress"><h2>📊 Tiến độ lớp</h2><p id="studentProgressText"></p><div class="student-progress"><i id="studentProgressBar"></i></div></section>
     <section class="student-section" id="studentMembers"><h2>👥 Thành viên lớp</h2><p>Danh sách học sinh trong lớp.</p><div id="studentMemberList"></div></section>
+  </div>
+</div>
+<div class="student-reward-result" id="studentRewardResult" role="dialog" aria-modal="true" aria-labelledby="studentRewardResultTitle" onclick="if(event.target===this)closeStudentRewardResult()">
+  <div class="student-reward-result-card">
+    <button class="student-reward-result-close" type="button" aria-label="Đóng" onclick="closeStudentRewardResult()">×</button>
+    <div class="student-reward-result-sparkle" aria-hidden="true">✨ 🎉 ✨</div>
+    <div class="student-reward-result-pet" id="studentRewardResultPet">🐱</div>
+    <p class="student-reward-result-eyebrow">CHÚC MỪNG EM!</p>
+    <h2 id="studentRewardResultTitle">Pet nhận được phần thưởng</h2>
+    <div class="student-reward-result-exp" id="studentRewardResultExp">+30 <small>EXP</small></div>
+    <p class="student-reward-result-level" id="studentRewardResultLevel">Pet tiếp tục lớn lên mỗi ngày!</p>
+    <button class="student-reward-result-button" type="button" onclick="closeStudentRewardResult()">Tuyệt vời!</button>
   </div>
 </div>
 <div class="modal-bg" id="petModal">
@@ -3629,6 +3658,32 @@ function updateStudentRewardUI(pets, account, classItem) {
     : 'Em chưa được gán Pet trong lớp.';
 }
 
+function showStudentRewardResult(reward, pet, previousLevel) {
+  const overlay = document.getElementById('studentRewardResult');
+  const petFace = document.getElementById('studentRewardResultPet');
+  const title = document.getElementById('studentRewardResultTitle');
+  const exp = document.getElementById('studentRewardResultExp');
+  const level = document.getElementById('studentRewardResultLevel');
+  if (!overlay) return;
+  if (petFace) petFace.textContent = pet?.emoji || '🐱';
+  if (title) title.textContent = (pet?.pet || 'Pet của em') + ' nhận được phần thưởng!';
+  if (exp) exp.innerHTML = '+' + Number(reward.reward_exp || 0) + ' <small>EXP</small>';
+  const leveledUp = Number(reward.level || pet?.level || 1) > Number(previousLevel || 1);
+  if (level) {
+    level.textContent = leveledUp
+      ? '🎊 LÊN CẤP! Pet đã đạt Level ' + Number(reward.level) + '!'
+      : 'Pet hiện đang ở Level ' + Number(reward.level || pet?.level || 1) + '. Cố gắng chăm sóc Pet nhé!';
+    level.classList.toggle('level-up', leveledUp);
+  }
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeStudentRewardResult() {
+  const overlay = document.getElementById('studentRewardResult');
+  if (overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
 async function spinStudentReward() {
   const classItem = window.studentClassItem;
   const account = window.studentAccount;
@@ -3681,6 +3736,9 @@ async function spinStudentReward() {
       throw new Error('Đã nhận thưởng nhưng chưa tải lại được danh sách Pet.');
     }
 
+    const previousPet = (window.studentPortalPets || []).find(pet => pet.id === account.studentPetId);
+    const previousLevel = Number(previousPet?.level || 1);
+
     const classPets = petsData.pets.map(pet => ({
       id: pet.id,
       pet: pet.pet,
@@ -3703,6 +3761,7 @@ async function spinStudentReward() {
     }
     if (button) button.textContent = 'ĐÃ QUAY HÔM NAY';
     toast('🎉 Pet nhận +' + data.reward_exp + ' EXP! Đã lưu lên hệ thống.');
+    setTimeout(() => showStudentRewardResult(data, classPets.find(pet => pet.id === account.studentPetId), previousLevel), 850);
   } catch (error) {
     console.error('Lỗi quay thưởng Supabase (chi tiết):', error);
     const detail = [
