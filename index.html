@@ -3650,13 +3650,20 @@ function spinStudentReward() {
   const card = document.getElementById('studentRewardCard'); card.classList.add('spinning');
   setTimeout(() => { card.classList.remove('spinning'); document.getElementById('studentRewardStatus').textContent = '🎉 ' + pet.pet + ' nhận +' + reward + ' EXP!'; renderStudentPortal(classItem, account); }, 1100);
 }
-function renderStudentPortal(classItem, account) {
+function renderStudentPortal(classItem, account, suppliedPets = null) {
   window.studentClassItem = classItem; window.studentAccount = account;
   const username = account.username.toLowerCase();
   const studentKey = 'classpet-students-' + username + '-' + classItem.id;
   const taskStorageKey = 'classpet-tasks-' + username + '-' + classItem.id;
   let pets = [], tasks = [];
-  try { pets = JSON.parse(localStorage.getItem(studentKey) || '[]'); tasks = JSON.parse(localStorage.getItem(taskStorageKey) || '[]'); } catch (error) {}
+  try {
+    pets = Array.isArray(suppliedPets)
+      ? suppliedPets
+      : JSON.parse(localStorage.getItem(studentKey) || '[]');
+    tasks = JSON.parse(localStorage.getItem(taskStorageKey) || '[]');
+  } catch (error) {
+    console.error('Không đọc được dữ liệu cổng học sinh:', error);
+  }
   const code = classItem.code || '-----';
   document.getElementById('studentClassLabel').textContent = '🏫 Lớp ' + classItem.name + ' · Mã lớp: ' + code;
   document.getElementById('studentWelcome').textContent = 'Chào học sinh! 👋';
