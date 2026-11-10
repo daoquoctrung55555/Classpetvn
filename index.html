@@ -77,7 +77,7 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
 .student-reward-wheel-stage{position:relative;width:min(94vw,520px);display:flex;flex-direction:column;align-items:center;text-align:center}
 .student-reward-wheel-caption{margin:0 0 23px;color:#fff;font-size:clamp(16px,3vw,21px);font-weight:950;letter-spacing:1.5px;text-shadow:0 3px 14px #0005}
 .student-big-wheel{--wheel-size:min(78vw,430px);width:var(--wheel-size);height:var(--wheel-size);position:relative;border-radius:50%;border:9px solid #fff;box-shadow:0 0 0 5px #f5c95c,0 20px 65px #0007;overflow:hidden;background:conic-gradient(from -22.5deg,#6555e8 0deg 45deg,#f5bd45 45deg 90deg,#36b98a 90deg 135deg,#f0788d 135deg 180deg,#4c9be8 180deg 225deg,#a66be0 225deg 270deg,#ef9850 270deg 315deg,#42b9c3 315deg 360deg);transform:rotate(0deg);transition:transform 6.8s cubic-bezier(.12,.72,.08,1)}
-.student-big-wheel-label{position:absolute;left:50%;top:50%;width:20%;height:50%;display:flex;justify-content:center;align-items:flex-start;padding-top:11%;box-sizing:border-box;color:#fff;font-size:clamp(17px,4vw,25px);font-weight:1000;text-shadow:0 2px 5px #2228;transform:translate(-50%,-100%) rotate(calc(var(--i)*45deg + 22.5deg));transform-origin:50% 100%;pointer-events:none}
+.student-big-wheel-label{position:absolute;left:50%;top:50%;width:20%;height:50%;display:flex;justify-content:center;align-items:flex-start;padding-top:11%;box-sizing:border-box;color:#fff;font-size:clamp(17px,4vw,25px);font-weight:1000;text-shadow:0 2px 5px #2228;transform:translate(-50%,-100%) rotate(calc(var(--i)*45deg));transform-origin:50% 100%;pointer-events:none}
 .student-big-wheel-hub{position:absolute;left:50%;top:50%;width:19%;aspect-ratio:1;display:grid;place-items:center;transform:translate(-50%,-50%);border:6px solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff,#f1edff);box-shadow:0 4px 16px #24204455;font-size:clamp(24px,5vw,36px);z-index:3}
 .student-big-wheel-pointer{position:absolute;top:48px;left:50%;z-index:5;transform:translateX(-50%);color:#ffdf75;font-size:clamp(34px,6vw,48px);line-height:1;text-shadow:0 4px 10px #0008}
 .student-reward-wheel-hint{margin:25px 0 0;color:#fff;font-size:13px;font-weight:750;text-shadow:0 2px 8px #0005}
@@ -3694,7 +3694,7 @@ function playStudentRewardWheel(rewardExp) {
   if (!overlay || !wheel) return Promise.resolve();
   const index = STUDENT_REWARD_OPTIONS.indexOf(Number(rewardExp));
   if (index < 0) return Promise.resolve();
-  const sectorCenter = index * 45 + 22.5;
+  const sectorCenter = index * 45;
   const stopAngle = (360 - sectorCenter + 360) % 360;
   wheel.style.transition = 'none';
   wheel.style.transform = 'rotate(0deg)';
