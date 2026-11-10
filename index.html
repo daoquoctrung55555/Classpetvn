@@ -587,14 +587,14 @@ function showDashboard() {
   playUiSound('click');
 }
 
-function switchClass(classId) {
+async function switchClass(classId) {
   if (!currentAccount || !currentAccount.classes.some(item => item.id === classId)) return;
   currentAccount.activeClassId = classId;
   const accounts = getAccounts();
-  const account = accounts.find(item => item.username === currentAccount.username);
+  const account = accounts.find(item => String(item.username || '').toLowerCase() === String(currentAccount.username || '').toLowerCase());
   if (account) { account.activeClassId = classId; saveAccounts(accounts); }
-  applyAccount(currentAccount);
-  toast('Đã chuyển sang lớp ' + currentClass.name + '.');
+  await applyAccount(currentAccount);
+  if (currentClass) toast('Đã chuyển sang lớp ' + currentClass.name + '.');
 }
 
 const classModal = document.getElementById('classModal');
@@ -1052,7 +1052,44 @@ function getSettingsElement(key) { return document.getElementById('settings' + k
 function openSettings() { if (!currentAccount) return; const s = getSettings(); document.getElementById('settingsTeacherName').value = currentAccount.name; document.getElementById('settingsUsername').value = currentAccount.username; document.getElementById('settingsSchoolName').value = currentAccount.schoolName; document.getElementById('settingsRoleName').value = currentAccount.role || 'Giáo viên chủ nhiệm'; document.getElementById('settingsClassName').value = currentClass.name; document.getElementById('settingsHomeroom').value = currentAccount.name; Object.keys(s).forEach(key => { const el = getSettingsElement(key); if (el) el.type === 'checkbox' ? el.checked = s[key] : el.value = s[key]; }); document.getElementById('settingsFeedExpPet').value = s.feedExp; document.getElementById('settingsTheme').value = document.body.classList.contains('dark-mode') ? 'dark' : 'light'; document.getElementById('settingsSound').checked = s.sound !== false; settingsModal.classList.add('show'); }
 function closeSettings() { settingsModal.classList.remove('show'); }
 function settingsValue(key) { const el = getSettingsElement(key); return el.type === 'checkbox' ? el.checked : Number(el.value); }
-function saveSettingsAccount() { const accounts = getAccounts(); const account = accounts.find(item => item.username === currentAccount.username); account.name = document.getElementById('settingsTeacherName').value.trim(); account.schoolName = document.getElementById('settingsSchoolName').value.trim(); account.role = document.getElementById('settingsRoleName').value.trim(); saveAccounts(accounts); applyAccount(account); toast('Đã lưu thông tin tài khoản.'); }
+async function saveSettingsAccount() {
+  if (!currentAccount) return;
+  const name = document.getElementById('settingsTeacherName').value.trim();
+  const schoolName = document.getElementById('settingsSchoolName').value.trim();
+  const role = document.getElementById('settingsRoleName').value.trim();
+  if (!name || !schoolName || !role) {
+    toast('Vui lòng nhập đầy đủ thông tin giáo viên.');
+    return;
+  }
+
+  try {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) throw userError || new Error('Phiên đăng nhập đã hết.');
+    const { error } = await supabaseClient
+      .from('teacher_profiles')
+      .update({ full_name: name, school_name: schoolName })
+      .eq('id', user.id);
+    if (error) throw error;
+
+    currentAccount.name = name;
+    currentAccount.schoolName = schoolName;
+    currentAccount.role = role;
+    const accounts = getAccounts();
+    const index = accounts.findIndex(item =>
+      String(item.username || '').toLowerCase() === String(currentAccount.username || '').toLowerCase()
+    );
+    const saved = { ...(index >= 0 ? accounts[index] : {}), ...currentAccount };
+    if (index >= 0) accounts[index] = saved;
+    else accounts.push(saved);
+    saveAccounts(accounts);
+
+    await applyAccount(currentAccount);
+    toast('Đã lưu thông tin tài khoản giáo viên.');
+  } catch (error) {
+    console.error('Lỗi lưu hồ sơ giáo viên:', error);
+    toast('Không lưu được hồ sơ: ' + (error.message || 'Lỗi không xác định'));
+  }
+}
 async function saveSettingsClass() {
   if (!currentAccount || !currentClass?.id) {
     toast('Không xác định được lớp hiện tại.');
