@@ -3704,9 +3704,15 @@ async function spinStudentReward() {
     if (button) button.textContent = 'ĐÃ QUAY HÔM NAY';
     toast('🎉 Pet nhận +' + data.reward_exp + ' EXP! Đã lưu lên hệ thống.');
   } catch (error) {
-    console.error('Lỗi quay thưởng Supabase:', error);
-    toast('Không thể quay thưởng: ' + error.message);
-    if (status) status.textContent = 'Chưa quay được. Em hãy thử lại.';
+    console.error('Lỗi quay thưởng Supabase (chi tiết):', error);
+    const detail = [
+      error?.message,
+      error?.details,
+      error?.hint,
+      error?.code
+    ].filter(Boolean).join(' | ') || String(error || 'Lỗi không xác định');
+    if (status) status.textContent = 'LỖI QUAY THƯỞNG: ' + detail;
+    toast('Lỗi quay thưởng: ' + detail);
   } finally {
     if (button && button.textContent !== 'ĐÃ QUAY HÔM NAY') {
       button.disabled = false;
