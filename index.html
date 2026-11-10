@@ -3650,7 +3650,7 @@ function spinStudentReward() {
   const card = document.getElementById('studentRewardCard'); card.classList.add('spinning');
   setTimeout(() => { card.classList.remove('spinning'); document.getElementById('studentRewardStatus').textContent = '🎉 ' + pet.pet + ' nhận +' + reward + ' EXP!'; renderStudentPortal(classItem, account); }, 1100);
 }
-function renderStudentPortal(classItem, account, suppliedPets = null) {
+function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTasks = null) {
   window.studentClassItem = classItem; window.studentAccount = account;
   const username = account.username.toLowerCase();
   const studentKey = 'classpet-students-' + username + '-' + classItem.id;
@@ -3660,7 +3660,9 @@ function renderStudentPortal(classItem, account, suppliedPets = null) {
     pets = Array.isArray(suppliedPets)
       ? suppliedPets
       : JSON.parse(localStorage.getItem(studentKey) || '[]');
-    tasks = JSON.parse(localStorage.getItem(taskStorageKey) || '[]');
+    tasks = Array.isArray(suppliedTasks)
+      ? suppliedTasks
+      : JSON.parse(localStorage.getItem(taskStorageKey) || '[]');
   } catch (error) {
     console.error('Không đọc được dữ liệu cổng học sinh:', error);
   }
@@ -3773,10 +3775,41 @@ async function enterStudentClass() {
       status: pet.status || 'alive'
     }));
 
-    // Hiển thị toàn bộ Pet trong lớp từ Supabase.
+    // Tải nhiệm vụ của lớp và trạng thái hoàn thành riêng của Pet đang đăng nhập.
+    const { data: classTasksData, error: classTasksError } = await supabaseClient.rpc(
+      'student_get_class_tasks',
+      {
+        p_class_code: code,
+        p_student_name: name,
+        p_pet_name: petName
+      }
+    );
+
+    if (classTasksError) {
+      console.error('Lỗi student_get_class_tasks:', classTasksError);
+      if (errorBox) errorBox.textContent = 'Không tải được nhiệm vụ: ' + classTasksError.message;
+      return;
+    }
+
+    if (!classTasksData?.success || !Array.isArray(classTasksData.tasks)) {
+      if (errorBox) errorBox.textContent = classTasksData?.message || 'Không tải được nhiệm vụ của lớp.';
+      return;
+    }
+
+    const classTasks = classTasksData.tasks.map(task => ({
+      id: task.id,
+      title: task.title || 'Nhiệm vụ',
+      description: task.description || '',
+      exp: Number(task.exp || 0),
+      dueDate: task.due_date || '',
+      completed: Boolean(task.completed),
+      completedPetIds: task.completed ? [studentAccount.studentPetId] : []
+    }));
+
+    // Hiển thị cổng học sinh với Pet và nhiệm vụ mới nhất từ Supabase.
     document.getElementById('authScreen')?.classList.add('hidden');
     document.getElementById('studentPortal')?.classList.add('show');
-    renderStudentPortal(studentClass, studentAccount, classPets);
+    renderStudentPortal(studentClass, studentAccount, classPets, classTasks);
 
     document.getElementById('studentWelcome').textContent =
       'Chào ' + data.student_name + '! 👋';
