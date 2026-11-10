@@ -88,26 +88,47 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
 @media(prefers-reduced-motion:reduce){.student-reward-result.show,.student-reward-result-card,.student-reward-result-pet{animation:none}}
 @keyframes rewardSpin{to{transform:rotate(720deg) scale(1.08)}}.student-reward.spinning .student-reward-wheel{animation:rewardSpin 1.1s cubic-bezier(.2,.8,.2,1)}
 @media(max-width:800px){.student-overview-grid{grid-template-columns:1fr}}@media(max-width:520px){.student-kpi-grid{grid-template-columns:1fr 1fr}.student-kpi:last-child{grid-column:span 2}.student-reward{align-items:flex-start;flex-wrap:wrap}.student-reward button{margin-left:77px;margin-top:-4px}}
+
+/* ClassPet Teacher UI refresh — collapsible SaaS sidebar */
+.logo{position:relative;min-height:48px;padding-right:42px}
+.logo-label{white-space:nowrap;transition:opacity .18s ease}
+.sidebar-toggle{position:absolute;right:0;top:5px;width:32px;height:32px;border:1px solid var(--line);border-radius:10px;background:#f7f6ff;color:var(--purple);font-size:21px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .18s ease,transform .2s ease}
+.sidebar-toggle:hover{background:#efedff}
+.sidebar{transition:width .22s ease,padding .22s ease}
+.main{transition:margin-left .22s ease,padding .22s ease}
+.sidebar.collapsed{width:78px;padding-left:12px;padding-right:12px}
+.sidebar.collapsed .logo{padding-left:6px;padding-right:0;justify-content:center}
+.sidebar.collapsed .logo-label,.sidebar.collapsed .section,.sidebar.collapsed .nav button .nav-label,.sidebar.collapsed .profile-info{display:none}
+.sidebar.collapsed .sidebar-toggle{right:-5px;transform:rotate(180deg)}
+.sidebar.collapsed .nav button{justify-content:center;padding:12px 8px}
+.sidebar.collapsed .nav button .ico{width:auto;font-size:19px}
+.sidebar.collapsed .profile{left:10px;right:10px;justify-content:center;padding-left:0;padding-right:0}
+.sidebar.collapsed .avatar{flex:0 0 42px}
+.main.sidebar-collapsed{margin-left:78px}
+.nav button .ico{flex:0 0 20px}
+.nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:720px){.sidebar-toggle{display:none}}
+
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="sidebar">
-  <div class="logo"><i>🐾</i> ClassPet</div>
+  <div class="logo"><i>🐾</i><span class="logo-label">ClassPet</span><button class="sidebar-toggle" type="button" onclick="toggleTeacherSidebar()" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">‹</button></div>
   <div class="section">Quản lý lớp</div>
   <div class="nav">
-    <button class="active" onclick="toast('Đang ở Tổng quan')"><span class="ico">⌂</span>Tổng quan</button>
-    <button onclick="document.getElementById('studentsPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">👥</span>Học sinh & Pet</button>
-    <button onclick="document.getElementById('tasksSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🎯</span>Nhiệm vụ</button>
+    <button class="active" onclick="toast('Đang ở Tổng quan')"><span class="ico">⌂</span><span class="nav-label">Tổng quan</span></button>
+    <button onclick="document.getElementById('studentsPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">👥</span><span class="nav-label">Học sinh & Pet</span></button>
+    <button onclick="document.getElementById('tasksSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🎯</span><span class="nav-label">Nhiệm vụ</span></button>
   </div>
   <div class="section">Phân tích</div>
   <div class="nav">
-    <button onclick="document.getElementById('topPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🏆</span>Xếp hạng</button>
-    <button onclick="showStatistics()"><span class="ico">📊</span>Thống kê</button>
+    <button onclick="document.getElementById('topPetsSection').scrollIntoView({ behavior: 'smooth', block: 'start' })"><span class="ico">🏆</span><span class="nav-label">Xếp hạng</span></button>
+    <button onclick="showStatistics()"><span class="ico">📊</span><span class="nav-label">Thống kê</span></button>
   </div>
   <div class="section">Hệ thống</div>
-  <div class="nav"><button onclick="openSettings()"><span class="ico">⚙️</span>Cài đặt</button><button onclick="openClassModal()"><span class="ico">＋</span>Tạo lớp mới</button></div>
-  <div class="profile"><div class="avatar">👩‍🏫</div><div><b id="profileName" style="font-size:12px;cursor:pointer" onclick="openProfileModal()" title="Đổi thông tin hồ sơ">Giáo viên</b><small id="profileSchool">Giáo viên chủ nhiệm</small><button class="logout" type="button" onclick="logout()">Đăng xuất</button></div></div>
+  <div class="nav"><button onclick="openSettings()"><span class="ico">⚙️</span><span class="nav-label">Cài đặt</span></button><button onclick="openClassModal()"><span class="ico">＋</span><span class="nav-label">Tạo lớp mới</span></button></div>
+  <div class="profile"><div class="avatar">👩‍🏫</div><div class="profile-info"><b id="profileName" style="font-size:12px;cursor:pointer" onclick="openProfileModal()" title="Đổi thông tin hồ sơ">Giáo viên</b><small id="profileSchool">Giáo viên chủ nhiệm</small><button class="logout" type="button" onclick="logout()">Đăng xuất</button></div></div>
 </aside>
 
 <main class="main" id="mainContent">
@@ -564,6 +585,21 @@ if (dateText) {
   document.getElementById('classAlert').querySelector('p').textContent = 'Thông báo chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp.';
   document.getElementById('dateText').textContent = 'Hãy cùng quản lý lớp ' + currentClass.name + ' nhé.';
   document.getElementById('heroClassCode').textContent = currentClass.code || '-----';
+}
+
+
+function toggleTeacherSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const mainContent = document.getElementById('mainContent');
+  if (!sidebar || !mainContent) return;
+  const collapsed = sidebar.classList.toggle('collapsed');
+  mainContent.classList.toggle('sidebar-collapsed', collapsed);
+  localStorage.setItem('classpet-teacher-sidebar', collapsed ? 'collapsed' : 'expanded');
+  const toggle = sidebar.querySelector('.sidebar-toggle');
+  if (toggle) {
+    toggle.setAttribute('aria-label', collapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng');
+    toggle.title = collapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng';
+  }
 }
 
 function showStatistics() {
@@ -4302,6 +4338,14 @@ document.querySelectorAll('.nav button').forEach(button => {
   });
 });
 
+const teacherSidebarCollapsed = localStorage.getItem('classpet-teacher-sidebar') === 'collapsed';
+if (teacherSidebarCollapsed) {
+  document.querySelector('.sidebar')?.classList.add('collapsed');
+  document.getElementById('mainContent')?.classList.add('sidebar-collapsed');
+  const sidebarToggle = document.querySelector('.sidebar-toggle');
+  sidebarToggle?.setAttribute('aria-label', 'Mở rộng thanh điều hướng');
+  if (sidebarToggle) sidebarToggle.title = 'Mở rộng thanh điều hướng';
+}
 updateDate();
 updateStats();
 applyMotionSettings();
