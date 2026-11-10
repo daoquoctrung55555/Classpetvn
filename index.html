@@ -72,6 +72,16 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
 .student-reward-result-level{min-height:20px;margin:4px 0 18px;color:#77718e;font-size:12px;font-weight:700}
 .student-reward-result-level.level-up{color:#e49a17;font-size:14px}
 .student-reward-result-button{width:100%;border:0;border-radius:13px;padding:13px;background:linear-gradient(135deg,#6757f5,#8274ff);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 8px 18px #6757f538}
+.student-reward-wheel-overlay{position:fixed;inset:0;z-index:245;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(20,22,42,.78);backdrop-filter:blur(8px)}
+.student-reward-wheel-overlay.show{display:flex;animation:rewardResultFade .25s ease both}
+.student-reward-wheel-stage{position:relative;width:min(94vw,520px);display:flex;flex-direction:column;align-items:center;text-align:center}
+.student-reward-wheel-caption{margin:0 0 23px;color:#fff;font-size:clamp(16px,3vw,21px);font-weight:950;letter-spacing:1.5px;text-shadow:0 3px 14px #0005}
+.student-big-wheel{--wheel-size:min(78vw,430px);width:var(--wheel-size);height:var(--wheel-size);position:relative;border-radius:50%;border:9px solid #fff;box-shadow:0 0 0 5px #f5c95c,0 20px 65px #0007;overflow:hidden;background:conic-gradient(from -22.5deg,#6555e8 0deg 45deg,#f5bd45 45deg 90deg,#36b98a 90deg 135deg,#f0788d 135deg 180deg,#4c9be8 180deg 225deg,#a66be0 225deg 270deg,#ef9850 270deg 315deg,#42b9c3 315deg 360deg);transform:rotate(0deg);transition:transform 6.8s cubic-bezier(.12,.72,.08,1)}
+.student-big-wheel-label{position:absolute;left:50%;top:50%;width:20%;height:50%;display:flex;justify-content:center;align-items:flex-start;padding-top:11%;box-sizing:border-box;color:#fff;font-size:clamp(17px,4vw,25px);font-weight:1000;text-shadow:0 2px 5px #2228;transform:translate(-50%,-100%) rotate(calc(var(--i)*45deg + 22.5deg));transform-origin:50% 100%;pointer-events:none}
+.student-big-wheel-hub{position:absolute;left:50%;top:50%;width:19%;aspect-ratio:1;display:grid;place-items:center;transform:translate(-50%,-50%);border:6px solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff,#f1edff);box-shadow:0 4px 16px #24204455;font-size:clamp(24px,5vw,36px);z-index:3}
+.student-big-wheel-pointer{position:absolute;top:48px;left:50%;z-index:5;transform:translateX(-50%);color:#ffdf75;font-size:clamp(34px,6vw,48px);line-height:1;text-shadow:0 4px 10px #0008}
+.student-reward-wheel-hint{margin:25px 0 0;color:#fff;font-size:13px;font-weight:750;text-shadow:0 2px 8px #0005}
+@media(prefers-reduced-motion:reduce){.student-big-wheel{transition-duration:.5s}}
 @keyframes rewardResultFade{from{opacity:0}to{opacity:1}}
 @keyframes rewardResultPop{from{opacity:0;transform:translateY(18px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes rewardPetBounce{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-7px) rotate(4deg)}}
@@ -293,6 +303,24 @@ button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{wid
     <section class="student-section" id="studentRanking"><h2>🏆 Xếp hạng</h2><p>Thứ hạng Pet theo Level và EXP.</p><div id="studentRankingList"></div></section>
     <section class="student-section" id="studentProgress"><h2>📊 Tiến độ lớp</h2><p id="studentProgressText"></p><div class="student-progress"><i id="studentProgressBar"></i></div></section>
     <section class="student-section" id="studentMembers"><h2>👥 Thành viên lớp</h2><p>Danh sách học sinh trong lớp.</p><div id="studentMemberList"></div></section>
+  </div>
+</div>
+<div class="student-reward-wheel-overlay" id="studentRewardWheelOverlay" aria-live="polite">
+  <div class="student-reward-wheel-stage">
+    <p class="student-reward-wheel-caption">🎡 VÒNG QUAY MAY MẮN</p>
+    <div class="student-big-wheel-pointer">▼</div>
+    <div class="student-big-wheel" id="studentBigWheel">
+      <span class="student-big-wheel-label" style="--i:0">+5</span>
+      <span class="student-big-wheel-label" style="--i:1">+10</span>
+      <span class="student-big-wheel-label" style="--i:2">+15</span>
+      <span class="student-big-wheel-label" style="--i:3">+20</span>
+      <span class="student-big-wheel-label" style="--i:4">+25</span>
+      <span class="student-big-wheel-label" style="--i:5">+30</span>
+      <span class="student-big-wheel-label" style="--i:6">+40</span>
+      <span class="student-big-wheel-label" style="--i:7">+50</span>
+      <div class="student-big-wheel-hub">🐾</div>
+    </div>
+    <p class="student-reward-wheel-hint" id="studentRewardWheelHint">Đang tìm phần thưởng cho Pet...</p>
   </div>
 </div>
 <div class="student-reward-result" id="studentRewardResult" role="dialog" aria-modal="true" aria-labelledby="studentRewardResultTitle" onclick="if(event.target===this)closeStudentRewardResult()">
@@ -3658,6 +3686,32 @@ function updateStudentRewardUI(pets, account, classItem) {
     : 'Em chưa được gán Pet trong lớp.';
 }
 
+const STUDENT_REWARD_OPTIONS = [5, 10, 15, 20, 25, 30, 40, 50];
+function playStudentRewardWheel(rewardExp) {
+  const overlay = document.getElementById('studentRewardWheelOverlay');
+  const wheel = document.getElementById('studentBigWheel');
+  const hint = document.getElementById('studentRewardWheelHint');
+  if (!overlay || !wheel) return Promise.resolve();
+  const index = STUDENT_REWARD_OPTIONS.indexOf(Number(rewardExp));
+  if (index < 0) return Promise.resolve();
+  const sectorCenter = index * 45 + 22.5;
+  const stopAngle = (360 - sectorCenter + 360) % 360;
+  wheel.style.transition = 'none';
+  wheel.style.transform = 'rotate(0deg)';
+  overlay.classList.add('show');
+  if (hint) hint.textContent = 'Vòng quay đang chậm lại...';
+  void wheel.offsetWidth;
+  wheel.style.transition = 'transform 6.8s cubic-bezier(.12,.72,.08,1)';
+  wheel.style.transform = 'rotate(' + (360 * 7 + stopAngle) + 'deg)';
+  return new Promise(resolve => setTimeout(() => {
+    if (hint) hint.textContent = '🎉 Đã tìm thấy phần thưởng!';
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      resolve();
+    }, 650);
+  }, 6900));
+}
+
 function showStudentRewardResult(reward, pet, previousLevel) {
   const overlay = document.getElementById('studentRewardResult');
   const petFace = document.getElementById('studentRewardResultPet');
@@ -3761,7 +3815,8 @@ async function spinStudentReward() {
     }
     if (button) button.textContent = 'ĐÃ QUAY HÔM NAY';
     toast('🎉 Pet nhận +' + data.reward_exp + ' EXP! Đã lưu lên hệ thống.');
-    setTimeout(() => showStudentRewardResult(data, classPets.find(pet => pet.id === account.studentPetId), previousLevel), 850);
+    await playStudentRewardWheel(data.reward_exp);
+    showStudentRewardResult(data, classPets.find(pet => pet.id === account.studentPetId), previousLevel);
   } catch (error) {
     console.error('Lỗi quay thưởng Supabase (chi tiết):', error);
     const detail = [
