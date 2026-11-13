@@ -1284,10 +1284,12 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   if(!url){ viewer.hidden = true; return; }
   // Lùi camera mặc định để toàn bộ thú cưng nằm gọn trong khung;
   // người xem vẫn có thể cuộn/gesture để tự phóng to khi cần.
-  viewer.setAttribute('camera-orbit','0deg 75deg auto');
+  // Đặt camera lùi nhẹ để pet chiếm khoảng 70–80% khung, luôn thấy đủ thân và có viền thoáng.
+  viewer.setAttribute('camera-orbit','0deg 75deg 115%');
+  viewer.setAttribute('camera-target','auto auto auto');
   viewer.setAttribute('field-of-view','35deg');
-  viewer.setAttribute('min-camera-orbit','auto auto 1.2m');
-  viewer.setAttribute('max-camera-orbit','auto auto 7m');
+  viewer.setAttribute('min-camera-orbit','auto auto 70%');
+  viewer.setAttribute('max-camera-orbit','auto auto 220%');
   viewer.setAttribute('reveal','auto');
   viewer.setAttribute('crossorigin','anonymous');
   viewer.addEventListener('load', () => {
