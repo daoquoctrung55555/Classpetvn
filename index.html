@@ -139,6 +139,37 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 .pet-3d-credit a{color:#6757f5;text-decoration:none}
 @media(max-width:700px){.profile-pet-face{width:min(260px,75vw);height:min(260px,75vw)}.profile-pet-face model-viewer{height:100%;min-height:0}.profile-pet-face .pet-emoji-fallback{font-size:140px}}
 
+/* ClassPet visual polish: soft studio lighting and friendly pastel presentation */
+.pet-face{
+  background:radial-gradient(circle at 50% 34%,#ffffff 0%,#f3efff 58%,#e7f5ff 100%);
+  border:3px solid rgba(255,255,255,.92);
+  box-shadow:0 9px 20px rgba(103,87,245,.18),inset 0 0 18px rgba(255,255,255,.85);
+}
+.pet-face model-viewer{
+  --poster-color:transparent;
+  background:transparent;
+}
+.profile-pet-face{
+  background:radial-gradient(ellipse at 50% 38%,#ffffff 0%,#f2efff 58%,#e5f4ff 100%);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 16px 34px rgba(55,48,112,.13),inset 0 0 30px rgba(255,255,255,.9);
+}
+.profile-pet-face model-viewer{
+  --poster-color:transparent;
+  background:transparent;
+}
+.pet-viewer-stage{
+  background:radial-gradient(ellipse at 50% 35%,#62618f 0%,#343653 48%,#171a2d 100%);
+}
+.pet-viewer-stage:before{
+  content:"";position:absolute;inset:8% 18% 12%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(220,214,255,.2),transparent 68%);
+  filter:blur(18px);pointer-events:none;
+}
+.pet-viewer-stage model-viewer{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){
+  .pet-face:after{animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -389,14 +420,14 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 <div class="modal-bg" id="petModal">
   <div class="modal pet-detail-modal">
     <div class="pet-profile">
-      <div><div class="profile-pet-face" id="profilePetFace"><model-viewer id="profilePetModel" camera-controls auto-rotate rotation-per-second="22deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" aria-label="Mô hình thú cưng 3D"></model-viewer><span class="pet-emoji-fallback" id="profilePetEmoji">🐱</span></div><div class="profile-view-actions"><button class="pet-expand-btn" type="button" onclick="openPetViewer()">⛶ Ngắm thú cưng toàn màn hình</button></div></div>
+      <div><div class="profile-pet-face" id="profilePetFace"><model-viewer id="profilePetModel" camera-controls auto-rotate rotation-per-second="10deg" shadow-intensity="1.1" shadow-softness="0.9" exposure="1.15" environment-image="neutral" autoplay animation-name="*" interaction-prompt="none" aria-label="Mô hình thú cưng 3D"></model-viewer><span class="pet-emoji-fallback" id="profilePetEmoji">🐱</span></div><div class="profile-view-actions"><button class="pet-expand-btn" type="button" onclick="openPetViewer()">⛶ Ngắm thú cưng toàn màn hình</button></div></div>
       <div><h3 id="petModalTitle">Thông tin pet</h3><p id="petModalStudent"></p><p id="petModalStage"></p><div class="profile-stats"><span>❤️ Sức khỏe<b id="profileHealth">100</b></span><span>🍖 Độ no<b id="profileHunger">100</b></span><span>😊 Hạnh phúc<b id="profileHappiness">90</b></span></div><p id="petModalLastFed"></p></div>
     </div>
     <p class="pet-3d-credit" id="pet3DStatus" role="status" aria-live="polite">Đang chuẩn bị mô hình 3D…</p><p class="pet-3d-credit">Mô hình 3D miễn phí từ <a href="https://shuriken.studio/kits/pets" target="_blank" rel="noopener">Shuriken Studio</a>. Kéo để xoay, dùng cuộn chuột để phóng to.</p><div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
     <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
   </div>
 </div>
-<div class="pet-viewer-overlay" id="petViewerOverlay" role="dialog" aria-modal="true" aria-label="Ngắm thú cưng 3D" onclick="if(event.target===this)closePetViewer()"><div class="pet-viewer-stage"><button class="pet-viewer-close" type="button" onclick="closePetViewer()">✕ Đóng</button><model-viewer id="expandedPetModel" camera-controls auto-rotate rotation-per-second="16deg" shadow-intensity="1" exposure="1.1" interaction-prompt="auto" environment-image="neutral" aria-label="Thú cưng 3D toàn màn hình"></model-viewer><div class="pet-viewer-hint">Kéo để xoay · Cuộn chuột để phóng to/thu nhỏ</div></div></div>
+<div class="pet-viewer-overlay" id="petViewerOverlay" role="dialog" aria-modal="true" aria-label="Ngắm thú cưng 3D" onclick="if(event.target===this)closePetViewer()"><div class="pet-viewer-stage"><button class="pet-viewer-close" type="button" onclick="closePetViewer()">✕ Đóng</button><model-viewer id="expandedPetModel" camera-controls auto-rotate rotation-per-second="12deg" shadow-intensity="1.2" shadow-softness="1" exposure="1.2" autoplay animation-name="*" interaction-prompt="auto" environment-image="neutral" aria-label="Thú cưng 3D toàn màn hình"></model-viewer><div class="pet-viewer-hint">Kéo để xoay · Cuộn chuột để phóng to/thu nhỏ</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
   
@@ -1292,6 +1323,12 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   viewer.setAttribute('max-camera-orbit','auto auto 220%');
   viewer.setAttribute('reveal','auto');
   viewer.setAttribute('crossorigin','anonymous');
+  viewer.setAttribute('shadow-intensity','1.1');
+  viewer.setAttribute('shadow-softness','0.9');
+  viewer.setAttribute('exposure','1.15');
+  viewer.setAttribute('environment-image','neutral');
+  viewer.setAttribute('autoplay','');
+  viewer.setAttribute('animation-name','*');
   viewer.addEventListener('load', () => {
     wrapper.classList.add('has-3d');
     viewer.dataset.modelStatus = 'loaded';
@@ -1604,7 +1641,7 @@ pet.dataset.studentId = studentId;
 
 pet.dataset.name = student + ' ' + petName;
   pet.dataset.level = level;
-  pet.innerHTML = '<div class="pet-top"><div class="pet-face"><model-viewer class="pet-card-model" camera-controls auto-rotate rotation-per-second="24deg" shadow-intensity="0.65" exposure="1.05" interaction-prompt="none" aria-label="Thú cưng 3D"></model-viewer><span class="pet-emoji-fallback">' + escapeHtml(emoji) + '</span></div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
+  pet.innerHTML = '<div class="pet-top"><div class="pet-face"><model-viewer class="pet-card-model" camera-controls auto-rotate rotation-per-second="10deg" shadow-intensity="1.05" shadow-softness="0.85" exposure="1.12" environment-image="neutral" autoplay animation-name="*" interaction-prompt="none" aria-label="Thú cưng 3D"></model-viewer><span class="pet-emoji-fallback">' + escapeHtml(emoji) + '</span></div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
   document.getElementById('pets').appendChild(pet);
   const cardFace = pet.querySelector('.pet-face');
   attachPetModel(cardFace?.querySelector('model-viewer'), emoji, cardFace?.querySelector('.pet-emoji-fallback'), cardFace);
