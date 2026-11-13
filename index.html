@@ -1284,7 +1284,7 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   if(!url){ viewer.hidden = true; return; }
   // Lùi camera mặc định để toàn bộ thú cưng nằm gọn trong khung;
   // người xem vẫn có thể cuộn/gesture để tự phóng to khi cần.
-  viewer.setAttribute('camera-orbit','0deg 75deg 3.4m');
+  viewer.setAttribute('camera-orbit','0deg 75deg auto');
   viewer.setAttribute('field-of-view','35deg');
   viewer.setAttribute('min-camera-orbit','auto auto 1.2m');
   viewer.setAttribute('max-camera-orbit','auto auto 7m');
@@ -3884,7 +3884,7 @@ function openPetViewer() {
     return;
   }
   expandedViewer.setAttribute('src', sourceViewer.getAttribute('src'));
-  expandedViewer.setAttribute('camera-orbit', sourceViewer.getAttribute('camera-orbit') || '0deg 75deg 3.4m');
+  expandedViewer.setAttribute('camera-orbit', sourceViewer.getAttribute('camera-orbit') || '0deg 75deg auto');
   overlay.classList.add('show');
   document.body.style.overflow = 'hidden';
 }
