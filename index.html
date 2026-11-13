@@ -392,7 +392,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
       <div class="profile-pet-face" id="profilePetFace"><model-viewer id="profilePetModel" camera-controls auto-rotate rotation-per-second="22deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" aria-label="Mô hình thú cưng 3D"></model-viewer><span class="pet-emoji-fallback" id="profilePetEmoji">🐱</span></div>
       <div><h3 id="petModalTitle">Thông tin pet</h3><p id="petModalStudent"></p><p id="petModalStage"></p><div class="profile-stats"><span>❤️ Sức khỏe<b id="profileHealth">100</b></span><span>🍖 Độ no<b id="profileHunger">100</b></span><span>😊 Hạnh phúc<b id="profileHappiness">90</b></span></div><p id="petModalLastFed"></p></div>
     </div>
-    <p class="pet-3d-credit">Mô hình 3D miễn phí từ <a href="https://shuriken.studio/kits/pets" target="_blank" rel="noopener">Shuriken Studio</a>. Kéo để xoay, dùng cuộn chuột để phóng to.</p><div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
+    <p class="pet-3d-credit" id="pet3DStatus" role="status" aria-live="polite">Đang chuẩn bị mô hình 3D…</p><p class="pet-3d-credit">Mô hình 3D miễn phí từ <a href="https://shuriken.studio/kits/pets" target="_blank" rel="noopener">Shuriken Studio</a>. Kéo để xoay, dùng cuộn chuột để phóng to.</p><div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
     <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
   </div>
 </div>
@@ -1273,31 +1273,45 @@ function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || '
 function attachPetModel(viewer, emoji, fallback, wrapper){
   if(!viewer || !fallback || !wrapper) return;
   const url = petModelUrl(emoji);
+  const status = document.getElementById('pet3DStatus');
   fallback.textContent = emoji || '🐾';
   wrapper.classList.remove('has-3d');
   viewer.removeAttribute('src');
   viewer.hidden = false;
   fallback.hidden = false;
+  if(status) status.textContent = url ? 'Đang tải mô hình 3D…' : 'Chưa có mô hình 3D cho thú cưng này.';
   if(!url){ viewer.hidden = true; return; }
   viewer.setAttribute('camera-orbit','0deg 75deg 2.5m');
   viewer.setAttribute('field-of-view','30deg');
   viewer.setAttribute('min-camera-orbit','auto auto 1.5m');
   viewer.setAttribute('max-camera-orbit','auto auto 4m');
   viewer.setAttribute('reveal','auto');
+  viewer.setAttribute('crossorigin','anonymous');
   viewer.addEventListener('load', () => {
     wrapper.classList.add('has-3d');
     viewer.dataset.modelStatus = 'loaded';
+    if(status) status.textContent = 'Mô hình 3D đã tải. Kéo chuột để xoay.';
   }, {once:true});
-  viewer.addEventListener('error', () => {
+  viewer.addEventListener('error', event => {
     wrapper.classList.remove('has-3d');
     viewer.hidden = true;
     fallback.hidden = false;
     viewer.dataset.modelStatus = 'error';
-    console.error('ClassPet: không tải được mô hình 3D', url);
+    const detail = event?.detail?.type || event?.detail?.source || 'Lỗi tải tệp GLB/CORS';
+    if(status) status.textContent = 'Không tải được mô hình 3D (' + detail + '). Đường dẫn mô hình bên ngoài có thể bị chặn.';
+    console.error('ClassPet: không tải được mô hình 3D', url, event?.detail || event);
   }, {once:true});
-  const loadModel = () => viewer.setAttribute('src', url);
+  const loadModel = () => {
+    viewer.setAttribute('src', url);
+    if(status) status.textContent = 'Đang kết nối máy chủ mô hình 3D…';
+  };
   if (customElements.get('model-viewer')) loadModel();
-  else customElements.whenDefined('model-viewer').then(loadModel);
+  else {
+    customElements.whenDefined('model-viewer').then(loadModel);
+    setTimeout(() => {
+      if(!customElements.get('model-viewer') && status) status.textContent = 'Thư viện hiển thị 3D chưa tải được. Hãy kiểm tra kết nối CDN.';
+    }, 10000);
+  }
 }
 
 const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
@@ -4505,6 +4519,19 @@ studentModeButton.addEventListener('click', () => {
 });
 </script>
 
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+<script type="module">
+try {
+  await import('https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js');
+} catch (primaryError) {
+  console.warn('ClassPet: CDN chính không tải được, thử CDN dự phòng.', primaryError);
+  try {
+    await import('https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js');
+  } catch (fallbackError) {
+    console.error('ClassPet: cả hai CDN model-viewer đều lỗi.', fallbackError);
+    const status = document.getElementById('pet3DStatus');
+    if(status) status.textContent = 'Không tải được thư viện 3D từ CDN. Hãy thử tải lại trang hoặc đổi mạng.';
+  }
+}
+</script>
 </body>
 </html>
