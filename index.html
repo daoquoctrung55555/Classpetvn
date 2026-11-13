@@ -318,7 +318,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
   </form>
 </div>
 <div class="modal-bg" id="addModal">
-  <form class="modal" id="addForm"><h2>＋ Thêm học sinh và pet</h2><p>Nhập thông tin để thêm thành viên mới vào lớp.</p><label class="auth-label" for="studentName">Tên học sinh</label><input class="auth-input" id="studentName" required placeholder="Ví dụ: Nguyễn Văn An"><label class="auth-label" for="petName">Tên pet</label><input class="auth-input" id="petName" required placeholder="Ví dụ: Miu"><label class="auth-label" for="petEmoji">Biểu tượng pet</label><input class="auth-input" id="petEmoji" value="🐱" maxlength="2" required><div class="pet-picker" id="petPicker" aria-label="Chọn hình hoạt họa cho Pet"></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeAddModal()">Hủy</button><button class="feedall" type="submit">Thêm vào lớp</button></div></form>
+  <form class="modal" id="addForm"><h2>＋ Thêm học sinh và pet</h2><p>Nhập thông tin để thêm thành viên mới vào lớp.</p><label class="auth-label" for="studentName">Tên học sinh</label><input class="auth-input" id="studentName" required placeholder="Ví dụ: Nguyễn Văn An"><label class="auth-label" for="petName">Tên pet</label><input class="auth-input" id="petName" required placeholder="Ví dụ: Miu"><label class="auth-label" for="petEmoji">Biểu tượng pet</label><input class="auth-input" id="petEmoji" value="🐱" maxlength="8" required><div class="pet-picker" id="petPicker" aria-label="Chọn hình hoạt họa cho Pet"></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeAddModal()">Hủy</button><button class="feedall" type="submit">Thêm vào lớp</button></div></form>
 </div>
 <div class="modal-bg" id="classModal">
   <form class="modal" id="classForm">
@@ -1293,14 +1293,68 @@ function toast(message) {
 
 
 const pet3DModels = {
-  // Mô hình GLB CC0 từ 3DAssets.dev; tải trực tiếp qua CDN CORS-enabled.
-  '🐱':'https://cdn.3dassets.dev/assets/20538/v1/model.glb',
-  '🐶':'https://cdn.3dassets.dev/assets/20606/v1/model.glb',
-  '🐰':'https://cdn.3dassets.dev/assets/20612/v1/model.glb',
-  '🦊':'https://cdn.3dassets.dev/assets/6062/v1/model.glb',
-  '🐼':'https://cdn.3dassets.dev/assets/6055/v1/model.glb',
-  '🐉':'https://cdn.3dassets.dev/assets/36706/v1/model.glb',
-  '🐲':'https://cdn.3dassets.dev/assets/36706/v1/model.glb'
+  // 61 mô hình GLB được lưu trực tiếp trong assets/pets; mỗi emoji tương ứng một mô hình.
+  "🐉": './assets/pets/baby-dragon-pet.glb',
+  "🦈": './assets/pets/baby-shark-pet.glb',
+  "🦖": './assets/pets/baby-t-rex-pet.glb',
+  "🦕": './assets/pets/baby-triceratops-pet.glb',
+  "🐳": './assets/pets/baby-whale-pet.glb',
+  "🐼": './assets/pets/bamboo-hug-panda.glb',
+  "🌵": './assets/pets/cactus-pet.glb',
+  "🐈": './assets/pets/cat-standing-ginger-tabby.glb',
+  "🐝": './assets/pets/chunky-bumblebee-pet.glb',
+  "🐰": './assets/pets/chunky-bunny-pet.glb',
+  "🦋": './assets/pets/chunky-butterfly-pet.glb',
+  "🦀": './assets/pets/chunky-crab-pet.glb',
+  "🦩": './assets/pets/chunky-flamingo-pet.glb',
+  "🦊": './assets/pets/chunky-fox-pet.glb',
+  "🐨": './assets/pets/chunky-koala-pet.glb',
+  "🐒": './assets/pets/chunky-monkey-pet.glb',
+  "🦉": './assets/pets/chunky-owl-pet.glb',
+  "🦚": './assets/pets/chunky-peacock-pet.glb',
+  "🪽": './assets/pets/chunky-pegasus-pet.glb',
+  "🦎": './assets/pets/chunky-pink-axolotl.glb',
+  "🐶": './assets/pets/chunky-puppy-pet.glb',
+  "🐾": './assets/pets/chunky-red-panda-pet.glb',
+  "🦭": './assets/pets/chunky-seal-pup.glb',
+  "🐹": './assets/pets/chunky-seed-hamster.glb',
+  "🐌": './assets/pets/chunky-snail-pet.glb',
+  "🐦": './assets/pets/chunky-toucan-pet.glb',
+  "🐢": './assets/pets/chunky-turtle-pet.glb',
+  "🦝": './assets/pets/coin-raccoon-pet.glb',
+  "🐙": './assets/pets/cute-octopus-pet.glb',
+  "🐲": './assets/pets/dragon-hatchling.glb',
+  "🥚": './assets/pets/egg-hatching-stand.glb',
+  "🐘": './assets/pets/elephant-calf-pet.glb',
+  "🦦": './assets/pets/floating-otter-pet.glb',
+  "🦊✨": './assets/pets/fox.glb',
+  "🦒": './assets/pets/giraffe-calf-pet.glb',
+  "⭐": './assets/pets/gold-star-pet.glb',
+  "🦅": './assets/pets/griffin-chick-pet.glb',
+  "🧸": './assets/pets/gummy-bear-pet.glb',
+  "🦥": './assets/pets/hanging-sloth-pet.glb',
+  "🦔": './assets/pets/hedgehog-pet.glb',
+  "🐻": './assets/pets/honey-bear-cub.glb',
+  "🐺": './assets/pets/howling-wolf-pup.glb',
+  "🐕": './assets/pets/husky-puppy-pet.glb',
+  "🐬": './assets/pets/jumping-dolphin-pet.glb',
+  "🐞": './assets/pets/ladybug-pet.glb',
+  "🐸": './assets/pets/lily-pad-frog-pet.glb',
+  "🦁": './assets/pets/lion-cub-pet.glb',
+  "🦆": './assets/pets/low-poly-duckling-pet.glb',
+  "🦌": './assets/pets/low-poly-fawn-pet.glb',
+  "🍄": './assets/pets/mushroom-sprite-pet.glb',
+  "🐱": './assets/pets/orange-tabby-kitten.glb',
+  "🐼🎋": './assets/pets/panda.glb',
+  "🐦‍🔥": './assets/pets/phoenix-chick-pet.glb',
+  "🐩": './assets/pets/puppy-standing.glb',
+  "🐇": './assets/pets/rabbit-sitting.glb',
+  "🌈": './assets/pets/rainbow-cloud-pet.glb',
+  "🦜": './assets/pets/rainbow-parrot-pet.glb',
+  "🦄": './assets/pets/rainbow-unicorn-pet.glb',
+  "🗿": './assets/pets/rock-golem-pet.glb',
+  "🐺‍⬛": './assets/pets/shadow-wolf-pet.glb',
+  "🐯": './assets/pets/tiger-cub-pet.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
 function attachPetModel(viewer, emoji, fallback, wrapper){
@@ -1357,10 +1411,10 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   }
 }
 
-const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
+const petEmojis = Object.keys(pet3DModels);
 function renderPetPicker() {
   const picker = document.getElementById('petPicker');
-  picker.innerHTML = petEmojis.map((emoji, index) => '<button type="button" class="' + (index === 1 ? 'selected' : '') + '" data-emoji="' + emoji + '" title="Chọn ' + emoji + '">' + emoji + '</button>').join('');
+  picker.innerHTML = petEmojis.map(emoji => '<button type="button" class="' + (emoji === '🐱' ? 'selected' : '') + '" data-emoji="' + emoji + '" title="Chọn mô hình ' + pet3DModels[emoji].split('/').pop() + '">' + emoji + '</button>').join('');
   picker.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
     document.getElementById('petEmoji').value = button.dataset.emoji;
     picker.querySelectorAll('button').forEach(item => item.classList.remove('selected'));
@@ -1476,6 +1530,10 @@ async function createPetForStudent(student) {
   if (emojiInput === null) return;
 
   const petEmoji = emojiInput.trim() || '🐱';
+  if (!pet3DModels[petEmoji]) {
+    toast('Biểu tượng này chưa có mô hình 3D. Hãy chọn một biểu tượng trong danh sách thú cưng.');
+    return;
+  }
 
   try {
     // Kiểm tra học sinh đã có Pet chưa
@@ -2613,6 +2671,11 @@ document.getElementById('addForm').addEventListener('submit', async event => {
 
   const petEmoji =
     document.getElementById('petEmoji').value.trim() || '🐱';
+
+  if (!pet3DModels[petEmoji]) {
+    toast('Biểu tượng này chưa có mô hình 3D. Hãy chọn một biểu tượng trong danh sách.');
+    return;
+  }
 
   // Phải có lớp đang được chọn
   if (!currentClass || !currentClass.id) {
