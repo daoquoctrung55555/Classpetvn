@@ -1293,13 +1293,14 @@ function toast(message) {
 
 
 const pet3DModels = {
-  '🐱':'./assets/pets/orange-tabby-kitten.glb',
-  '🐶':'./assets/pets/husky-puppy-pet.glb',
-  '🐰':'./assets/pets/chunky-bunny-pet.glb',
-  '🦊':'./assets/pets/chunky-fox-pet.glb',
-  '🐼':'./assets/pets/bamboo-hug-panda.glb',
-  '🐉':'./assets/pets/baby-dragon-pet.glb',
-  '🐲':'./assets/pets/baby-dragon-pet.glb'
+  // Mô hình GLB CC0 từ 3DAssets.dev; tải trực tiếp qua CDN CORS-enabled.
+  '🐱':'https://cdn.3dassets.dev/assets/20538/v1/model.glb',
+  '🐶':'https://cdn.3dassets.dev/assets/20606/v1/model.glb',
+  '🐰':'https://cdn.3dassets.dev/assets/20612/v1/model.glb',
+  '🦊':'https://cdn.3dassets.dev/assets/6062/v1/model.glb',
+  '🐼':'https://cdn.3dassets.dev/assets/6055/v1/model.glb',
+  '🐉':'https://cdn.3dassets.dev/assets/36706/v1/model.glb',
+  '🐲':'https://cdn.3dassets.dev/assets/36706/v1/model.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
 function attachPetModel(viewer, emoji, fallback, wrapper){
