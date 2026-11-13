@@ -1261,13 +1261,13 @@ function toast(message) {
 
 
 const pet3DModels = {
-  '🐱':'https://shuriken.studio/models/download/349583f3-05b5-4704-8095-ce67c4c58270',
-  '🐶':'https://shuriken.studio/models/download/05bd2c67-8d05-4c06-b67c-48fd8943d3cd',
-  '🐰':'https://shuriken.studio/models/download/7df48664-58f0-4d6b-90be-79f198417d42',
-  '🦊':'https://shuriken.studio/models/download/22ba9417-f4ca-4997-ba74-26cbb94b063d',
-  '🐼':'https://shuriken.studio/models/download/29164679-c2af-462a-91ab-d2571c6545b1',
-  '🐉':'https://shuriken.studio/models/download/63fabf68-69d0-45a9-a430-de9aadd59655',
-  '🐲':'https://shuriken.studio/models/download/63fabf68-69d0-45a9-a430-de9aadd59655'
+  '🐱':'./assets/pets/orange-tabby-kitten.glb',
+  '🐶':'./assets/pets/husky-puppy-pet.glb',
+  '🐰':'./assets/pets/chunky-bunny-pet.glb',
+  '🦊':'./assets/pets/chunky-fox-pet.glb',
+  '🐼':'./assets/pets/bamboo-hug-panda.glb',
+  '🐉':'./assets/pets/baby-dragon-pet.glb',
+  '🐲':'./assets/pets/baby-dragon-pet.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
 function attachPetModel(viewer, emoji, fallback, wrapper){
@@ -1298,7 +1298,7 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
     fallback.hidden = false;
     viewer.dataset.modelStatus = 'error';
     const detail = event?.detail?.type || event?.detail?.source || 'Lỗi tải tệp GLB/CORS';
-    if(status) status.textContent = 'Không tải được mô hình 3D (' + detail + '). Đường dẫn mô hình bên ngoài có thể bị chặn.';
+    if(status) status.textContent = 'Không tải được mô hình 3D (' + detail + '). Hãy kiểm tra tệp trong assets/pets và tải lại trang.';
     console.error('ClassPet: không tải được mô hình 3D', url, event?.detail || event);
   }, {once:true});
   const loadModel = () => {
