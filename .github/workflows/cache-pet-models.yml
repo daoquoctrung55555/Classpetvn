@@ -1,0 +1,53 @@
+name: Cache ClassPet GLB models
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cache-pet-models.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cache-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download six free CC0 GLB models
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/pets
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/20538/v1/model.glb" -o assets/pets/cat-standing-ginger-tabby.glb
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/20606/v1/model.glb" -o assets/pets/puppy-standing.glb
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/20612/v1/model.glb" -o assets/pets/rabbit-sitting.glb
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/6062/v1/model.glb" -o assets/pets/fox.glb
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/6055/v1/model.glb" -o assets/pets/panda.glb
+          curl --fail --location --retry 3 "https://cdn.3dassets.dev/assets/36706/v1/model.glb" -o assets/pets/dragon-hatchling.glb
+          for file in assets/pets/*.glb; do
+            test -s "$file"
+            magic="$(head -c 4 "$file")"
+            if [ "$magic" != "glTF" ]; then
+              echo "Invalid GLB file: $file"
+              exit 1
+            fi
+            echo "$file $(du -h "$file" | cut -f1)"
+          done
+
+      - name: Commit GLB files to assets/pets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/pets/*.glb
+          if git diff --cached --quiet; then
+            echo "No model changes to commit."
+            exit 0
+          fi
+          git commit -m "Add six free CC0 pet GLB models"
+          git push
