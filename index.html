@@ -1293,14 +1293,49 @@ function toast(message) {
 
 
 const pet3DModels = {
-  // Mô hình GLB CC0 từ 3DAssets.dev; tải trực tiếp qua CDN CORS-enabled.
+  // Mô hình GLB miễn phí CC0 từ 3DAssets.dev; CDN hỗ trợ CORS.
+  // Các loài có mô hình riêng dùng đúng mô hình; một số emoji cùng nhóm dùng biến thể gần nhất.
   '🐱':'https://cdn.3dassets.dev/assets/20538/v1/model.glb',
   '🐶':'https://cdn.3dassets.dev/assets/20606/v1/model.glb',
   '🐰':'https://cdn.3dassets.dev/assets/20612/v1/model.glb',
   '🦊':'https://cdn.3dassets.dev/assets/6062/v1/model.glb',
   '🐼':'https://cdn.3dassets.dev/assets/6055/v1/model.glb',
   '🐉':'https://cdn.3dassets.dev/assets/36706/v1/model.glb',
-  '🐲':'https://cdn.3dassets.dev/assets/36706/v1/model.glb'
+  '🐲':'https://cdn.3dassets.dev/assets/36706/v1/model.glb',
+
+  '🐹':'https://cdn.3dassets.dev/assets/20613/v1/model.glb',
+  '🐭':'https://cdn.3dassets.dev/assets/20613/v1/model.glb',
+  '🐹':'https://cdn.3dassets.dev/assets/20613/v1/model.glb',
+  '🐦':'https://cdn.3dassets.dev/assets/20619/v1/model.glb',
+  '🐧':'https://cdn.3dassets.dev/assets/39348/v1/model.glb',
+  '🐔':'https://cdn.3dassets.dev/assets/29130/v1/model.glb',
+  '🐤':'https://cdn.3dassets.dev/assets/29130/v1/model.glb',
+  '🐢':'https://cdn.3dassets.dev/assets/5881/v1/model.glb',
+  '🦁':'https://cdn.3dassets.dev/assets/6531/v1/model.glb',
+  '🐯':'https://cdn.3dassets.dev/assets/30235/v1/model.glb',
+  '🐷':'https://cdn.3dassets.dev/assets/29125/v1/model.glb',
+  '🐸':'https://cdn.3dassets.dev/assets/22452/v1/model.glb',
+  '🐵':'https://cdn.3dassets.dev/assets/6555/v1/model.glb',
+  '🙈':'https://cdn.3dassets.dev/assets/6555/v1/model.glb',
+  '🐊':'https://cdn.3dassets.dev/assets/6557/v1/model.glb',
+  '🦖':'https://cdn.3dassets.dev/assets/4885/v1/model.glb',
+  '🦕':'https://cdn.3dassets.dev/assets/4885/v1/model.glb',
+  '🐙':'https://cdn.3dassets.dev/assets/5884/v1/model.glb',
+  '🦑':'https://cdn.3dassets.dev/assets/5887/v1/model.glb',
+  '🐳':'https://cdn.3dassets.dev/assets/5862/v1/model.glb',
+  '🐬':'https://cdn.3dassets.dev/assets/5859/v1/model.glb',
+  '🦈':'https://cdn.3dassets.dev/assets/5867/v1/model.glb',
+  '🐗':'https://cdn.3dassets.dev/assets/6553/v1/model.glb',
+  '🦌':'https://cdn.3dassets.dev/assets/30203/v1/model.glb',
+  '🐘':'https://cdn.3dassets.dev/assets/6528/v1/model.glb',
+  '🦒':'https://cdn.3dassets.dev/assets/6535/v1/model.glb',
+  '🦓':'https://cdn.3dassets.dev/assets/6547/v1/model.glb',
+  '🦏':'https://cdn.3dassets.dev/assets/6537/v1/model.glb',
+  '🦛':'https://cdn.3dassets.dev/assets/6536/v1/model.glb',
+  '🦦':'https://cdn.3dassets.dev/assets/5895/v1/model.glb',
+  '🐌':'https://cdn.3dassets.dev/assets/5884/v1/model.glb',
+  '🦔':'https://cdn.3dassets.dev/assets/20614/v1/model.glb',
+  '🐿️':'https://cdn.3dassets.dev/assets/20614/v1/model.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
 function attachPetModel(viewer, emoji, fallback, wrapper){
