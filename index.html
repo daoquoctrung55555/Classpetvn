@@ -126,18 +126,18 @@ body.dark-mode .settings-nav button.active,body.dark-mode .settings-nav button:h
 body.dark-mode .student-portal{color:#fff}
 body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit}
 
-/* ClassPet 3D pets */
-.pet-face{position:relative;display:grid;place-items:center;overflow:hidden}
-.pet-face model-viewer{width:100%;height:112px;min-height:112px;background:transparent;--poster-color:transparent}
-.pet-face .pet-emoji-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:48px;pointer-events:none}
+/* ClassPet 3D pets — explicit dimensions prevent zero-height viewer */
+.pet-face{position:relative;display:grid;place-items:center;overflow:hidden;isolation:isolate}
+.pet-face model-viewer{display:block;width:100%;height:100%;min-width:72px;min-height:72px;background:transparent;--poster-color:transparent;pointer-events:auto}
+.pet-face .pet-emoji-fallback{position:absolute;inset:0;z-index:2;display:grid;place-items:center;font-size:48px;pointer-events:none}
 .pet-face.has-3d .pet-emoji-fallback{display:none}
-.profile-pet-face{position:relative;display:grid;place-items:center;overflow:hidden}
-.profile-pet-face model-viewer{width:100%;height:190px;min-height:190px;background:transparent;--poster-color:transparent}
-.profile-pet-face .pet-emoji-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;pointer-events:none}
+.profile-pet-face{position:relative;display:grid;place-items:center;overflow:hidden;isolation:isolate;width:110px;height:110px}
+.profile-pet-face model-viewer{display:block;width:100%;height:100%;min-height:110px;background:transparent;--poster-color:transparent}
+.profile-pet-face .pet-emoji-fallback{position:absolute;inset:0;z-index:2;display:grid;place-items:center;font-size:76px;pointer-events:none}
 .profile-pet-face.has-3d .pet-emoji-fallback{display:none}
 .pet-3d-credit{font-size:10px;color:#7b8192;margin:8px 0 0}
 .pet-3d-credit a{color:#6757f5;text-decoration:none}
-@media(max-width:600px){.profile-pet-face model-viewer{height:155px;min-height:155px}}
+@media(max-width:600px){.profile-pet-face{width:110px;height:110px}.profile-pet-face model-viewer{height:100%;min-height:110px}}
 
 </style>
 </head>
@@ -1276,12 +1276,28 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   fallback.textContent = emoji || '🐾';
   wrapper.classList.remove('has-3d');
   viewer.removeAttribute('src');
-  if(!url){ viewer.hidden = true; fallback.hidden = false; return; }
   viewer.hidden = false;
   fallback.hidden = false;
-  viewer.addEventListener('load', () => wrapper.classList.add('has-3d'), {once:true});
-  viewer.addEventListener('error', () => { wrapper.classList.remove('has-3d'); viewer.hidden = true; fallback.hidden = false; }, {once:true});
-  viewer.setAttribute('src', url);
+  if(!url){ viewer.hidden = true; return; }
+  viewer.setAttribute('camera-orbit','0deg 75deg 2.5m');
+  viewer.setAttribute('field-of-view','30deg');
+  viewer.setAttribute('min-camera-orbit','auto auto 1.5m');
+  viewer.setAttribute('max-camera-orbit','auto auto 4m');
+  viewer.setAttribute('reveal','auto');
+  viewer.addEventListener('load', () => {
+    wrapper.classList.add('has-3d');
+    viewer.dataset.modelStatus = 'loaded';
+  }, {once:true});
+  viewer.addEventListener('error', () => {
+    wrapper.classList.remove('has-3d');
+    viewer.hidden = true;
+    fallback.hidden = false;
+    viewer.dataset.modelStatus = 'error';
+    console.error('ClassPet: không tải được mô hình 3D', url);
+  }, {once:true});
+  const loadModel = () => viewer.setAttribute('src', url);
+  if (customElements.get('model-viewer')) loadModel();
+  else customElements.whenDefined('model-viewer').then(loadModel);
 }
 
 const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
