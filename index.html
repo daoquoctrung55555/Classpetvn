@@ -126,6 +126,19 @@ body.dark-mode .settings-nav button.active,body.dark-mode .settings-nav button:h
 body.dark-mode .student-portal{color:#fff}
 body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit}
 
+/* ClassPet 3D pets */
+.pet-face{position:relative;display:grid;place-items:center;overflow:hidden}
+.pet-face model-viewer{width:100%;height:112px;min-height:112px;background:transparent;--poster-color:transparent}
+.pet-face .pet-emoji-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:48px;pointer-events:none}
+.pet-face.has-3d .pet-emoji-fallback{display:none}
+.profile-pet-face{position:relative;display:grid;place-items:center;overflow:hidden}
+.profile-pet-face model-viewer{width:100%;height:190px;min-height:190px;background:transparent;--poster-color:transparent}
+.profile-pet-face .pet-emoji-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;pointer-events:none}
+.profile-pet-face.has-3d .pet-emoji-fallback{display:none}
+.pet-3d-credit{font-size:10px;color:#7b8192;margin:8px 0 0}
+.pet-3d-credit a{color:#6757f5;text-decoration:none}
+@media(max-width:600px){.profile-pet-face model-viewer{height:155px;min-height:155px}}
+
 </style>
 </head>
 <body>
@@ -376,10 +389,10 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 <div class="modal-bg" id="petModal">
   <div class="modal">
     <div class="pet-profile">
-      <div class="profile-pet-face" id="profilePetFace">🐱</div>
+      <div class="profile-pet-face" id="profilePetFace"><model-viewer id="profilePetModel" camera-controls auto-rotate rotation-per-second="22deg" shadow-intensity="0.8" exposure="1.05" interaction-prompt="none" aria-label="Mô hình thú cưng 3D"></model-viewer><span class="pet-emoji-fallback" id="profilePetEmoji">🐱</span></div>
       <div><h3 id="petModalTitle">Thông tin pet</h3><p id="petModalStudent"></p><p id="petModalStage"></p><div class="profile-stats"><span>❤️ Sức khỏe<b id="profileHealth">100</b></span><span>🍖 Độ no<b id="profileHunger">100</b></span><span>😊 Hạnh phúc<b id="profileHappiness">90</b></span></div><p id="petModalLastFed"></p></div>
     </div>
-    <div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
+    <p class="pet-3d-credit">Mô hình 3D miễn phí từ <a href="https://shuriken.studio/kits/pets" target="_blank" rel="noopener">Shuriken Studio</a>. Kéo để xoay, dùng cuộn chuột để phóng to.</p><div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
     <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
   </div>
 </div>
@@ -1246,6 +1259,31 @@ function toast(message) {
   window.tt = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+
+const pet3DModels = {
+  '🐱':'https://shuriken.studio/models/download/349583f3-05b5-4704-8095-ce67c4c58270',
+  '🐶':'https://shuriken.studio/models/download/7fdda1b9-6237-4fbf-b7b9-c1f4e01951aa',
+  '🐰':'https://shuriken.studio/models/download/7df48664-58f0-4d6b-90be-79f198417d42',
+  '🦊':'https://shuriken.studio/models/download/22ba9417-f4ca-4997-ba74-26cbb94b063d',
+  '🐼':'https://shuriken.studio/models/download/29164679-c2af-462a-91ab-d2571c6545b1',
+  '🐉':'https://shuriken.studio/models/download/63fabf68-69d0-45a9-a430-de9aadd59655',
+  '🐲':'https://shuriken.studio/models/download/63fabf68-69d0-45a9-a430-de9aadd59655'
+};
+function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
+function attachPetModel(viewer, emoji, fallback, wrapper){
+  if(!viewer || !fallback || !wrapper) return;
+  const url = petModelUrl(emoji);
+  fallback.textContent = emoji || '🐾';
+  wrapper.classList.remove('has-3d');
+  viewer.removeAttribute('src');
+  if(!url){ viewer.hidden = true; fallback.hidden = false; return; }
+  viewer.hidden = false;
+  fallback.hidden = false;
+  viewer.addEventListener('load', () => wrapper.classList.add('has-3d'), {once:true});
+  viewer.addEventListener('error', () => { wrapper.classList.remove('has-3d'); viewer.hidden = true; fallback.hidden = false; }, {once:true});
+  viewer.src = url;
+}
+
 const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
 function renderPetPicker() {
   const picker = document.getElementById('petPicker');
@@ -1531,8 +1569,10 @@ pet.dataset.studentId = studentId;
 
 pet.dataset.name = student + ' ' + petName;
   pet.dataset.level = level;
-  pet.innerHTML = '<div class="pet-top"><div class="pet-face">' + escapeHtml(emoji) + '</div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
+  pet.innerHTML = '<div class="pet-top"><div class="pet-face"><model-viewer class="pet-card-model" camera-controls auto-rotate rotation-per-second="24deg" shadow-intensity="0.65" exposure="1.05" interaction-prompt="none" aria-label="Thú cưng 3D"></model-viewer><span class="pet-emoji-fallback">' + escapeHtml(emoji) + '</span></div><div class="level-badge"><span>LEVEL</span><strong> ' + level + '</strong></div><span class="badge"></span></div><h4>' + escapeHtml(student) + '</h4><div class="meta"><span>' + escapeHtml(petName) + ' · Lv.' + level + '</span><b></b></div><div class="pet-stage"></div><div class="pet-metrics"><span>❤️ Sức khỏe<b class="health-value">100</b></span><span>🍖 Độ no<b class="hunger-value">100</b></span><span>😊 Vui vẻ<b>90</b></span></div><div class="exp">EXP: <span class="exp-value">0 / ' + getLevelCost(level) + '</span></div><div class="bar"><div class="fill"></div></div>';
   document.getElementById('pets').appendChild(pet);
+  const cardFace = pet.querySelector('.pet-face');
+  attachPetModel(cardFace?.querySelector('model-viewer'), emoji, cardFace?.querySelector('.pet-emoji-fallback'), cardFace);
   pet.dataset.exp = exp;
   pet.dataset.lastFedAt = lastFedAt;
   pet.classList.toggle('motion-on', getSettings().animation !== false && !dead);
@@ -3788,7 +3828,9 @@ function openPetModal(pet) {
   document.getElementById('petModalTitle').textContent = '🐾 ' + petName;
   document.getElementById('petModalStudent').textContent = '👤 Học sinh: ' + student + ' · Lv.' + level;
   document.getElementById('petModalStage').textContent = stage;
-  document.getElementById('profilePetFace').textContent = pet.querySelector('.pet-face').textContent;
+  
+  const petEmoji = pet.querySelector('.pet-face .pet-emoji-fallback')?.textContent || pet.querySelector('.pet-face').textContent;
+  attachPetModel(document.getElementById('profilePetModel'), petEmoji, document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'));
   document.getElementById('profilePetFace').classList.toggle('dead', pet.dataset.dead === 'true');
   document.getElementById('profileHealth').textContent = health;
   document.getElementById('profileHunger').textContent = health;
@@ -4446,5 +4488,7 @@ studentModeButton.addEventListener('click', () => {
   studentLoginFields.classList.add('active');
 });
 </script>
+
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 </body>
 </html>
