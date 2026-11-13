@@ -1281,7 +1281,7 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   fallback.hidden = false;
   viewer.addEventListener('load', () => wrapper.classList.add('has-3d'), {once:true});
   viewer.addEventListener('error', () => { wrapper.classList.remove('has-3d'); viewer.hidden = true; fallback.hidden = false; }, {once:true});
-  viewer.src = url;
+  viewer.setAttribute('src', url);
 }
 
 const petEmojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐜','🕷️','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦀','🐠','🐟','🐡','🐬','🐳','🦈','🐊','🦆','🦉','🦅','🦇','🐺','🐗','🦌','🐘','🦒','🦓','🦏','🦛','🐪','🐫','🦘','🦥','🦦','🦨','🦔','🐿️'];
