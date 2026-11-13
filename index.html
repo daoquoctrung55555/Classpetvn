@@ -1282,10 +1282,12 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
   fallback.hidden = false;
   if(status) status.textContent = url ? 'Đang tải mô hình 3D…' : 'Chưa có mô hình 3D cho thú cưng này.';
   if(!url){ viewer.hidden = true; return; }
-  viewer.setAttribute('camera-orbit','0deg 75deg 2.5m');
-  viewer.setAttribute('field-of-view','30deg');
-  viewer.setAttribute('min-camera-orbit','auto auto 1.5m');
-  viewer.setAttribute('max-camera-orbit','auto auto 4m');
+  // Lùi camera mặc định để toàn bộ thú cưng nằm gọn trong khung;
+  // người xem vẫn có thể cuộn/gesture để tự phóng to khi cần.
+  viewer.setAttribute('camera-orbit','0deg 75deg 3.4m');
+  viewer.setAttribute('field-of-view','35deg');
+  viewer.setAttribute('min-camera-orbit','auto auto 1.2m');
+  viewer.setAttribute('max-camera-orbit','auto auto 7m');
   viewer.setAttribute('reveal','auto');
   viewer.setAttribute('crossorigin','anonymous');
   viewer.addEventListener('load', () => {
