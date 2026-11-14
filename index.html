@@ -226,6 +226,17 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 }
 @media(prefers-reduced-motion:reduce){.rankrow,.student-pet-card{transition:none}}
 
+
+/* Ranking and student pet modal hardening */
+.pet-rank-face model-viewer,.student-rank-face model-viewer{background:transparent!important;--poster-color:transparent!important;opacity:0;transition:opacity .2s}
+.pet-rank-face.has-3d model-viewer,.student-rank-face.has-3d model-viewer{opacity:1}
+.rankrow .rname{min-width:0;overflow:hidden;white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.rankrow .rname small{display:block;white-space:normal;overflow-wrap:anywhere}
+.rankrow .lv{flex:0 0 58px}
+#petModal{z-index:10000!important}
+#petModal.show{display:flex!important}
+#petModal .pet-detail-modal{max-height:90vh;overflow-y:auto}
+
 </style>
 </head>
 <body>
@@ -1413,9 +1424,9 @@ const pet3DModels = {
   "🐯": './assets/pets/tiger-cub-pet.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
-function attachPetModel(viewer, emoji, fallback, wrapper){
+function attachPetModel(viewer, emoji, fallback, wrapper, sourceUrl = ''){
   if(!viewer || !fallback || !wrapper) return;
-  const url = petModelUrl(emoji);
+  const url = sourceUrl || petModelUrl(emoji);
   const status = document.getElementById('pet3DStatus');
   fallback.textContent = emoji || '🐾';
   wrapper.classList.remove('has-3d');
@@ -1470,9 +1481,9 @@ function attachPetModel(viewer, emoji, fallback, wrapper){
 const petEmojis = Object.keys(pet3DModels);
 
 // Thumbnail 3D tĩnh: phóng gần vào vùng đầu, không xoay và không cho tương tác.
-function attachPetThumbnail(viewer, emoji, fallback, wrapper) {
+function attachPetThumbnail(viewer, emoji, fallback, wrapper, sourceUrl = '') {
   if (!viewer || !fallback || !wrapper) return;
-  const url = petModelUrl(emoji);
+  const url = sourceUrl || petModelUrl(emoji);
   fallback.textContent = emoji || '🐾';
   viewer.removeAttribute('camera-controls');
   viewer.removeAttribute('auto-rotate');
@@ -1480,11 +1491,11 @@ function attachPetThumbnail(viewer, emoji, fallback, wrapper) {
   viewer.removeAttribute('animation-name');
   viewer.setAttribute('disable-zoom', '');
   viewer.setAttribute('interaction-prompt', 'none');
-  viewer.setAttribute('loading', 'lazy');
+  viewer.setAttribute('loading', 'eager');
   viewer.setAttribute('reveal', 'auto');
-  viewer.setAttribute('camera-orbit', '0deg 75deg 68%');
+  viewer.setAttribute('camera-orbit', '0deg 75deg 110%');
   viewer.setAttribute('camera-target', 'auto auto auto');
-  viewer.setAttribute('field-of-view', '30deg');
+  viewer.setAttribute('field-of-view', '35deg');
   viewer.setAttribute('shadow-intensity', '0.35');
   viewer.setAttribute('exposure', '1.2');
   viewer.setAttribute('environment-image', 'neutral');
@@ -1991,7 +2002,7 @@ function renderRankings() {
     return;
   }
   list.innerHTML = pets.map((pet, index) => '<div class="rankrow' + (index < 3 ? ' rank-podium rank-podium-' + (index + 1) : '') + '" role="button" tabindex="0" data-pet-id="' + escapeHtml(pet.id) + '" aria-label="Xem Pet ' + escapeHtml(pet.pet) + '"><span class="num">' + (index + 1) + '</span><span class="rpet pet-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="pet-rank-fallback">' + escapeHtml(pet.emoji || '🐾') + '</span></span><span class="rname">' + escapeHtml(pet.pet) + '<small style="display:block;color:var(--muted);font-size:11px">' + escapeHtml(pet.student) + '</small></span><span class="lv">Lv.' + pet.level + '<small style="display:block;font-size:10px">' + pet.exp + ' EXP</small></span></div>').join('');
-  list.querySelectorAll('.pet-rank-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), pets[index].emoji, face.querySelector('.pet-rank-fallback'), face));
+  list.querySelectorAll('.pet-rank-face').forEach((face, index) => { const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === pets[index].id); const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || ''; attachPetThumbnail(face.querySelector('model-viewer'), pets[index].emoji, face.querySelector('.pet-rank-fallback'), face, sourceUrl); });
   list.querySelectorAll('.rankrow[data-pet-id]').forEach(row => {
     const open = () => { const petCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === row.dataset.petId); if (petCard) openPetModal(petCard); };
     row.addEventListener('click', open);
@@ -4086,6 +4097,8 @@ function openPetModal(pet) {
 
 function openStudentPetModal(item) {
   if (!item) return;
+  if (petModal && petModal.parentElement !== document.body) document.body.appendChild(petModal);
+  if (petModal) petModal.style.zIndex = '10000';
   selectedPet = null;
   const level = Number(item.level || 1);
   const exp = Number(item.exp || 0);
@@ -4093,7 +4106,9 @@ function openStudentPetModal(item) {
   document.getElementById('petModalTitle').textContent = '🐾 ' + (item.pet || 'Pet');
   document.getElementById('petModalStudent').textContent = '👤 Học sinh: ' + (item.student || '—') + ' · Lv.' + level;
   document.getElementById('petModalStage').textContent = getPetStage(level);
-  attachPetModel(document.getElementById('profilePetModel'), item.emoji || '🐱', document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'));
+  const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === item.id);
+  const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || '';
+  attachPetModel(document.getElementById('profilePetModel'), item.emoji || '🐱', document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'), sourceUrl);
   document.getElementById('profilePetFace').classList.toggle('dead', item.status === 'dead');
   document.getElementById('profileHealth').textContent = health + '%';
   document.getElementById('profileHunger').textContent = health + '%';
@@ -4105,6 +4120,7 @@ function openStudentPetModal(item) {
   const feedButton = document.getElementById('petModalFeedButton');
   if (feedButton) feedButton.hidden = true;
   petModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 function openPetViewer() {
@@ -4131,6 +4147,7 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape') clos
 
 function closePetModal() {
   petModal.classList.remove('show');
+  document.body.style.overflow = '';
   selectedPet = null;
   const feedButton = document.getElementById('petModalFeedButton');
   if (feedButton) feedButton.hidden = false;
@@ -4338,7 +4355,7 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   const cards = pets.length ? pets.map(petCard).join('') : '<div class="student-empty">Lớp chưa có Pet.</div>';
   document.getElementById('studentSummary').innerHTML = cards; document.getElementById('studentPetList').innerHTML = cards;
   [document.getElementById('studentSummary'), document.getElementById('studentPetList')].forEach(container => {
-    container.querySelectorAll('.student-pet-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), pets[index]?.emoji || '🐱', face.querySelector('.student-pet-fallback'), face));
+    container.querySelectorAll('.student-pet-face').forEach((face, index) => { const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === pets[index]?.id); const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || ''; attachPetThumbnail(face.querySelector('model-viewer'), pets[index]?.emoji || '🐱', face.querySelector('.student-pet-fallback'), face, sourceUrl); });
     container.querySelectorAll('.student-pet-card').forEach((card, index) => {
       const open = () => openStudentPetModal(pets[index]);
       card.addEventListener('click', open);
@@ -4353,7 +4370,7 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   const sorted = [...pets].sort((a, b) => Number(b.level || 1) - Number(a.level || 1) || Number(b.exp || 0) - Number(a.exp || 0));
   const studentRankList = document.getElementById('studentRankingList');
   studentRankList.innerHTML = sorted.length ? sorted.map((pet, index) => '<div class="student-rank-row"><span class="student-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-rank-fallback">' + escapeHtml(pet.emoji || '🐱') + '</span></span><span class="student-rank-name">' + (index + 1) + '. ' + escapeHtml(pet.pet) + ' · ' + escapeHtml(pet.student) + '</span><strong>Lv.' + (pet.level || 1) + ' · ' + (pet.exp || 0) + ' EXP</strong></div>').join('') : '<div class="student-empty">Chưa có dữ liệu xếp hạng.</div>';
-  studentRankList.querySelectorAll('.student-rank-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), sorted[index].emoji || '🐱', face.querySelector('.student-rank-fallback'), face));
+  studentRankList.querySelectorAll('.student-rank-face').forEach((face, index) => { const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === sorted[index].id); const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || ''; attachPetThumbnail(face.querySelector('model-viewer'), sorted[index].emoji || '🐱', face.querySelector('.student-rank-fallback'), face, sourceUrl); });
   studentRankList.querySelectorAll('.student-rank-row').forEach((row, index) => {
     row.setAttribute('role', 'button'); row.setAttribute('tabindex', '0');
     row.addEventListener('click', () => openStudentPetModal(sorted[index]));
