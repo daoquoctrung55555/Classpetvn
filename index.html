@@ -237,6 +237,16 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 #petModal.show{display:flex!important}
 #petModal .pet-detail-modal{max-height:90vh;overflow-y:auto}
 
+
+/* Student-first hierarchy: student names stand out above pet names */
+#pets .pet>h4{font-size:18px!important;font-weight:850!important;line-height:1.3!important;margin:10px 0 3px!important;color:var(--text)!important}
+#pets .pet>.meta,#pets .pet>.meta span{font-size:12px!important;font-weight:600!important}
+.rankrow .rname{font-size:15px!important;font-weight:850!important}
+.rankrow .rname .rank-pet-name{display:block!important;font-size:11px!important;font-weight:600!important;color:#667085!important;margin-top:3px}
+.student-pet-card .student-name-primary{font-size:17px!important;line-height:1.35!important;font-weight:850!important;color:#20263a!important;margin:0 0 3px!important}
+.student-pet-card .student-pet-name{display:block!important;font-size:12px!important;line-height:1.4!important;font-weight:650!important;color:#667085!important}
+.student-rank-name{display:flex!important;flex-direction:column!important;gap:2px!important;font-size:14px!important;font-weight:850!important;color:#20263a!important}
+.student-rank-name small{font-size:11px!important;font-weight:600!important;color:#667085!important}
 </style>
 </head>
 <body>
@@ -287,7 +297,6 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
   </div>
   <div class="dashboard-panels">
     <section class="card"><div class="head"><div><h3>🏆 Thành tích & Badge</h3><p>Những cột mốc đáng nhớ của lớp</p></div></div><div class="achievement-list" id="achievementList"></div></section>
-    <section class="card top-three"><div class="head"><div><h3>🥇 Bảng xếp hạng nổi bật</h3><p>Top Pet theo Level và EXP</p></div></div><div class="rank" id="topThreeList"></div></section>
   </div>
 
   <section class="card tasks-card" id="tasksSection">
@@ -2001,7 +2010,7 @@ function renderRankings() {
     list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có pet để xếp hạng.</p>';
     return;
   }
-  list.innerHTML = pets.map((pet, index) => '<div class="rankrow' + (index < 3 ? ' rank-podium rank-podium-' + (index + 1) : '') + '" role="button" tabindex="0" data-pet-id="' + escapeHtml(pet.id) + '" aria-label="Xem Pet ' + escapeHtml(pet.pet) + '"><span class="num">' + (index + 1) + '</span><span class="rpet pet-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="pet-rank-fallback">' + escapeHtml(pet.emoji || '🐾') + '</span></span><span class="rname">' + escapeHtml(pet.pet) + '<small style="display:block;color:var(--muted);font-size:11px">' + escapeHtml(pet.student) + '</small></span><span class="lv">Lv.' + pet.level + '<small style="display:block;font-size:10px">' + pet.exp + ' EXP</small></span></div>').join('');
+  list.innerHTML = pets.map((pet, index) => '<div class="rankrow' + (index < 3 ? ' rank-podium rank-podium-' + (index + 1) : '') + '" role="button" tabindex="0" data-pet-id="' + escapeHtml(pet.id) + '" aria-label="Xem Pet ' + escapeHtml(pet.pet) + '"><span class="num">' + (index + 1) + '</span><span class="rpet pet-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="pet-rank-fallback">' + escapeHtml(pet.emoji || '🐾') + '</span></span><span class="rname">' + escapeHtml(pet.student) + '<small class="rank-pet-name">🐾 ' + escapeHtml(pet.pet) + '</small></span><span class="lv">Lv.' + pet.level + '<small style="display:block;font-size:10px">' + pet.exp + ' EXP</small></span></div>').join('');
   list.querySelectorAll('.pet-rank-face').forEach((face, index) => { const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === pets[index].id); const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || ''; attachPetThumbnail(face.querySelector('model-viewer'), pets[index].emoji, face.querySelector('.pet-rank-fallback'), face, sourceUrl); });
   list.querySelectorAll('.rankrow[data-pet-id]').forEach(row => {
     const open = () => { const petCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === row.dataset.petId); if (petCard) openPetModal(petCard); };
@@ -4351,7 +4360,7 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   const code = classItem.code || '-----';
   document.getElementById('studentClassLabel').textContent = '🏫 Lớp ' + classItem.name + ' · Mã lớp: ' + code;
   document.getElementById('studentWelcome').textContent = 'Chào học sinh! 👋';
-  const petCard = item => { const level = Number(item.level || 1), exp = Number(item.exp || 0), health = Number(item.health ?? 100), emoji = item.emoji || '🐱'; const isMine = account.studentPetId ? item.id === account.studentPetId : item.student === account.studentName && item.pet === account.studentPetName; return '<article class="student-pet-card' + (isMine ? ' mine' : '') + '" role="button" tabindex="0" aria-label="Xem Pet ' + escapeHtml(item.pet) + '"><div class="student-pet-open-hint">👆 Chạm để xem Pet</div><div class="face student-pet-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-pet-fallback">' + escapeHtml(emoji) + '</span></div><h3>' + escapeHtml(item.pet) + ' · Lv.' + level + '</h3><small>👤 ' + escapeHtml(item.student) + '</small><div class="student-badges"><span class="student-badge">⭐ EXP: ' + exp + '</span><span class="student-badge">🍖 No: ' + health + '%</span><span class="student-badge">❤️ Sức khỏe: ' + health + '%</span><span class="student-badge">😊 Hạnh phúc: 90%</span></div><small>Quá trình: ' + getPetStage(level) + '</small></article>'; };
+  const petCard = item => { const level = Number(item.level || 1), exp = Number(item.exp || 0), health = Number(item.health ?? 100), emoji = item.emoji || '🐱'; const isMine = account.studentPetId ? item.id === account.studentPetId : item.student === account.studentName && item.pet === account.studentPetName; return '<article class="student-pet-card' + (isMine ? ' mine' : '') + '" role="button" tabindex="0" aria-label="Xem Pet ' + escapeHtml(item.pet) + '"><div class="student-pet-open-hint">👆 Chạm để xem Pet</div><div class="face student-pet-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-pet-fallback">' + escapeHtml(emoji) + '</span></div><h3 class="student-name-primary">👤 ' + escapeHtml(item.student) + '</h3><small class="student-pet-name">🐾 ' + escapeHtml(item.pet) + ' · Lv.' + level + '</small><div class="student-badges"><span class="student-badge">⭐ EXP: ' + exp + '</span><span class="student-badge">🍖 No: ' + health + '%</span><span class="student-badge">❤️ Sức khỏe: ' + health + '%</span><span class="student-badge">😊 Hạnh phúc: 90%</span></div><small>Quá trình: ' + getPetStage(level) + '</small></article>'; };
   const cards = pets.length ? pets.map(petCard).join('') : '<div class="student-empty">Lớp chưa có Pet.</div>';
   document.getElementById('studentSummary').innerHTML = cards; document.getElementById('studentPetList').innerHTML = cards;
   [document.getElementById('studentSummary'), document.getElementById('studentPetList')].forEach(container => {
@@ -4369,7 +4378,7 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   document.getElementById('studentTaskList').innerHTML = tasks.length ? tasks.map(task => { const completed = (Array.isArray(task.completedPetIds) && task.completedPetIds.includes(account.studentPetId)) || (Array.isArray(task.completed) && task.completed.includes(account.studentName)); return '<article class="student-task"><b>🎯 ' + escapeHtml(task.title) + ' <span class="student-badge">+' + task.exp + ' EXP</span></b><p>' + escapeHtml(task.description || 'Nhiệm vụ của lớp') + (task.dueDate ? ' · Hạn: ' + new Intl.DateTimeFormat('vi-VN').format(new Date(task.dueDate + 'T00:00:00')) : '') + '</p><span class="student-status ' + (completed ? 'done' : '') + '">' + (completed ? '🟢 Đã hoàn thành · +' + task.exp + ' EXP cho Pet' : '🟡 Chưa hoàn thành') + '</span></article>'; }).join('') : '<div class="student-empty">Chưa có nhiệm vụ.</div>';
   const sorted = [...pets].sort((a, b) => Number(b.level || 1) - Number(a.level || 1) || Number(b.exp || 0) - Number(a.exp || 0));
   const studentRankList = document.getElementById('studentRankingList');
-  studentRankList.innerHTML = sorted.length ? sorted.map((pet, index) => '<div class="student-rank-row"><span class="student-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-rank-fallback">' + escapeHtml(pet.emoji || '🐱') + '</span></span><span class="student-rank-name">' + (index + 1) + '. ' + escapeHtml(pet.pet) + ' · ' + escapeHtml(pet.student) + '</span><strong>Lv.' + (pet.level || 1) + ' · ' + (pet.exp || 0) + ' EXP</strong></div>').join('') : '<div class="student-empty">Chưa có dữ liệu xếp hạng.</div>';
+  studentRankList.innerHTML = sorted.length ? sorted.map((pet, index) => '<div class="student-rank-row"><span class="student-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-rank-fallback">' + escapeHtml(pet.emoji || '🐱') + '</span></span><span class="student-rank-name">' + '<b>' + (index + 1) + '. ' + escapeHtml(pet.student) + '</b><small>🐾 ' + escapeHtml(pet.pet) + '</small>' + '</span><strong>Lv.' + (pet.level || 1) + ' · ' + (pet.exp || 0) + ' EXP</strong></div>').join('') : '<div class="student-empty">Chưa có dữ liệu xếp hạng.</div>';
   studentRankList.querySelectorAll('.student-rank-face').forEach((face, index) => { const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === sorted[index].id); const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || ''; attachPetThumbnail(face.querySelector('model-viewer'), sorted[index].emoji || '🐱', face.querySelector('.student-rank-fallback'), face, sourceUrl); });
   studentRankList.querySelectorAll('.student-rank-row').forEach((row, index) => {
     row.setAttribute('role', 'button'); row.setAttribute('tabindex', '0');
