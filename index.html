@@ -170,6 +170,62 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 @media(prefers-reduced-motion:reduce){
   .pet-face:after{animation:none!important}
 }
+
+/* ClassPet refinement: clearer ranking and student readability */
+.rank{padding:10px 16px 17px}
+.rankrow{min-height:66px;padding:11px 10px;border:1px solid transparent;border-radius:14px;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.rankrow:hover{background:#f5f3ff;border-color:#ded9ff;transform:translateX(2px)}
+.rankrow.rank-podium{margin:4px 0;padding:13px 11px;min-height:76px}
+.rankrow.rank-podium-1{background:linear-gradient(100deg,#fff4c7,#fffdf4);border-color:#f2d889}
+.rankrow.rank-podium-2{background:linear-gradient(100deg,#eef1f7,#fff);border-color:#dfe4ed}
+.rankrow.rank-podium-3{background:linear-gradient(100deg,#ffede2,#fff);border-color:#f4d4bf}
+.rank-podium .num{width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#fff;font-size:13px;color:#795b0c;box-shadow:0 2px 7px #252b4312}
+.rank-podium-1 .num:before{content:"👑";position:absolute;transform:translateY(-19px);font-size:12px}
+.rank-podium-2 .num{color:#596579}.rank-podium-3 .num{color:#a65b32}
+.rankrow .rname{font-size:13px;line-height:1.35;color:#20263a}
+.rankrow .rname small{font-size:11px!important;color:#586174!important}
+.rankrow .lv{min-width:58px;text-align:right;line-height:1.35}
+.rankrow .pet-rank-face{width:48px;height:48px;flex-basis:48px;border-radius:14px}
+.student-portal{color:#20263a}
+.student-section{color:#20263a}
+.student-section h2{font-size:20px;color:#20263a}
+.student-section>p{font-size:14px;line-height:1.55;color:#505a6d}
+.student-nav button{font-size:13px;font-weight:750;color:#465166;padding:11px 13px}
+.student-welcome p{font-size:15px;line-height:1.55;color:#fff}
+.student-kpi small{font-size:12px;color:#465166}
+.student-kpi strong{font-size:25px}
+.student-choice-card label{font-size:13px;color:#3d4658}
+.student-pet-card{position:relative;cursor:pointer;min-height:245px;padding:17px;background:linear-gradient(145deg,#fff,#f4f2ff);border-color:#dfe2ed;transition:transform .18s,box-shadow .18s,border-color .18s}
+.student-pet-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px #252b4314;border-color:#bdb5ff}
+.student-pet-card h3{font-size:16px;color:#20263a;margin:3px 0 5px}
+.student-pet-card>small{display:block;font-size:12px;color:#4d586b;line-height:1.5}
+.student-pet-open-hint{position:absolute;right:12px;top:11px;padding:5px 8px;border-radius:8px;background:#efedff;color:#5142c9;font-size:11px;font-weight:800}
+.student-pet-card .student-pet-face{margin:12px auto 12px}
+.student-badge{font-size:12px;color:#4539b8;padding:6px 9px}
+.student-task{padding:15px;border-color:#dfe2ed}
+.student-task b{font-size:14px;color:#20263a}
+.student-task p{font-size:13px;line-height:1.6;color:#4d586b}
+.student-status{font-size:13px}
+.student-rank-row,.student-member-row{font-size:14px;line-height:1.45;color:#30394d;padding:13px 5px}
+.student-rank-row{cursor:pointer;border-radius:10px;padding-left:8px;padding-right:8px}
+.student-rank-row:hover{background:#f4f2ff}
+.student-rank-row strong{font-size:13px;white-space:normal;text-align:right;color:#5142c9}
+.student-rank-name{font-weight:700}
+.student-member-row{font-size:13px}
+.student-empty{font-size:14px;color:#4d586b}
+#studentProgressText{font-size:14px;color:#3f4a5d;line-height:1.5}
+@media(max-width:650px){
+  .student-overview-grid{grid-template-columns:1fr}
+  .student-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .student-kpi{padding:10px}
+  .student-kpi small{font-size:11px}
+  .student-kpi strong{font-size:20px}
+  .student-pet-grid{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+  .student-rank-row{align-items:flex-start;flex-wrap:wrap}
+  .student-rank-row strong{margin-left:51px!important;text-align:left}
+}
+@media(prefers-reduced-motion:reduce){.rankrow,.student-pet-card{transition:none}}
+
 </style>
 </head>
 <body>
@@ -424,7 +480,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
       <div><h3 id="petModalTitle">Thông tin pet</h3><p id="petModalStudent"></p><p id="petModalStage"></p><div class="profile-stats"><span>❤️ Sức khỏe<b id="profileHealth">100</b></span><span>🍖 Độ no<b id="profileHunger">100</b></span><span>😊 Hạnh phúc<b id="profileHappiness">90</b></span></div><p id="petModalLastFed"></p></div>
     </div>
     <p class="pet-3d-credit" id="pet3DStatus" role="status" aria-live="polite">Đang chuẩn bị mô hình 3D…</p><p class="pet-3d-credit">Mô hình 3D miễn phí từ <a href="https://shuriken.studio/kits/pets" target="_blank" rel="noopener">Shuriken Studio</a>. Kéo để xoay, dùng cuộn chuột để phóng to.</p><div class="bar"><div class="fill" id="profileExpBar"></div></div><p id="petModalExp"></p><div class="profile-timeline" id="petModalHistory">Chưa có lịch sử phát triển.</div>
-    <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
+    <div class="modal-actions"><button class="cancel" type="button" onclick="closePetModal()">Đóng</button><button class="feedall" id="petModalFeedButton" type="button" onclick="feedSelectedPet()">🍖 Cho ăn +10%</button></div>
   </div>
 </div>
 <div class="pet-viewer-overlay" id="petViewerOverlay" role="dialog" aria-modal="true" aria-label="Ngắm thú cưng 3D" onclick="if(event.target===this)closePetViewer()"><div class="pet-viewer-stage"><button class="pet-viewer-close" type="button" onclick="closePetViewer()">✕ Đóng</button><model-viewer id="expandedPetModel" camera-controls auto-rotate rotation-per-second="12deg" shadow-intensity="0.65" shadow-softness="1" exposure="1.25" autoplay animation-name="*" interaction-prompt="auto" environment-image="neutral" aria-label="Thú cưng 3D toàn màn hình"></model-viewer><div class="pet-viewer-hint">Kéo để xoay · Cuộn chuột để phóng to/thu nhỏ</div></div></div>
@@ -1920,20 +1976,26 @@ function getPetData() {
     id: pet.dataset.id,
     student: pet.querySelector('h4').textContent,
     pet: pet.querySelector('.meta span').textContent.split(' · ')[0],
-    emoji: pet.querySelector('.pet-face').textContent,
-    level: parseInt(pet.dataset.level || '1', 10)
+    emoji: pet.querySelector('.pet-face .pet-emoji-fallback')?.textContent?.trim() || pet.querySelector('.pet-face .pet-face-fallback')?.textContent?.trim() || pet.querySelector('.pet-face').textContent.trim(),
+    level: parseInt(pet.dataset.level || '1', 10),
+    exp: parseInt(pet.dataset.exp || '0', 10)
   }));
 }
 
 function renderRankings() {
   const list = document.getElementById('rankList');
-  const pets = getPetData().sort((a, b) => b.level - a.level).slice(0, 10);
+  const pets = getPetData().sort((a, b) => b.level - a.level || b.exp - a.exp).slice(0, 10);
   if (!pets.length) {
     list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:15px 0">Chưa có pet để xếp hạng.</p>';
     return;
   }
-  list.innerHTML = pets.map((pet, index) => '<div class="rankrow"><span class="num">' + (index + 1) + '</span><span class="rpet pet-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="pet-rank-fallback">' + escapeHtml(pet.emoji) + '</span></span><span class="rname">' + escapeHtml(pet.pet) + '<small style="display:block;color:var(--muted);font-size:10px">' + escapeHtml(pet.student) + '</small></span><span class="lv">Lv.' + pet.level + '</span></div>').join('');
+  list.innerHTML = pets.map((pet, index) => '<div class="rankrow' + (index < 3 ? ' rank-podium rank-podium-' + (index + 1) : '') + '" role="button" tabindex="0" data-pet-id="' + escapeHtml(pet.id) + '" aria-label="Xem Pet ' + escapeHtml(pet.pet) + '"><span class="num">' + (index + 1) + '</span><span class="rpet pet-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="pet-rank-fallback">' + escapeHtml(pet.emoji || '🐾') + '</span></span><span class="rname">' + escapeHtml(pet.pet) + '<small style="display:block;color:var(--muted);font-size:11px">' + escapeHtml(pet.student) + '</small></span><span class="lv">Lv.' + pet.level + '<small style="display:block;font-size:10px">' + pet.exp + ' EXP</small></span></div>').join('');
   list.querySelectorAll('.pet-rank-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), pets[index].emoji, face.querySelector('.pet-rank-fallback'), face));
+  list.querySelectorAll('.rankrow[data-pet-id]').forEach(row => {
+    const open = () => { const petCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === row.dataset.petId); if (petCard) openPetModal(petCard); };
+    row.addEventListener('click', open);
+    row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } });
+  });
 }
 
 async function renderActivity() {
@@ -4006,7 +4068,7 @@ function openPetModal(pet) {
   document.getElementById('petModalStudent').textContent = '👤 Học sinh: ' + student + ' · Lv.' + level;
   document.getElementById('petModalStage').textContent = stage;
   
-  const petEmoji = pet.querySelector('.pet-face .pet-emoji-fallback')?.textContent || pet.querySelector('.pet-face').textContent;
+  const petEmoji = pet.querySelector('.pet-face .pet-emoji-fallback')?.textContent?.trim() || pet.querySelector('.pet-face .pet-face-fallback')?.textContent?.trim() || pet.querySelector('.pet-face').textContent.trim();
   attachPetModel(document.getElementById('profilePetModel'), petEmoji, document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'));
   document.getElementById('profilePetFace').classList.toggle('dead', pet.dataset.dead === 'true');
   document.getElementById('profileHealth').textContent = health;
@@ -4016,6 +4078,31 @@ function openPetModal(pet) {
   document.getElementById('profileExpBar').style.width = Math.min(100, exp / getLevelCost(level) * 100) + '%';
   document.getElementById('petModalExp').textContent = '⭐ ' + exp + ' / ' + getLevelCost(level) + ' EXP';
   document.getElementById('petModalHistory').innerHTML = history;
+  const feedButton = document.getElementById('petModalFeedButton');
+  if (feedButton) feedButton.hidden = false;
+  petModal.classList.add('show');
+}
+
+function openStudentPetModal(item) {
+  if (!item) return;
+  selectedPet = null;
+  const level = Number(item.level || 1);
+  const exp = Number(item.exp || 0);
+  const health = Number(item.health ?? 100);
+  document.getElementById('petModalTitle').textContent = '🐾 ' + (item.pet || 'Pet');
+  document.getElementById('petModalStudent').textContent = '👤 Học sinh: ' + (item.student || '—') + ' · Lv.' + level;
+  document.getElementById('petModalStage').textContent = getPetStage(level);
+  attachPetModel(document.getElementById('profilePetModel'), item.emoji || '🐱', document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'));
+  document.getElementById('profilePetFace').classList.toggle('dead', item.status === 'dead');
+  document.getElementById('profileHealth').textContent = health + '%';
+  document.getElementById('profileHunger').textContent = health + '%';
+  document.getElementById('profileHappiness').textContent = '90%';
+  document.getElementById('petModalLastFed').textContent = '📊 Thông tin Pet trong lớp';
+  document.getElementById('profileExpBar').style.width = Math.min(100, exp / getLevelCost(level) * 100) + '%';
+  document.getElementById('petModalExp').textContent = '⭐ ' + exp + ' / ' + getLevelCost(level) + ' EXP';
+  document.getElementById('petModalHistory').textContent = 'Pet đang ở cấp độ ' + level + '. Hãy tiếp tục hoàn thành nhiệm vụ và chăm sóc Pet cùng lớp!';
+  const feedButton = document.getElementById('petModalFeedButton');
+  if (feedButton) feedButton.hidden = true;
   petModal.classList.add('show');
 }
 
@@ -4044,6 +4131,8 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape') clos
 function closePetModal() {
   petModal.classList.remove('show');
   selectedPet = null;
+  const feedButton = document.getElementById('petModalFeedButton');
+  if (feedButton) feedButton.hidden = false;
 }
 
 function feedSelectedPet() {
@@ -4244,10 +4333,17 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   const code = classItem.code || '-----';
   document.getElementById('studentClassLabel').textContent = '🏫 Lớp ' + classItem.name + ' · Mã lớp: ' + code;
   document.getElementById('studentWelcome').textContent = 'Chào học sinh! 👋';
-  const petCard = item => { const level = Number(item.level || 1), exp = Number(item.exp || 0), health = Number(item.health ?? 100), emoji = item.emoji || '🐱'; const isMine = account.studentPetId ? item.id === account.studentPetId : item.student === account.studentName && item.pet === account.studentPetName; return '<article class="student-pet-card' + (isMine ? ' mine' : '') + '"><div class="face student-pet-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-pet-fallback">' + escapeHtml(emoji) + '</span></div><h3>' + escapeHtml(item.pet) + ' · Lv.' + level + '</h3><small>👤 ' + escapeHtml(item.student) + '</small><div class="student-badges"><span class="student-badge">⭐ EXP: ' + exp + '</span><span class="student-badge">🍖 No: ' + health + '%</span><span class="student-badge">❤️ Sức khỏe: ' + health + '%</span><span class="student-badge">😊 Hạnh phúc: 90%</span></div><small>Quá trình: ' + getPetStage(level) + '</small></article>'; };
+  const petCard = item => { const level = Number(item.level || 1), exp = Number(item.exp || 0), health = Number(item.health ?? 100), emoji = item.emoji || '🐱'; const isMine = account.studentPetId ? item.id === account.studentPetId : item.student === account.studentName && item.pet === account.studentPetName; return '<article class="student-pet-card' + (isMine ? ' mine' : '') + '" role="button" tabindex="0" aria-label="Xem Pet ' + escapeHtml(item.pet) + '"><div class="student-pet-open-hint">👆 Chạm để xem Pet</div><div class="face student-pet-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-pet-fallback">' + escapeHtml(emoji) + '</span></div><h3>' + escapeHtml(item.pet) + ' · Lv.' + level + '</h3><small>👤 ' + escapeHtml(item.student) + '</small><div class="student-badges"><span class="student-badge">⭐ EXP: ' + exp + '</span><span class="student-badge">🍖 No: ' + health + '%</span><span class="student-badge">❤️ Sức khỏe: ' + health + '%</span><span class="student-badge">😊 Hạnh phúc: 90%</span></div><small>Quá trình: ' + getPetStage(level) + '</small></article>'; };
   const cards = pets.length ? pets.map(petCard).join('') : '<div class="student-empty">Lớp chưa có Pet.</div>';
   document.getElementById('studentSummary').innerHTML = cards; document.getElementById('studentPetList').innerHTML = cards;
-  [document.getElementById('studentSummary'), document.getElementById('studentPetList')].forEach(container => container.querySelectorAll('.student-pet-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), pets[index]?.emoji || '🐱', face.querySelector('.student-pet-fallback'), face)));
+  [document.getElementById('studentSummary'), document.getElementById('studentPetList')].forEach(container => {
+    container.querySelectorAll('.student-pet-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), pets[index]?.emoji || '🐱', face.querySelector('.student-pet-fallback'), face));
+    container.querySelectorAll('.student-pet-card').forEach((card, index) => {
+      const open = () => openStudentPetModal(pets[index]);
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } });
+    });
+  });
   document.getElementById('studentPetCount').textContent = pets.length;
   document.getElementById('studentTopLevel').textContent = pets.length ? Math.max(...pets.map(pet => Number(pet.level || 1))) : 0;
   document.getElementById('studentAverageHealth').textContent = pets.length ? Math.round(pets.reduce((sum, pet) => sum + Number(pet.health ?? 100), 0) / pets.length) + '%' : '0%';
@@ -4257,6 +4353,11 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   const studentRankList = document.getElementById('studentRankingList');
   studentRankList.innerHTML = sorted.length ? sorted.map((pet, index) => '<div class="student-rank-row"><span class="student-rank-face"><model-viewer aria-hidden="true"></model-viewer><span class="student-rank-fallback">' + escapeHtml(pet.emoji || '🐱') + '</span></span><span class="student-rank-name">' + (index + 1) + '. ' + escapeHtml(pet.pet) + ' · ' + escapeHtml(pet.student) + '</span><strong>Lv.' + (pet.level || 1) + ' · ' + (pet.exp || 0) + ' EXP</strong></div>').join('') : '<div class="student-empty">Chưa có dữ liệu xếp hạng.</div>';
   studentRankList.querySelectorAll('.student-rank-face').forEach((face, index) => attachPetThumbnail(face.querySelector('model-viewer'), sorted[index].emoji || '🐱', face.querySelector('.student-rank-fallback'), face));
+  studentRankList.querySelectorAll('.student-rank-row').forEach((row, index) => {
+    row.setAttribute('role', 'button'); row.setAttribute('tabindex', '0');
+    row.addEventListener('click', () => openStudentPetModal(sorted[index]));
+    row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openStudentPetModal(sorted[index]); } });
+  });
   const average = pets.length ? Math.round(pets.reduce((sum, pet) => sum + Number(pet.health ?? 100), 0) / pets.length) : 0;
   document.getElementById('studentProgressText').textContent = pets.length + ' Pet trong lớp · Sức khỏe trung bình: ' + average + '%'; document.getElementById('studentProgressBar').style.width = average + '%';
   document.getElementById('studentMemberList').innerHTML = pets.length ? pets.map(pet => '<div class="student-member-row">👤 ' + escapeHtml(pet.student) + '<span style="margin-left:auto;color:var(--muted)">' + escapeHtml(pet.pet) + ' · Lv.' + (pet.level || 1) + '</span></div>').join('') : '<div class="student-empty">Chưa có thành viên.</div>';
