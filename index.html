@@ -860,20 +860,68 @@ async function requestPassword(action, callback) {
 }
 
 function deleteCurrentClass() {
-  if (!currentAccount || currentAccount.classes.length <= 1) { toast('Tài khoản phải có ít nhất một lớp.'); return; }
-  requestPassword('xóa lớp ' + currentClass.name, () => {
-    if (!confirm('Xóa lớp ' + currentClass.name + ' và toàn bộ học sinh, Pet, lịch sử của lớp?')) return;
+  if (!currentAccount || !currentClass) {
+    toast('Không xác định được lớp cần xóa.');
+    return;
+  }
+
+  if (currentAccount.classes.length <= 1) {
+    toast('Tài khoản phải có ít nhất một lớp. Hãy tạo lớp khác trước khi xóa lớp này.');
+    return;
+  }
+
+  requestPassword('xóa lớp ' + currentClass.name, async () => {
+    const confirmed = confirm(
+      'Xóa lớp ' + currentClass.name +
+      ' và toàn bộ học sinh, Pet, nhiệm vụ, lịch sử của lớp? Hành động này không thể hoàn tác.'
+    );
+    if (!confirmed) return;
+
     const classId = currentClass.id;
     const deletedClassName = currentClass.name;
-    ['classpet-health', 'classpet-students', 'classpet-activity', 'classpet-tasks'].forEach(prefix => localStorage.removeItem(getClassStorageKey(prefix, classId)));
-    currentAccount.classes = currentAccount.classes.filter(item => item.id !== classId);
-    currentAccount.activeClassId = currentAccount.classes[0].id;
-    const accounts = getAccounts();
-      const account = accounts.find(item => item.username === currentAccount.username);
-  if (account) { account.classes = currentAccount.classes; account.activeClassId = currentAccount.activeClassId; saveAccounts(accounts); }
-  closeClassModal();
-    applyAccount(currentAccount);
-    toast('Đã xóa lớp ' + deletedClassName + '.');
+
+    try {
+      // Xóa lớp thật trên Supabase; các dữ liệu liên quan được xử lý theo khóa ngoại.
+      const { data, error } = await supabaseClient.rpc('teacher_delete_class', {
+        p_class_id: classId
+      });
+
+      if (error) {
+        console.error('Lỗi xóa lớp trên Supabase:', error);
+        toast('Không thể xóa lớp: ' + (error.message || 'Lỗi từ máy chủ.'));
+        return;
+      }
+
+      if (!data || data.success !== true) {
+        console.error('Supabase không xác nhận xóa lớp:', data);
+        toast(data?.message || 'Supabase chưa xác nhận xóa lớp.');
+        return;
+      }
+
+      // Chỉ dọn dữ liệu đệm sau khi Supabase xác nhận xóa thành công.
+      ['classpet-health', 'classpet-students', 'classpet-activity', 'classpet-tasks']
+        .forEach(prefix => localStorage.removeItem(getClassStorageKey(prefix, classId)));
+
+      const remainingClasses = currentAccount.classes.filter(item => item.id !== classId);
+      currentAccount.activeClassId = remainingClasses[0]?.id || null;
+
+      const accounts = getAccounts();
+      const account = accounts.find(item =>
+        String(item.username || '').toLowerCase() ===
+        String(currentAccount.username || '').toLowerCase()
+      );
+      if (account) {
+        account.activeClassId = currentAccount.activeClassId;
+        saveAccounts(accounts);
+      }
+
+      closeClassModal();
+      await applyAccount(currentAccount);
+      toast('Đã xóa lớp ' + deletedClassName + ' trên hệ thống.');
+    } catch (error) {
+      console.error('Lỗi không xác định khi xóa lớp:', error);
+      toast('Có lỗi xảy ra khi xóa lớp. Dữ liệu chưa được xác nhận đã xóa.');
+    }
   });
 }
 
