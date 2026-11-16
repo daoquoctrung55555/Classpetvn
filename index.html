@@ -2996,7 +2996,7 @@ function showFeedEffect(pet) {
   pet.appendChild(effect); setTimeout(() => effect.remove(), 900);
 }
 
-async function feedPet(pet) {
+async function feedPet(pet, options = {}) {
   if (pet.dataset.dead === 'true') {
     playUiSound('error');
     toast('Pet đã qua đời. Hãy hồi sinh trước.');
@@ -3115,34 +3115,37 @@ async function feedPet(pet) {
       );
     }, 900);
 
-    // RPC đã tự ghi activity
-    await renderActivity();
+    // Khi cho ăn hàng loạt, chỉ làm mới thống kê một lần sau khi tất cả RPC hoàn tất
+    if (!options.batch) {
+      await renderActivity();
+      await updateStats();
+      renderRankings();
+      await renderDashboardInsights();
 
-    await updateStats();
-    renderRankings();
-    await renderDashboardInsights();
-
-    if (data.level > oldLevel) {
-      toast(
-        '✨ PET TIẾN HÓA! ' +
-        petName +
-        ' đã lên cấp ' +
-        data.level +
-        '!'
-      );
-    } else {
-      toast(
-        '🍖 ' +
-        petName +
-        ' vừa được chăm sóc, +' +
-        data.feed_exp +
-        ' EXP! (' +
-        data.today_count +
-        '/' +
-        data.daily_limit +
-        ' lần hôm nay)'
-      );
+      if (data.level > oldLevel) {
+        toast(
+          '✨ PET TIẾN HÓA! ' +
+          petName +
+          ' đã lên cấp ' +
+          data.level +
+          '!'
+        );
+      } else {
+        toast(
+          '🍖 ' +
+          petName +
+          ' vừa được chăm sóc, +' +
+          data.feed_exp +
+          ' EXP! (' +
+          data.today_count +
+          '/' +
+          data.daily_limit +
+          ' lần hôm nay)'
+        );
+      }
     }
+
+    return true;
 
   } catch (error) {
     console.error('❌ Lỗi feedPet:', error);
@@ -4102,23 +4105,23 @@ async function feedAll() {
   const pets = [...document.querySelectorAll('.pet')];
 
   if (!pets.length) {
-    closeModal();
     toast('Lớp hiện chưa có Pet nào.');
     return;
   }
 
-  closeModal();
+  // Gửi yêu cầu cho ăn đồng thời, không chờ từng Pet một
+  const results = await Promise.all(
+    pets.map(pet => feedPet(pet, { batch: true }))
+  );
 
-  for (const pet of pets) {
-    await feedPet(pet);
-  }
+  const successCount = results.filter(Boolean).length;
 
   await renderActivity();
   await updateStats();
   renderRankings();
   await renderDashboardInsights();
 
-  toast('🍖 Đã xử lý cho cả lớp ăn!');
+  toast('🍖 Đã cho ăn đồng thời ' + successCount + '/' + pets.length + ' Pet.');
 }
 
 const petModal = document.getElementById('petModal');
