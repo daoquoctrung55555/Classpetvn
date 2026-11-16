@@ -2081,6 +2081,24 @@ async function loadStudents() {
       return;
     }
 
+    // Sắp xếp học sinh: tên bắt đầu bằng số trước (tăng dần),
+    // tiếp theo là tên bắt đầu bằng chữ cái theo thứ tự tiếng Việt.
+    students.sort((a, b) => {
+      const nameA = String(a.name || '').trim();
+      const nameB = String(b.name || '').trim();
+      const startsWithNumberA = /^\d/.test(nameA);
+      const startsWithNumberB = /^\d/.test(nameB);
+
+      if (startsWithNumberA !== startsWithNumberB) {
+        return startsWithNumberA ? -1 : 1;
+      }
+
+      return nameA.localeCompare(nameB, 'vi', {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    });
+
     // ==========================================
     // 2. LẤY ID CÁC HỌC SINH CỦA LỚP
     // ==========================================
