@@ -1344,7 +1344,80 @@ function saveSettingsExp() { const s = getSettings(); s.feedExp = Math.max(0, Ma
 function saveSettingsNotifications() { const s = getSettings(); ['noticeDeath','noticeHungry','noticeLevel','noticeBrowser'].forEach(key => s[key] = settingsValue(key)); saveSettings(s); toast('Đã lưu cài đặt thông báo.'); }
 function applyMotionSettings(enabled = getSettings().animation !== false) { document.body.classList.toggle('no-animation', !enabled); document.querySelectorAll('.pet').forEach(pet => pet.classList.toggle('motion-on', enabled && pet.dataset.dead !== 'true')); }
 function saveSettingsAppearance() { const dark = document.getElementById('settingsTheme').value === 'dark'; document.body.classList.toggle('dark-mode', dark); localStorage.setItem('classpet-theme', dark ? 'dark' : 'light'); document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙'; const s = getSettings(); s.animation = document.getElementById('settingsAnimation').checked; s.sound = document.getElementById('settingsSound').checked; saveSettings(s); applyMotionSettings(s.animation); toast('Đã áp dụng giao diện và âm thanh.'); playUiSound('save'); }
-function exportBackup() { const data = { exportedAt: new Date().toISOString(), account: currentAccount.username, students: JSON.parse(localStorage.getItem(studentsKey) || '[]'), activities: JSON.parse(localStorage.getItem(activityKey) || '[]'), settings: getSettings() }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'classpet-backup-' + new Date().toISOString().slice(0, 10) + '.json'; link.click(); URL.revokeObjectURL(link.href); toast('Đã xuất bản sao dữ liệu.'); }
+async function exportBackup() {
+  const button = document.querySelector('[onclick*="exportBackup"]');
+  if (button) { button.disabled = true; button.dataset.originalText = button.textContent; button.textContent = 'Đang sao lưu...'; }
+  try {
+    const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authData?.user) throw authError || new Error('Vui lòng đăng nhập lại.');
+    const teacherId = authData.user.id;
+
+    const { data: classes, error: classesError } = await supabaseClient
+      .from('classes').select('*').eq('teacher_id', teacherId);
+    if (classesError) throw classesError;
+    const classIds = (classes || []).map(item => item.id);
+    const empty = [];
+    const backup = {
+      format: 'ClassPet-Supabase-Backup',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      teacher: { id: teacherId, email: authData.user.email || '' },
+      classes: classes || [],
+      students: empty, pets: empty, tasks: empty, activities: empty,
+      task_completions: empty, pet_feed_logs: empty, student_reward_logs: empty
+    };
+
+    if (classIds.length) {
+      const [studentsRes, tasksRes, activitiesRes, rewardRes] = await Promise.all([
+        supabaseClient.from('students').select('*').in('class_id', classIds),
+        supabaseClient.from('tasks').select('*').in('class_id', classIds),
+        supabaseClient.from('activities').select('*').in('class_id', classIds),
+        supabaseClient.from('student_reward_logs').select('*').in('class_id', classIds)
+      ]);
+      for (const result of [studentsRes, tasksRes, activitiesRes, rewardRes]) {
+        if (result.error) throw result.error;
+      }
+      backup.students = studentsRes.data || [];
+      backup.tasks = tasksRes.data || [];
+      backup.activities = activitiesRes.data || [];
+      backup.student_reward_logs = rewardRes.data || [];
+
+      const studentIds = backup.students.map(item => item.id);
+      const [petsRes, completionsRes] = await Promise.all([
+        studentIds.length ? supabaseClient.from('pets').select('*').in('student_id', studentIds) : Promise.resolve({data:[],error:null}),
+        backup.tasks.length ? supabaseClient.from('task_completions').select('*').in('task_id', backup.tasks.map(item => item.id)) : Promise.resolve({data:[],error:null})
+      ]);
+      if (petsRes.error) throw petsRes.error;
+      if (completionsRes.error) throw completionsRes.error;
+      backup.pets = petsRes.data || [];
+      backup.task_completions = completionsRes.data || [];
+
+      const petIds = backup.pets.map(item => item.id);
+      if (petIds.length) {
+        const { data, error } = await supabaseClient.from('pet_feed_logs').select('*').in('pet_id', petIds);
+        if (error) throw error;
+        backup.pet_feed_logs = data || [];
+      }
+    }
+
+    backup.settings = getSettings();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'classpet-supabase-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast('Đã sao lưu dữ liệu Supabase của các lớp giáo viên quản lý.');
+  } catch (error) {
+    console.error('Lỗi sao lưu Supabase:', error);
+    toast('Không thể sao lưu: ' + (error.message || 'Lỗi không xác định'));
+  } finally {
+    if (button) { button.disabled = false; button.textContent = button.dataset.originalText || 'Sao lưu'; }
+  }
+}
 function importBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); if (!Array.isArray(data.students)) throw new Error(); localStorage.setItem(studentsKey, JSON.stringify(data.students)); localStorage.setItem(activityKey, JSON.stringify(Array.isArray(data.activities) ? data.activities : [])); if (data.settings) saveSettings({ ...defaultSettings, ...data.settings }); applyAccount(currentAccount); toast('Đã nhập dữ liệu sao lưu.'); } catch (error) { toast('Tệp sao lưu không hợp lệ.'); } event.target.value = ''; }; reader.readAsText(file); }
 async function clearClassData() {
   if (!currentClass?.id) {
