@@ -4,6 +4,27 @@
 
 begin;
 
+-- Remove every policy granting access to PUBLIC or anon on protected tables.
+-- Student portal access is provided only through the narrowly scoped SECURITY DEFINER RPCs.
+do $
+declare
+  pol record;
+begin
+  for pol in
+    select schemaname, tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in (
+        'classes', 'students', 'pets', 'tasks', 'activities',
+        'task_completions', 'pet_feed_logs', 'student_reward_logs'
+      )
+      and ('public' = any(roles) or 'anon' = any(roles))
+  loop
+    execute format('drop policy if exists %I on %I.%I', pol.policyname, pol.schemaname, pol.tablename);
+  end loop;
+end;
+$;
+
 -- Remove broad public access policies. Student access must go through the
 -- existing student_* SECURITY DEFINER RPCs, never direct table reads.
 drop policy if exists "Allow public read activities" on public.activities;
@@ -133,7 +154,7 @@ create or replace function public.teacher_delete_student(p_student_id uuid)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_deleted uuid;
@@ -162,7 +183,7 @@ create or replace function public.teacher_delete_class(p_class_id uuid)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_deleted uuid;
@@ -189,7 +210,7 @@ create or replace function public.teacher_clear_class_data(p_class_id uuid)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_class_id uuid;
