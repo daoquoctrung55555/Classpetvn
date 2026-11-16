@@ -247,6 +247,27 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 .student-pet-card .student-pet-name{display:block!important;font-size:12px!important;line-height:1.4!important;font-weight:650!important;color:#667085!important}
 .student-rank-name{display:flex!important;flex-direction:column!important;gap:2px!important;font-size:14px!important;font-weight:850!important;color:#20263a!important}
 .student-rank-name small{font-size:11px!important;font-weight:600!important;color:#667085!important}
+
+/* Colorful habitat scenes for each pet's natural/fantasy environment */
+.profile-pet-face[data-habitat],.pet-viewer-stage[data-habitat]{background-size:cover!important;background-position:center!important}
+.profile-pet-face[data-habitat="sky"],.pet-viewer-stage[data-habitat="sky"]{background:linear-gradient(180deg,#55c8ff 0%,#a8e7ff 48%,#f8e8a6 100%)!important}
+.profile-pet-face[data-habitat="underwater"],.pet-viewer-stage[data-habitat="underwater"]{background:radial-gradient(ellipse at 50% 75%,#42e2d0 0%,transparent 48%),linear-gradient(180deg,#0877bd 0%,#12b9cf 52%,#064a83 100%)!important}
+.profile-pet-face[data-habitat="forest"],.pet-viewer-stage[data-habitat="forest"]{background:radial-gradient(ellipse at 50% 90%,#b5df73 0%,transparent 48%),linear-gradient(180deg,#9edb9b 0%,#39865b 58%,#174d3d 100%)!important}
+.profile-pet-face[data-habitat="jungle"],.pet-viewer-stage[data-habitat="jungle"]{background:radial-gradient(ellipse at 50% 85%,#a9dc55 0%,transparent 48%),linear-gradient(145deg,#0b654e 0%,#25a66d 48%,#d2e76b 100%)!important}
+.profile-pet-face[data-habitat="desert"],.pet-viewer-stage[data-habitat="desert"]{background:radial-gradient(ellipse at 50% 90%,#f4c66f 0%,transparent 48%),linear-gradient(180deg,#ffdc91 0%,#f3a75e 58%,#b96b43 100%)!important}
+.profile-pet-face[data-habitat="fantasy"],.pet-viewer-stage[data-habitat="fantasy"]{background:radial-gradient(ellipse at 50% 75%,#ffb8ed 0%,transparent 45%),linear-gradient(145deg,#6d68dc 0%,#bb8cf4 48%,#ffc5dc 100%)!important}
+.profile-pet-face[data-habitat="meadow"],.pet-viewer-stage[data-habitat="meadow"]{background:radial-gradient(ellipse at 50% 88%,#c4ed8c 0%,transparent 45%),linear-gradient(180deg,#7bd5f4 0%,#d8f3ff 50%,#8acb65 100%)!important}
+.profile-pet-face[data-habitat]:after,.pet-viewer-stage[data-habitat]:after{content:"";position:absolute;inset:auto 0 0;height:24%;z-index:0;pointer-events:none;opacity:.48;background:linear-gradient(0deg,#163b2866,transparent)}
+.profile-pet-face[data-habitat] model-viewer{position:relative;z-index:1}
+.pet-viewer-stage[data-habitat] model-viewer{position:relative;z-index:1}
+.profile-pet-face[data-habitat="sky"]:before,.pet-viewer-stage[data-habitat="sky"]:before{content:"☁️     ☀️      ☁️";position:absolute;inset:10% 0 auto;text-align:center;font-size:clamp(20px,4vw,42px);letter-spacing:16px;z-index:0;opacity:.8;pointer-events:none}
+.profile-pet-face[data-habitat="underwater"]:before,.pet-viewer-stage[data-habitat="underwater"]:before{content:"🫧      🪸       🫧      🐚";position:absolute;inset:10% 0 auto;text-align:center;font-size:clamp(20px,4vw,42px);letter-spacing:12px;z-index:0;opacity:.82;pointer-events:none}
+.profile-pet-face[data-habitat="forest"]:before,.pet-viewer-stage[data-habitat="forest"]:before{content:"🌲      🌿      🌳      🍃";position:absolute;inset:auto 0 5%;text-align:center;font-size:clamp(22px,4vw,48px);letter-spacing:12px;z-index:0;opacity:.85;pointer-events:none}
+.profile-pet-face[data-habitat="jungle"]:before,.pet-viewer-stage[data-habitat="jungle"]:before{content:"🌴      🌿       🌴";position:absolute;inset:auto 0 5%;text-align:center;font-size:clamp(24px,4vw,52px);letter-spacing:14px;z-index:0;opacity:.9;pointer-events:none}
+.profile-pet-face[data-habitat="desert"]:before,.pet-viewer-stage[data-habitat="desert"]:before{content:"🌵        🏜️        ☀️";position:absolute;inset:auto 0 6%;text-align:center;font-size:clamp(22px,4vw,48px);letter-spacing:14px;z-index:0;opacity:.85;pointer-events:none}
+.profile-pet-face[data-habitat="fantasy"]:before,.pet-viewer-stage[data-habitat="fantasy"]:before{content:"✨       🌈       ⭐";position:absolute;inset:9% 0 auto;text-align:center;font-size:clamp(24px,4vw,48px);letter-spacing:15px;z-index:0;opacity:.9;pointer-events:none}
+.profile-pet-face[data-habitat="meadow"]:before,.pet-viewer-stage[data-habitat="meadow"]:before{content:"☁️       🌼       ☀️";position:absolute;inset:10% 0 auto;text-align:center;font-size:clamp(22px,4vw,46px);letter-spacing:14px;z-index:0;opacity:.85;pointer-events:none}
+.pet-viewer-stage[data-habitat] .pet-viewer-hint{z-index:3}
 </style>
 </head>
 <body>
@@ -1433,6 +1454,35 @@ const pet3DModels = {
   "🐯": './assets/pets/tiger-cub-pet.glb'
 };
 function petModelUrl(emoji){ return pet3DModels[String(emoji || '').trim()] || ''; }
+function getPetHabitat(emoji, modelUrl = '') {
+  const e = String(emoji || '').trim();
+  const file = String(modelUrl || petModelUrl(e)).toLowerCase();
+  const groups = {
+    underwater: ['🦈','🐳','🦀','🦎','🐙','🦭','🐢','🐬','🐟','🐠','🐡'],
+    sky: ['🦋','🦩','🦚','🪽','🐦','🦅','🦆','🦜','🐝','🐞','🐉','🐲','🦄','🌈','⭐'],
+    jungle: ['🐯','🐒','🦜','🐘','🦎','🐍','🐸'],
+    forest: ['🐻','🐺','🐺‍⬛','🦊','🦊✨','🦌','🦉','🦔','🐾','🐼','🐼🎋','🦝','🦥','🍄','🐰','🐇'],
+    desert: ['🐪','🌵','🦂'],
+    fantasy: ['🦄','🐉','🐲','🪽','🗿','⭐','🌈','🥚']
+  };
+  let habitat = 'meadow';
+  for (const [name, values] of Object.entries(groups)) if (values.includes(e)) { habitat = name; break; }
+  if (/shark|whale|octopus|dolphin|seal|crab|axolotl|turtle/i.test(file)) habitat = 'underwater';
+  else if (/parrot|toucan|peacock|phoenix|griffin|butterfly|bumblebee|flamingo|duckling/i.test(file)) habitat = 'sky';
+  else if (/tiger|monkey|elephant|frog|koala/i.test(file)) habitat = 'jungle';
+  else if (/wolf|fox|bear|panda|deer|owl|hedgehog|sloth|raccoon|mushroom/i.test(file)) habitat = 'forest';
+  if (['🐱','🐈','🐶','🐕','🐩','🐹','🐌'].includes(e)) habitat = 'meadow';
+  return habitat;
+}
+function applyPetHabitat(emoji, modelUrl = '') {
+  const habitat = getPetHabitat(emoji, modelUrl);
+  const profile = document.getElementById('profilePetFace');
+  const stage = document.querySelector('.pet-viewer-stage');
+  if (profile) profile.dataset.habitat = habitat;
+  if (stage) stage.dataset.habitat = habitat;
+  return habitat;
+}
+
 function attachPetModel(viewer, emoji, fallback, wrapper, sourceUrl = ''){
   if(!viewer || !fallback || !wrapper) return;
   const url = sourceUrl || petModelUrl(emoji);
@@ -1444,13 +1494,11 @@ function attachPetModel(viewer, emoji, fallback, wrapper, sourceUrl = ''){
   fallback.hidden = false;
   if(status) status.textContent = url ? 'Đang tải mô hình 3D…' : 'Chưa có mô hình 3D cho thú cưng này.';
   if(!url){ viewer.hidden = true; return; }
-  // Lùi camera mặc định để toàn bộ thú cưng nằm gọn trong khung;
-  // người xem vẫn có thể cuộn/gesture để tự phóng to khi cần.
-  // Đặt camera lùi nhẹ để pet chiếm khoảng 70–80% khung, luôn thấy đủ thân và có viền thoáng.
-  viewer.setAttribute('camera-orbit','0deg 75deg 115%');
+  // Khung xem thông tin: đặt mô hình gần hơn, tránh cảm giác bị lùi sâu.
+  viewer.setAttribute('camera-orbit','0deg 75deg 95%');
   viewer.setAttribute('camera-target','auto auto auto');
-  viewer.setAttribute('field-of-view','35deg');
-  viewer.setAttribute('min-camera-orbit','auto auto 70%');
+  viewer.setAttribute('field-of-view','30deg');
+  viewer.setAttribute('min-camera-orbit','auto auto 55%');
   viewer.setAttribute('max-camera-orbit','auto auto 220%');
   viewer.setAttribute('reveal','auto');
   viewer.setAttribute('crossorigin','anonymous');
@@ -4090,7 +4138,9 @@ function openPetModal(pet) {
   document.getElementById('petModalStage').textContent = stage;
   
   const petEmoji = pet.dataset.emoji || pet.querySelector('.pet-face .pet-emoji-fallback')?.textContent?.trim() || '🐱';
-  attachPetModel(document.getElementById('profilePetModel'), petEmoji, document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'));
+  const petModelSource = pet.querySelector('.pet-card-model')?.getAttribute('src') || '';
+  applyPetHabitat(petEmoji, petModelSource);
+  attachPetModel(document.getElementById('profilePetModel'), petEmoji, document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'), petModelSource);
   document.getElementById('profilePetFace').classList.toggle('dead', pet.dataset.dead === 'true');
   document.getElementById('profileHealth').textContent = health;
   document.getElementById('profileHunger').textContent = health;
@@ -4117,6 +4167,7 @@ function openStudentPetModal(item) {
   document.getElementById('petModalStage').textContent = getPetStage(level);
   const sourceCard = [...document.querySelectorAll('#pets .pet')].find(card => card.dataset.id === item.id);
   const sourceUrl = sourceCard?.querySelector('.pet-card-model')?.getAttribute('src') || '';
+  applyPetHabitat(item.emoji || '🐱', sourceUrl);
   attachPetModel(document.getElementById('profilePetModel'), item.emoji || '🐱', document.getElementById('profilePetEmoji'), document.getElementById('profilePetFace'), sourceUrl);
   document.getElementById('profilePetFace').classList.toggle('dead', item.status === 'dead');
   document.getElementById('profileHealth').textContent = health + '%';
@@ -4141,7 +4192,15 @@ function openPetViewer() {
     return;
   }
   expandedViewer.setAttribute('src', sourceViewer.getAttribute('src'));
-  expandedViewer.setAttribute('camera-orbit', sourceViewer.getAttribute('camera-orbit') || '0deg 75deg auto');
+  // Không sao chép góc camera lùi của ảnh xem trước; khung toàn màn hình lấy cỡ gần hơn.
+  expandedViewer.setAttribute('camera-target', 'auto auto auto');
+  expandedViewer.setAttribute('camera-orbit', '0deg 75deg 85%');
+  expandedViewer.setAttribute('field-of-view', '28deg');
+  expandedViewer.setAttribute('min-camera-orbit', 'auto auto 45%');
+  expandedViewer.setAttribute('max-camera-orbit', 'auto auto 220%');
+  const profile = document.getElementById('profilePetFace');
+  const stage = document.querySelector('.pet-viewer-stage');
+  if (stage && profile) stage.dataset.habitat = profile.dataset.habitat || 'meadow';
   overlay.classList.add('show');
   document.body.style.overflow = 'hidden';
 }
