@@ -1346,7 +1346,36 @@ function applyMotionSettings(enabled = getSettings().animation !== false) { docu
 function saveSettingsAppearance() { const dark = document.getElementById('settingsTheme').value === 'dark'; document.body.classList.toggle('dark-mode', dark); localStorage.setItem('classpet-theme', dark ? 'dark' : 'light'); document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙'; const s = getSettings(); s.animation = document.getElementById('settingsAnimation').checked; s.sound = document.getElementById('settingsSound').checked; saveSettings(s); applyMotionSettings(s.animation); toast('Đã áp dụng giao diện và âm thanh.'); playUiSound('save'); }
 function exportBackup() { const data = { exportedAt: new Date().toISOString(), account: currentAccount.username, students: JSON.parse(localStorage.getItem(studentsKey) || '[]'), activities: JSON.parse(localStorage.getItem(activityKey) || '[]'), settings: getSettings() }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'classpet-backup-' + new Date().toISOString().slice(0, 10) + '.json'; link.click(); URL.revokeObjectURL(link.href); toast('Đã xuất bản sao dữ liệu.'); }
 function importBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const data = JSON.parse(reader.result); if (!Array.isArray(data.students)) throw new Error(); localStorage.setItem(studentsKey, JSON.stringify(data.students)); localStorage.setItem(activityKey, JSON.stringify(Array.isArray(data.activities) ? data.activities : [])); if (data.settings) saveSettings({ ...defaultSettings, ...data.settings }); applyAccount(currentAccount); toast('Đã nhập dữ liệu sao lưu.'); } catch (error) { toast('Tệp sao lưu không hợp lệ.'); } event.target.value = ''; }; reader.readAsText(file); }
-function clearClassData() { const phrase = prompt('Nhập XOA LOP ' + currentAccount.className + ' để xác nhận:'); if (phrase !== 'XOA LOP ' + currentAccount.className) { if (phrase !== null) toast('Xác nhận chưa chính xác.'); return; } localStorage.removeItem(studentsKey); localStorage.removeItem(storageKey); localStorage.removeItem(activityKey); localStorage.removeItem(tasksKey); loadStudents(); renderRankings(); renderActivity(); renderTasks(); toast('Đã xóa dữ liệu lớp.'); }
+async function clearClassData() {
+  if (!currentClass?.id) {
+    toast('Không xác định được lớp hiện tại.');
+    return;
+  }
+  const phrase = prompt('Nhập XOA LOP ' + currentClass.name + ' để xác nhận:');
+  if (phrase !== 'XOA LOP ' + currentClass.name) {
+    if (phrase !== null) toast('Xác nhận chưa chính xác.');
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc('teacher_clear_class_data', {
+      p_class_id: currentClass.id
+    });
+    if (error) throw error;
+    if (!data?.success) throw new Error(data?.message || 'Không xác nhận được kết quả xóa.');
+    localStorage.removeItem(studentsKey);
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(activityKey);
+    localStorage.removeItem(tasksKey);
+    await loadStudents();
+    renderRankings();
+    renderActivity();
+    renderTasks();
+    toast('Đã xóa dữ liệu học sinh, Pet, nhiệm vụ và hoạt động trên Supabase.');
+  } catch (error) {
+    console.error('Lỗi xóa dữ liệu lớp:', error);
+    toast('Không thể xóa dữ liệu lớp: ' + (error.message || 'Lỗi không xác định'));
+  }
+}
 document.querySelectorAll('[data-settings-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-settings-tab]').forEach(item => item.classList.remove('active')); document.querySelectorAll('[data-settings-panel]').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.querySelector('[data-settings-panel="' + button.dataset.settingsTab + '"]').classList.add('active'); }));
 
 function openProfileModal() {
@@ -3363,132 +3392,38 @@ async function deleteAllPets() {
 
   async function deleteStudent(pet) {
   const studentId = pet.dataset.studentId;
-  const petId = pet.dataset.id;
-
-  const studentName =
-    pet.querySelector('h4')?.textContent || 'học sinh';
-
-  const petName =
-    pet.querySelector('.meta span')
-      ?.textContent
-      .split(' · ')[0] || 'Pet';
+  const studentName = pet.querySelector('h4')?.textContent || 'học sinh';
+  const petName = pet.querySelector('.meta span')?.textContent.split(' · ')[0] || 'Pet';
 
   if (!studentId) {
-    console.error('Không có studentId trên card:', pet);
     toast('Không xác định được học sinh trong Supabase.');
     return;
   }
 
-  requestPassword(
-    'xóa học sinh ' + studentName,
-    async () => {
+  requestPassword('xóa học sinh ' + studentName, async () => {
+    const confirmed = confirm(
+      'Bạn có chắc muốn xoá học sinh ' + studentName +
+      '?\n\nPet ' + petName + ' và lịch sử liên quan cũng sẽ bị xoá.\n\n' +
+      'Hành động này không thể hoàn tác.'
+    );
+    if (!confirmed) return;
 
-      const confirmed = confirm(
-        'Bạn có chắc muốn xoá học sinh ' +
-        studentName +
-        '?\n\nPet ' +
-        petName +
-        ' của học sinh này cũng sẽ bị xoá.\n\n' +
-        'Hành động này không thể hoàn tác.'
-      );
+    try {
+      // Một RPC duy nhất: PostgreSQL thực hiện trong một transaction.
+      const { data, error } = await supabaseClient.rpc('teacher_delete_student', {
+        p_student_id: studentId
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.message || 'Không xác nhận được kết quả xóa.');
 
-      if (!confirmed) return;
-
-      try {
-        // ======================================
-        // 1. XÓA PET CỦA HỌC SINH TRƯỚC
-        // ======================================
-
-        if (petId) {
-          const { error: petError } =
-            await supabaseClient
-              .from('pets')
-              .delete()
-              .eq('id', petId);
-
-          if (petError) {
-            console.error(
-              '❌ Lỗi xóa Pet của học sinh:',
-              petError
-            );
-
-            toast(
-              'Không thể xóa Pet của học sinh: ' +
-              petError.message
-            );
-
-            return;
-          }
-        }
-
-        // ======================================
-        // 2. XÓA HỌC SINH
-        // ======================================
-
-        const { data: deletedStudents, error: studentError } =
-          await supabaseClient
-            .from('students')
-            .delete()
-            .eq('id', studentId)
-            .select();
-
-        if (studentError) {
-          console.error(
-            '❌ Lỗi xóa học sinh:',
-            studentError
-          );
-
-          toast(
-            'Không thể xóa học sinh: ' +
-            studentError.message
-          );
-
-          return;
-        }
-
-        if (!deletedStudents || deletedStudents.length === 0) {
-          console.error(
-            '❌ Không có học sinh nào được xóa:',
-            studentId
-          );
-
-          toast(
-            'Không xóa được học sinh khỏi Supabase.'
-          );
-
-          return;
-        }
-
-        // ======================================
-        // 3. CẬP NHẬT GIAO DIỆN
-        // ======================================
-
-        if (selectedPet === pet) {
-          closePetModal();
-        }
-
-        await loadStudents();
-
-        toast(
-          '🗑️ Đã xoá học sinh ' +
-          studentName +
-          ' và Pet ' +
-          petName +
-          '.'
-        );
-
-      } catch (error) {
-        console.error(
-          '❌ Lỗi deleteStudent:',
-          error
-        );
-
-        toast(
-          'Có lỗi xảy ra khi xóa học sinh.'
-        );
-      }
+      if (selectedPet === pet) closePetModal();
+      await loadStudents();
+      toast('🗑️ Đã xóa học sinh ' + studentName + ' và Pet ' + petName + '.');
+    } catch (error) {
+      console.error('Lỗi xóa học sinh nguyên tử:', error);
+      toast('Không thể xóa học sinh: ' + (error.message || 'Lỗi không xác định'));
     }
-  );
+  });
 }
   
 async function checkPetLifetimes() {
