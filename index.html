@@ -1890,41 +1890,16 @@ async function deleteStudentWithoutPet(card) {
       if (!confirmed) return;
 
       try {
-        const { data: deletedStudents, error } =
-          await supabaseClient
-            .from('students')
-            .delete()
-            .eq('id', studentId)
-            .select();
+        const { data, error } = await supabaseClient.rpc('teacher_delete_student', {
+          p_student_id: studentId
+        });
 
-        if (error) {
-          console.error(
-            '❌ Lỗi xóa học sinh:',
-            error
-          );
-
-          toast(
-            'Không thể xóa học sinh: ' +
-            error.message
-          );
-
-          return;
+        if (error) throw error;
+        if (!data?.success) {
+          throw new Error(data?.message || 'Không xác nhận được kết quả xóa.');
         }
 
-        if (!deletedStudents || deletedStudents.length === 0) {
-          console.error(
-            '❌ Không có học sinh nào được xóa:',
-            studentId
-          );
-
-          toast('Không xóa được học sinh khỏi Supabase.');
-          return;
-        }
-
-        console.log(
-          '✅ Đã xóa học sinh:',
-          deletedStudents[0]
-        );
+        console.log('✅ Đã xóa học sinh nguyên tử:', data.student_id);
 
         // Tải lại danh sách từ Supabase
         await loadStudents();
