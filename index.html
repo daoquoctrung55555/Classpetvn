@@ -268,6 +268,25 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 .profile-pet-face[data-habitat="fantasy"]:before,.pet-viewer-stage[data-habitat="fantasy"]:before{content:"✨       🌈       ⭐";position:absolute;inset:9% 0 auto;text-align:center;font-size:clamp(24px,4vw,48px);letter-spacing:15px;z-index:0;opacity:.9;pointer-events:none}
 .profile-pet-face[data-habitat="meadow"]:before,.pet-viewer-stage[data-habitat="meadow"]:before{content:"☁️       🌼       ☀️";position:absolute;inset:10% 0 auto;text-align:center;font-size:clamp(22px,4vw,46px);letter-spacing:14px;z-index:0;opacity:.85;pointer-events:none}
 .pet-viewer-stage[data-habitat] .pet-viewer-hint{z-index:3}
+
+/* Fix kích thước cửa sổ Cài đặt: ghi đè .modal có độ ưu tiên tương đương */
+.modal.settings-modal{
+  width:min(1400px,96vw)!important;
+  max-width:96vw!important;
+  min-height:min(720px,92vh);
+  max-height:94vh;
+  padding:28px;
+  overflow:auto;
+}
+.modal.settings-modal .settings-grid{
+  grid-template-columns:220px minmax(0,1fr);
+  gap:24px;
+}
+.modal.settings-modal .settings-panel{min-width:0}
+@media(max-width:700px){
+  .modal.settings-modal{width:96vw!important;max-width:96vw!important;min-height:0;padding:18px}
+  .modal.settings-modal .settings-grid{grid-template-columns:1fr;gap:14px}
+}
 </style>
 </head>
 <body>
