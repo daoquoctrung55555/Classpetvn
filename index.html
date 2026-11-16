@@ -320,11 +320,6 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
     <section class="card"><div class="head"><div><h3>🏆 Thành tích & Badge</h3><p>Những cột mốc đáng nhớ của lớp</p></div></div><div class="achievement-list" id="achievementList"></div></section>
   </div>
 
-  <section class="card tasks-card" id="tasksSection">
-    <div class="head"><div><h3>🎯 Nhiệm vụ của lớp</h3><p>Đánh dấu học sinh hoàn thành để trao EXP cho Pet.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openTaskModal()">＋ Thêm nhiệm vụ</button><button class="pet-delete" type="button" onclick="deleteAllTasks()">🗑️ Xóa tất cả</button></div></div>
-    <div class="task-list" id="taskList"><div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div></div>
-  </section>
-
   <div class="layout">
     <section class="card" id="studentsPetsSection">
       <div class="head"><div><h3 id="petsTitle">👥 Học sinh & Pet của lớp</h3><p>Mỗi học sinh tương ứng với một pet trong lớp.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openAddModal()">＋ Thêm học sinh & pet</button><button class="pet-action" type="button" onclick="feedAll()">🍖 Cho tất cả ăn</button><button class="primary" onclick="deleteAllPets()">🗑️ Xoá tất cả</button></div></div>
@@ -344,6 +339,11 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
       <div class="alert" id="classAlert"><div class="alert-icon">⏰</div><div><b>Chưa có pet cần chú ý</b><p>Thông báo chăm sóc sẽ xuất hiện sau khi giáo viên thêm pet vào lớp.</p></div></div><section class="care-alert" id="careAlert"><div class="head"><div><h3>⚠️ Pet cần chăm sóc</h3><p>Ưu tiên những Pet đang có độ no thấp.</p></div></div><div class="care-list" id="careList"><p style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0">Chưa có Pet cần chú ý.</p></div></section>
     </aside>
   </div>
+  <section class="card tasks-card" id="tasksSection">
+    <div class="head"><div><h3>🎯 Nhiệm vụ của lớp</h3><p>Đánh dấu học sinh hoàn thành để trao EXP cho Pet.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openTaskModal()">＋ Thêm nhiệm vụ</button><button class="pet-delete" type="button" onclick="deleteAllTasks()">🗑️ Xóa tất cả</button></div></div>
+    <div class="task-list" id="taskList"><div class="task-empty">Chưa có nhiệm vụ. Hãy tạo nhiệm vụ đầu tiên cho lớp.</div></div>
+  </section>
+
 </main>
 </div>
 
