@@ -1469,8 +1469,8 @@ function getPetHabitat(emoji, modelUrl = '') {
   for (const [name, values] of Object.entries(groups)) if (values.includes(e)) { habitat = name; break; }
   if (/shark|whale|octopus|dolphin|seal|crab|axolotl|turtle/i.test(file)) habitat = 'underwater';
   else if (/parrot|toucan|peacock|phoenix|griffin|butterfly|bumblebee|flamingo|duckling/i.test(file)) habitat = 'sky';
-  else if (/tiger|monkey|elephant|frog|koala/i.test(file)) habitat = 'jungle';
-  else if (/wolf|fox|bear|panda|deer|owl|hedgehog|sloth|raccoon|mushroom/i.test(file)) habitat = 'forest';
+  else if (/tiger|wolf|fox|bear|panda|deer|owl|hedgehog|sloth|raccoon|mushroom/i.test(file)) habitat = 'forest';
+  else if (/monkey|elephant|frog|koala/i.test(file)) habitat = 'jungle';
   if (['🐱','🐈','🐶','🐕','🐩','🐹','🐌'].includes(e)) habitat = 'meadow';
   return habitat;
 }
