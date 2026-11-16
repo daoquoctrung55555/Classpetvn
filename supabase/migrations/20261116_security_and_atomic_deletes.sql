@@ -6,7 +6,7 @@ begin;
 
 -- Remove every policy granting access to PUBLIC or anon on protected tables.
 -- Student portal access is provided only through the narrowly scoped SECURITY DEFINER RPCs.
-do $
+do $migration$
 declare
   pol record;
 begin
@@ -23,7 +23,7 @@ begin
     execute format('drop policy if exists %I on %I.%I', pol.policyname, pol.schemaname, pol.tablename);
   end loop;
 end;
-$;
+$migration$;
 
 -- Remove broad public access policies. Student access must go through the
 -- existing student_* SECURITY DEFINER RPCs, never direct table reads.
