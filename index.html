@@ -2985,10 +2985,15 @@ document.getElementById('addForm').addEventListener('submit', async event => {
 
       // Pet lỗi thì xóa học sinh vừa tạo
       // để tránh học sinh bị lưu mà không có Pet
-      await supabaseClient
-        .from('students')
-        .delete()
-        .eq('id', student.id);
+      const { data: rollbackData, error: rollbackError } =
+        await supabaseClient.rpc('teacher_delete_student', {
+          p_student_id: student.id
+        });
+
+      if (rollbackError || !rollbackData?.success) {
+        console.error('Không thể hoàn tác học sinh vừa tạo:', rollbackError || rollbackData);
+        toast('Không tạo được Pet. Học sinh vẫn còn trong danh sách; bạn có thể xóa lại trong phần quản lý học sinh.');
+      }
 
       toast('Không tạo được Pet: ' + petError.message);
       return;
