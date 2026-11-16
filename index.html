@@ -415,7 +415,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
   </form>
 </div>
 <div class="modal-bg" id="addModal">
-  <form class="modal" id="addForm"><h2>＋ Thêm học sinh và pet</h2><p>Nhập thông tin để thêm thành viên mới vào lớp.</p><label class="auth-label" for="studentName">Tên học sinh</label><input class="auth-input" id="studentName" required placeholder="Ví dụ: Nguyễn Văn An"><label class="auth-label" for="petName">Tên pet</label><input class="auth-input" id="petName" required placeholder="Ví dụ: Miu"><label class="auth-label" for="petEmoji">Chọn thú cưng</label><input class="auth-input" id="petEmoji" value="🐱" maxlength="8" required readonly><div class="pet-picker" id="petPicker" aria-label="Chọn thú cưng"></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeAddModal()">Hủy</button><button class="feedall" type="submit">Thêm vào lớp</button></div></form>
+  <form class="modal" id="addForm"><h2>＋ Thêm học sinh và pet</h2><p>Nhập thông tin để thêm thành viên mới vào lớp.</p><label class="auth-label" for="studentName">Tên học sinh</label><input class="auth-input" id="studentName" required placeholder="Ví dụ: Nguyễn Văn An"><label class="auth-label" for="petName">Tên pet</label><input class="auth-input" id="petName" required placeholder="Ví dụ: Miu"><input type="hidden" id="petEmoji" value="🐱"><div class="pet-picker" id="petPicker" aria-label="Chọn thú cưng"></div><div class="modal-actions"><button class="cancel" type="button" onclick="closeAddModal()">Hủy</button><button class="feedall" type="submit">Thêm vào lớp</button></div></form>
 </div>
 <div class="modal-bg" id="classModal">
   <form class="modal" id="classForm">
