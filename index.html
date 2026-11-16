@@ -322,7 +322,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 
   <div class="layout">
     <section class="card" id="studentsPetsSection">
-      <div class="head"><div><h3 id="petsTitle">👥 Học sinh & Pet của lớp</h3><p>Mỗi học sinh tương ứng với một pet trong lớp.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="openAddModal()">＋ Thêm học sinh & pet</button><button class="pet-action" type="button" onclick="feedAll()">🍖 Cho tất cả ăn</button><button class="primary" onclick="deleteAllPets()">🗑️ Xoá tất cả</button></div></div>
+      <div class="head"><div><h3 id="petsTitle">👥 Học sinh & Pet của lớp</h3><p>Mỗi học sinh tương ứng với một pet trong lớp.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pet-action" id="teacherRefreshButton" type="button" onclick="refreshTeacherClass()">↻ Làm mới</button><button class="primary" onclick="openAddModal()">＋ Thêm học sinh & pet</button><button class="pet-action" type="button" onclick="feedAll()">🍖 Cho tất cả ăn</button><button class="primary" onclick="deleteAllPets()">🗑️ Xoá tất cả</button></div></div>
       <div class="tools"><div class="search"><span>⌕</span><input id="q" placeholder="Tìm học sinh hoặc pet..." oninput="searchPets()"></div><select class="filter" id="statusFilter" onchange="filterStatus()" aria-label="Lọc trạng thái Pet"><option value="all">Tất cả trạng thái</option><option value="ok">Đang khỏe</option><option value="hungry">Cần chăm sóc</option><option value="danger">Nguy hiểm / đã qua đời</option></select></div>
       <div class="pet-grid" id="pets"></div>
     </section>
@@ -473,7 +473,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 </div>
 <div class="student-portal" id="studentPortal">
   <div class="student-shell">
-    <header class="student-top"><div class="student-brand"><span>🐾</span>ClassPet học sinh</div><button class="student-logout" type="button" onclick="studentLogout()">Đăng xuất</button></header>
+    <header class="student-top"><div class="student-brand"><span>🐾</span>ClassPet học sinh</div><div style="display:flex;gap:8px;align-items:center"><button class="student-logout" id="studentRefreshButton" type="button" onclick="refreshStudentPortal()">↻ Làm mới</button><button class="student-logout" type="button" onclick="studentLogout()">Đăng xuất</button></div></header>
     <section class="student-welcome"><h1 id="studentWelcome">Chào mừng đến lớp học! 👋</h1><p id="studentClassLabel"></p></section>
     <nav class="student-nav"><button type="button" onclick="studentScroll('studentHome')">🏠 Trang chủ</button><button type="button" onclick="studentScroll('studentPets')">🐾 Pet của lớp</button><button type="button" onclick="studentScroll('studentTasks')">🎯 Nhiệm vụ</button><button type="button" onclick="studentScroll('studentRanking')">🏆 Xếp hạng</button><button type="button" onclick="studentScroll('studentProgress')">📊 Tiến độ lớp</button><button type="button" onclick="studentScroll('studentMembers')">👥 Thành viên lớp</button></nav>
     <section class="student-section" id="studentHome"><h2>🏠 Trang chủ</h2><p>Tổng quan Pet và thành tích của lớp.</p><div class="student-overview-grid"><div class="student-kpi-grid"><div class="student-kpi"><small>🐾 Tổng Pet</small><strong id="studentPetCount">0</strong></div><div class="student-kpi"><small>⭐ Level cao nhất</small><strong id="studentTopLevel">0</strong></div><div class="student-kpi"><small>💚 Sức khỏe lớp</small><strong id="studentAverageHealth">0%</strong></div></div><div class="student-choice-card"><label for="studentRewardPet">🎁 Pet nhận EXP thưởng</label><select id="studentRewardPet"></select></div></div><div class="student-reward" id="studentRewardCard"><div class="student-reward-wheel" aria-label="Vòng quay phần thưởng EXP"><span class="reward-wheel-center">🎡</span><span class="reward-wheel-label reward-10">+10</span><span class="reward-wheel-label reward-20">+20</span><span class="reward-wheel-label reward-30">+30</span><span class="reward-wheel-label reward-50">+50</span></div><div class="student-reward-info"><h3>🎁 Vòng quay EXP miễn phí</h3><p id="studentRewardStatus">Mỗi học sinh được quay 1 lần mỗi ngày.</p><div class="reward-range"><b>Phần thưởng có thể nhận</b><span>+10 EXP</span><span>+20 EXP</span><span>+30 EXP</span><span>+50 EXP</span></div></div><button type="button" id="studentRewardButton" onclick="spinStudentReward()">QUAY NGAY</button></div><div class="student-pet-grid" id="studentSummary"></div></section>
@@ -4101,6 +4101,35 @@ function applyFilters() {
 function searchPets() { applyFilters(); }
 function filterStatus() { applyFilters(); }
 
+async function refreshTeacherClass() {
+  const button = document.getElementById('teacherRefreshButton');
+  if (!currentAccount || !currentClass?.id) {
+    toast('Vui lòng đăng nhập và chọn lớp trước.');
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Đang tải...';
+  }
+
+  try {
+    await loadStudents();
+    await renderActivity();
+    await renderTasks();
+    await renderDashboardInsights();
+    toast('↻ Đã tải lại dữ liệu lớp từ Supabase.');
+  } catch (error) {
+    console.error('Lỗi làm mới dữ liệu giáo viên:', error);
+    toast('Không thể làm mới dữ liệu lớp. Vui lòng thử lại.');
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = '↻ Làm mới';
+    }
+  }
+}
+
 async function feedAll() {
   const pets = [...document.querySelectorAll('.pet')];
 
@@ -4453,6 +4482,78 @@ function renderStudentPortal(classItem, account, suppliedPets = null, suppliedTa
   document.getElementById('studentMemberList').innerHTML = pets.length ? pets.map(pet => '<div class="student-member-row">👤 ' + escapeHtml(pet.student) + '<span style="margin-left:auto;color:var(--muted)">' + escapeHtml(pet.pet) + ' · Lv.' + (pet.level || 1) + '</span></div>').join('') : '<div class="student-empty">Chưa có thành viên.</div>';
 }
 function studentScroll(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+async function refreshStudentPortal() {
+  const classItem = window.studentClassItem;
+  const account = window.studentAccount;
+  const button = document.getElementById('studentRefreshButton');
+
+  if (!classItem?.code || !account?.studentName || !account?.studentPetName) {
+    toast('Phiên học sinh không hợp lệ. Vui lòng vào lớp lại.');
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Đang tải...';
+  }
+
+  try {
+    const [petsResult, tasksResult] = await Promise.all([
+      supabaseClient.rpc('student_get_class_pets', {
+        p_class_code: classItem.code,
+        p_student_name: account.studentName,
+        p_pet_name: account.studentPetName
+      }),
+      supabaseClient.rpc('student_get_class_tasks', {
+        p_class_code: classItem.code,
+        p_student_name: account.studentName,
+        p_pet_name: account.studentPetName
+      })
+    ]);
+
+    if (petsResult.error) throw petsResult.error;
+    if (tasksResult.error) throw tasksResult.error;
+    if (!petsResult.data?.success || !Array.isArray(petsResult.data.pets)) {
+      throw new Error(petsResult.data?.message || 'Không tải được Pet của lớp.');
+    }
+    if (!tasksResult.data?.success || !Array.isArray(tasksResult.data.tasks)) {
+      throw new Error(tasksResult.data?.message || 'Không tải được nhiệm vụ của lớp.');
+    }
+
+    const pets = petsResult.data.pets.map(pet => ({
+      id: pet.id,
+      pet: pet.pet,
+      student: pet.student,
+      emoji: pet.emoji || '🐱',
+      level: Number(pet.level || 1),
+      exp: Number(pet.exp || 0),
+      health: Number(pet.health ?? 100),
+      status: pet.status || 'alive'
+    }));
+
+    const tasks = tasksResult.data.tasks.map(task => ({
+      id: task.id,
+      title: task.title || 'Nhiệm vụ',
+      description: task.description || '',
+      exp: Number(task.exp || 0),
+      dueDate: task.due_date || '',
+      completed: Boolean(task.completed),
+      completedPetIds: task.completed ? [account.studentPetId] : []
+    }));
+
+    renderStudentPortal(classItem, account, pets, tasks);
+    toast('↻ Đã cập nhật Pet, nhiệm vụ và xếp hạng của lớp.');
+  } catch (error) {
+    console.error('Lỗi làm mới cổng học sinh:', error);
+    toast('Không thể cập nhật dữ liệu: ' + (error.message || 'Lỗi không xác định'));
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = '↻ Làm mới';
+    }
+  }
+}
+
 function studentLogout() { document.getElementById('studentPortal').classList.remove('show'); document.getElementById('authScreen').classList.remove('hidden'); document.getElementById('studentClassCode').value = ''; document.getElementById('studentNameLogin').value = ''; document.getElementById('studentPetNameLogin').value = ''; window.studentAccount = null; window.studentClassItem = null; }
 async function enterStudentClass() {
   const name = document.getElementById('studentNameLogin')?.value.trim() || '';
