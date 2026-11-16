@@ -91,6 +91,23 @@ create policy "Teachers can insert pets in own classes" on public.pets
       where s.id = pets.student_id and c.teacher_id = auth.uid())
   );
 
+-- Pets need teacher update/delete rights for feeding, status changes and pet removal.
+drop policy if exists "Teachers can update pets in own classes" on public.pets;
+drop policy if exists "Teachers can delete pets in own classes" on public.pets;
+create policy "Teachers can update pets in own classes" on public.pets
+  for update to authenticated using (
+    exists (select 1 from public.students s join public.classes c on c.id = s.class_id
+      where s.id = pets.student_id and c.teacher_id = auth.uid())
+  ) with check (
+    exists (select 1 from public.students s join public.classes c on c.id = s.class_id
+      where s.id = pets.student_id and c.teacher_id = auth.uid())
+  );
+create policy "Teachers can delete pets in own classes" on public.pets
+  for delete to authenticated using (
+    exists (select 1 from public.students s join public.classes c on c.id = s.class_id
+      where s.id = pets.student_id and c.teacher_id = auth.uid())
+  );
+
 -- Tasks belong directly to a class.
 drop policy if exists "Teachers can read tasks in own classes" on public.tasks;
 drop policy if exists "Teachers can insert tasks in own classes" on public.tasks;
@@ -103,6 +120,25 @@ create policy "Teachers can insert tasks in own classes" on public.tasks
   for insert to authenticated with check (
     exists (select 1 from public.classes c
       where c.id = tasks.class_id and c.teacher_id = auth.uid())
+  );
+
+-- Teachers may remove tasks only from their own classes.
+drop policy if exists "Teachers can delete tasks in own classes" on public.tasks;
+create policy "Teachers can delete tasks in own classes" on public.tasks
+  for delete to authenticated using (
+    exists (select 1 from public.classes c
+      where c.id = tasks.class_id and c.teacher_id = auth.uid())
+  );
+
+-- Teacher dashboard reads task completion state for tasks in owned classes.
+drop policy if exists "Teachers can read task completions in own classes" on public.task_completions;
+create policy "Teachers can read task completions in own classes" on public.task_completions
+  for select to authenticated using (
+    exists (
+      select 1 from public.tasks t
+      join public.classes c on c.id = t.class_id
+      where t.id = task_completions.task_id and c.teacher_id = auth.uid()
+    )
   );
 
 -- Activities: teacher-only direct access, scoped to owned classes.
