@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClassPet Pro — Giáo viên</title>
-<link rel="icon" type="image/png" href="assets/classpet-vn-logo.png?v=20261118c">
+<link rel="icon" type="image/svg+xml" href="assets/classpet-vn-logo.svg?v=20261118d">
 <link rel="stylesheet" href="style.css">
 <style>
 :root{
@@ -299,7 +299,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 <body>
 <div class="app">
 <aside class="sidebar">
-  <div class="logo"><img class="logo-mark" src="assets/classpet-vn-logo.png?v=20261118c" alt="ClassPet VN"><button class="sidebar-toggle" type="button" onclick="toggleTeacherSidebar()" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">‹</button></div>
+  <div class="logo"><img class="logo-mark" src="assets/classpet-vn-logo.svg?v=20261118d" alt="ClassPet VN"><button class="sidebar-toggle" type="button" onclick="toggleTeacherSidebar()" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">‹</button></div>
   <div class="section">Quản lý lớp</div>
   <div class="nav">
     <button class="active" onclick="toast('Đang ở Tổng quan')"><span class="ico">⌂</span><span class="nav-label">Tổng quan</span></button>
@@ -379,7 +379,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 <div class="toast" id="toast"></div>
 <div class="auth-bg" id="authScreen">
   <form class="auth-card" id="loginForm">
-    <div class="auth-logo"><img src="assets/classpet-vn-logo.png?v=20261118c" alt="Logo ClassPet"></div>
+    <div class="auth-logo"><img src="assets/classpet-vn-logo.svg?v=20261118d" alt="Logo ClassPet"></div>
     <div class="student-choice"><button type="button" class="active" id="teacherModeButton">👨‍🏫 Giáo viên</button><button type="button" id="studentModeButton">👨‍🎓 Học sinh</button></div>
     <div id="teacherLoginFields">
     <h2 id="authTitle">Đăng nhập giáo viên</h2>
@@ -499,7 +499,7 @@ body.dark-mode .student-portal :is(h1,h2,h3,h4,p,label,small,span){color:inherit
 </div>
 <div class="student-portal" id="studentPortal">
   <div class="student-shell">
-    <header class="student-top"><div class="student-brand"><img src="assets/classpet-vn-logo.png?v=20261118c" alt="Logo ClassPet"><span>Học sinh</span></div><div style="display:flex;gap:8px;align-items:center"><button class="student-logout" id="studentRefreshButton" type="button" onclick="refreshStudentPortal()">↻ Làm mới</button><button class="student-logout" type="button" onclick="studentLogout()">Đăng xuất</button></div></header>
+    <header class="student-top"><div class="student-brand"><img src="assets/classpet-vn-logo.svg?v=20261118d" alt="Logo ClassPet"><span>Học sinh</span></div><div style="display:flex;gap:8px;align-items:center"><button class="student-logout" id="studentRefreshButton" type="button" onclick="refreshStudentPortal()">↻ Làm mới</button><button class="student-logout" type="button" onclick="studentLogout()">Đăng xuất</button></div></header>
     <section class="student-welcome"><h1 id="studentWelcome">Chào mừng đến lớp học! 👋</h1><p id="studentClassLabel"></p></section>
     <nav class="student-nav"><button type="button" onclick="studentScroll('studentHome')">🏠 Trang chủ</button><button type="button" onclick="studentScroll('studentPets')">🐾 Pet của lớp</button><button type="button" onclick="studentScroll('studentTasks')">🎯 Nhiệm vụ</button><button type="button" onclick="studentScroll('studentRanking')">🏆 Xếp hạng</button><button type="button" onclick="studentScroll('studentProgress')">📊 Tiến độ lớp</button><button type="button" onclick="studentScroll('studentMembers')">👥 Thành viên lớp</button></nav>
     <section class="student-section" id="studentHome"><h2>🏠 Trang chủ</h2><p>Tổng quan Pet và thành tích của lớp.</p><div class="student-overview-grid"><div class="student-kpi-grid"><div class="student-kpi"><small>🐾 Tổng Pet</small><strong id="studentPetCount">0</strong></div><div class="student-kpi"><small>⭐ Level cao nhất</small><strong id="studentTopLevel">0</strong></div><div class="student-kpi"><small>💚 Sức khỏe lớp</small><strong id="studentAverageHealth">0%</strong></div></div><div class="student-choice-card"><label for="studentRewardPet">🎁 Pet nhận EXP thưởng</label><select id="studentRewardPet"></select></div></div><div class="student-reward" id="studentRewardCard"><div class="student-reward-wheel" aria-label="Vòng quay phần thưởng EXP"><span class="reward-wheel-center">🎡</span><span class="reward-wheel-label reward-10">+10</span><span class="reward-wheel-label reward-20">+20</span><span class="reward-wheel-label reward-30">+30</span><span class="reward-wheel-label reward-50">+50</span></div><div class="student-reward-info"><h3>🎁 Vòng quay EXP miễn phí</h3><p id="studentRewardStatus">Mỗi học sinh được quay 1 lần mỗi ngày.</p><div class="reward-range"><b>Phần thưởng có thể nhận</b><span>+10 EXP</span><span>+20 EXP</span><span>+30 EXP</span><span>+50 EXP</span></div></div><button type="button" id="studentRewardButton" onclick="spinStudentReward()">QUAY NGAY</button></div><div class="student-pet-grid" id="studentSummary"></div></section>
